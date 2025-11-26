@@ -1,6 +1,6 @@
 import type { OperationAction } from '$lib/cam/operation/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { NormalSide } from '$lib/cam/cut/enums';
 import type { Lead } from './types';
 
@@ -12,7 +12,7 @@ export interface CutPath {
     leadOut?: Lead;
     isRapid: boolean;
     parameters?: CuttingParameters;
-    originalShape?: ShapeData; // Preserve original shape for native G-code generation
+    originalShape?: Shape; // Preserve original shape for native G-code generation
     executionClockwise?: boolean | null; // Execution direction from cut (true=CW, false=CCW, null=no direction)
     normalSide?: NormalSide; // Which side the normal is on (for machine cutter compensation)
     hasOffset?: boolean; // Whether this cut has an offset applied

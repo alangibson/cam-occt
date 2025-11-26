@@ -7,6 +7,7 @@ import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Spline } from '$lib/geometry/spline/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Elephant DXF - Chain Containment Issue', () => {
     it('should detect chain-18 as inside part shell chain-1', async () => {
@@ -23,7 +24,10 @@ describe('Elephant DXF - Chain Containment Issue', () => {
 
         // Detect chains
         const tolerance = 0.01;
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
         console.log('Chains detected:', chains.length);
 
         // Find the specific chains mentioned in the issue

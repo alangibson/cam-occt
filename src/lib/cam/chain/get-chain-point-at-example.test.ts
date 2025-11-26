@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 /**
  * Example usage of getChainPointAt function
  *
@@ -32,10 +33,11 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const chain: ChainData = {
+        const chainData: ChainData = {
             id: 'L-shape',
             shapes: [horizontalLine, verticalLine],
         };
+        const chain = new Chain(chainData);
 
         // Get 5 equally spaced points along the chain
         const numPoints = 5;
@@ -80,10 +82,11 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const chain: ChainData = {
+        const chainData: ChainData = {
             id: 'simple-line',
             shapes: [line],
         };
+        const chain = new Chain(chainData);
 
         // Find point at 75% of the chain length
         const point = getChainPointAt(chain, 0.75);
@@ -130,10 +133,11 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const chain: ChainData = {
+        const chainData: ChainData = {
             id: 'rectangle',
             shapes: [bottom, right, top, left],
         };
+        const chain = new Chain(chainData);
 
         // Sample 8 points around the perimeter
         const samples = 8;

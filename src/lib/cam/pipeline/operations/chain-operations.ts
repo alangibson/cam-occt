@@ -2,7 +2,6 @@
  * Chain operations module - handles cut generation for individual chains
  */
 
-import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
@@ -33,7 +32,7 @@ export async function generateCutsForChainsWithOperation(
     tolerance: number
 ): Promise<CutGenerationResult> {
     // Get chain from operation targets
-    const chain = operation.targets[index] as ChainData;
+    const chain = operation.targets[index] as Chain;
     const tool = operation.tool;
 
     // Return empty arrays if chain not found or tool missing
@@ -111,7 +110,7 @@ export async function generateCutsForChainsWithOperation(
     let executionClockwise: boolean | null = null;
     if (chain) {
         const cutChainResult = createCutChain(
-            chain,
+            new Chain(chain),
             cutDirection,
             calculatedOffset?.offsetShapes
         );
@@ -173,15 +172,12 @@ export async function generateCutsForChainsWithOperation(
         operation.optimizeStarts &&
         operation.optimizeStarts !== OptimizeStarts.NONE
     ) {
-        const optimizedCut = optimizeCutStartPoint(
+        const wasOptimized = optimizeCutStartPoint(
             cutToReturn,
             operation.optimizeStarts,
             tolerance
         );
-        if (optimizedCut) {
-            // Use the optimized cut with the new start point
-            Object.assign(cutToReturn, optimizedCut);
-
+        if (wasOptimized) {
             // Recalculate normal with the new start point
             const newCutNormalResult = calculateCutNormal(
                 cutToReturn.cutChain!,

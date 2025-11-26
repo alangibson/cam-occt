@@ -5,6 +5,7 @@ import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import fs from 'fs';
 import path from 'path';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('1997.dxf Part Detection', () => {
     it('should detect 6 chains and 4 parts from the 1997.dxf file', async () => {
@@ -21,8 +22,11 @@ describe('1997.dxf Part Detection', () => {
         // Verify we have the expected number of shapes after decomposition
         expect(decomposed.length).toBeGreaterThan(400); // Should have ~454 line segments
 
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = decomposed.map((s) => new Shape(s));
+
         // Detect chains using decomposed shapes
-        const chains = detectShapeChains(decomposed, { tolerance: 0.1 });
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         // Log chain details
         chains.forEach(() => {});
@@ -67,8 +71,11 @@ describe('1997.dxf Part Detection', () => {
         expect(decomposed).toBeDefined();
         expect(Array.isArray(decomposed)).toBe(true);
 
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = decomposed.map((s) => new Shape(s));
+
         // Chain detection should not throw
-        const chains = detectShapeChains(decomposed, { tolerance: 0.1 });
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         expect(chains).toBeDefined();
         expect(Array.isArray(chains)).toBe(true);
 

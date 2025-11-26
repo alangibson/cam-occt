@@ -12,10 +12,12 @@ import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { calculateLeads } from './lead-calculation';
-import { Chain } from '$lib/cam/chain/classes';
 import { isArc } from '$lib/geometry/arc/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Chain-Pill DXF Lead Direction Bug', () => {
     let chains: ChainData[];
@@ -34,20 +36,25 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
 
         // Scale shapes
         shapes = drawing.shapes.map((shape: ShapeData) =>
-            scaleShape(shape, physicalScale, { x: 0, y: 0 })
+            scaleShape(new Shape(shape), physicalScale, { x: 0, y: 0 }).toData()
         );
 
         // Calculate tolerance
         const tolerance = calculateDynamicTolerance(shapes, 0.1);
 
         // Detect chains
-        const detectedChains = detectShapeChains(shapes, { tolerance });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
 
         // Normalize chains
         chains = detectedChains.map((chain) => normalizeChain(chain));
 
         // Detect parts
-        const partDetectionResult = await detectParts(chains);
+        const partDetectionResult = await detectParts(
+            chains.map((c) => new Chain(c))
+        );
         parts = partDetectionResult.parts;
 
         console.log(`Found ${chains.length} chains and ${parts.length} parts`);
@@ -92,7 +99,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
-                part,
+                part ? new Part(part) : undefined,
                 { x: 1, y: 0 }
             );
 
@@ -102,7 +109,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                part ? new Part(part) : undefined,
                 { x: 1, y: 0 }
             );
 
@@ -266,7 +273,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 { x: 1, y: 0 }
             );
 
@@ -275,7 +282,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 { x: 1, y: 0 }
             );
 

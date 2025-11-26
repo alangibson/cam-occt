@@ -7,6 +7,7 @@ import {
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 // Helper function to create test cut
@@ -55,7 +56,7 @@ describe('createLeadInConfig', () => {
             },
         });
 
-        const config = createLeadInConfig(cut);
+        const config = createLeadInConfig(new Cut(cut));
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(7.5);
@@ -68,7 +69,7 @@ describe('createLeadInConfig', () => {
             leadInConfig: undefined,
         });
 
-        const config = createLeadInConfig(cut);
+        const config = createLeadInConfig(new Cut(cut));
 
         expect(config.type).toBe(LeadType.NONE);
         expect(config.length).toBe(0);
@@ -87,7 +88,7 @@ describe('createLeadInConfig', () => {
             },
         });
 
-        const config = createLeadInConfig(cut);
+        const config = createLeadInConfig(new Cut(cut));
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(3.14);
@@ -97,77 +98,93 @@ describe('createLeadInConfig', () => {
 
     it('should handle different lead types', () => {
         const arcConfig1 = createLeadInConfig(
-            createTestCut({
-                leadInConfig: { type: LeadType.ARC, length: 5, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: { type: LeadType.ARC, length: 5, fit: true },
+                })
+            )
         );
         expect(arcConfig1.type).toBe(LeadType.ARC);
 
         const arcConfig2 = createLeadInConfig(
-            createTestCut({
-                leadInConfig: { type: LeadType.ARC, length: 5, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: { type: LeadType.ARC, length: 5, fit: true },
+                })
+            )
         );
         expect(arcConfig2.type).toBe(LeadType.ARC);
 
         const arcConfig3 = createLeadInConfig(
-            createTestCut({
-                leadInConfig: { type: LeadType.NONE, length: 0, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: { type: LeadType.NONE, length: 0, fit: true },
+                })
+            )
         );
         expect(arcConfig3.type).toBe(LeadType.NONE);
     });
 
     it('should handle zero and negative lengths', () => {
         const zeroConfig = createLeadInConfig(
-            createTestCut({
-                leadInConfig: { type: LeadType.ARC, length: 0, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: { type: LeadType.ARC, length: 0, fit: true },
+                })
+            )
         );
         expect(zeroConfig.length).toBe(0);
 
         const negativeConfig = createLeadInConfig(
-            createTestCut({
-                leadInConfig: { type: LeadType.ARC, length: -5, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: { type: LeadType.ARC, length: -5, fit: true },
+                })
+            )
         );
         expect(negativeConfig.length).toBe(-5);
     });
 
     it('should handle extreme angle values', () => {
         const config360 = createLeadInConfig(
-            createTestCut({
-                leadInConfig: {
-                    type: LeadType.ARC,
-                    length: 5,
-                    angle: 360,
-                    fit: true,
-                },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: {
+                        type: LeadType.ARC,
+                        length: 5,
+                        angle: 360,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(config360.angle).toBe(360);
 
         const configNegative = createLeadInConfig(
-            createTestCut({
-                leadInConfig: {
-                    type: LeadType.ARC,
-                    length: 5,
-                    angle: -90,
-                    fit: true,
-                },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: {
+                        type: LeadType.ARC,
+                        length: 5,
+                        angle: -90,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(configNegative.angle).toBe(-90);
 
         const configLarge = createLeadInConfig(
-            createTestCut({
-                leadInConfig: {
-                    type: LeadType.ARC,
-                    length: 5,
-                    angle: 720,
-                    fit: true,
-                },
-            })
+            new Cut(
+                createTestCut({
+                    leadInConfig: {
+                        type: LeadType.ARC,
+                        length: 5,
+                        angle: 720,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(configLarge.angle).toBe(720);
     });
@@ -185,7 +202,7 @@ describe('createLeadOutConfig', () => {
             },
         });
 
-        const config = createLeadOutConfig(cut);
+        const config = createLeadOutConfig(new Cut(cut));
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(12.5);
@@ -198,7 +215,7 @@ describe('createLeadOutConfig', () => {
             leadOutConfig: undefined,
         });
 
-        const config = createLeadOutConfig(cut);
+        const config = createLeadOutConfig(new Cut(cut));
 
         expect(config.type).toBe(LeadType.NONE);
         expect(config.length).toBe(0);
@@ -217,7 +234,7 @@ describe('createLeadOutConfig', () => {
             },
         });
 
-        const config = createLeadOutConfig(cut);
+        const config = createLeadOutConfig(new Cut(cut));
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(0);
@@ -227,77 +244,101 @@ describe('createLeadOutConfig', () => {
 
     it('should handle different lead types', () => {
         const arcConfig1 = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: { type: LeadType.ARC, length: 5, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: { type: LeadType.ARC, length: 5, fit: true },
+                })
+            )
         );
         expect(arcConfig1.type).toBe(LeadType.ARC);
 
         const arcConfig2 = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: { type: LeadType.ARC, length: 5, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: { type: LeadType.ARC, length: 5, fit: true },
+                })
+            )
         );
         expect(arcConfig2.type).toBe(LeadType.ARC);
 
         const arcConfig3 = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: { type: LeadType.NONE, length: 0, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: {
+                        type: LeadType.NONE,
+                        length: 0,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(arcConfig3.type).toBe(LeadType.NONE);
     });
 
     it('should handle zero and negative lengths', () => {
         const zeroConfig = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: { type: LeadType.ARC, length: 0, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: { type: LeadType.ARC, length: 0, fit: true },
+                })
+            )
         );
         expect(zeroConfig.length).toBe(0);
 
         const negativeConfig = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: { type: LeadType.ARC, length: -3.5, fit: true },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: {
+                        type: LeadType.ARC,
+                        length: -3.5,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(negativeConfig.length).toBe(-3.5);
     });
 
     it('should handle extreme angle values', () => {
         const config360 = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: {
-                    type: LeadType.ARC,
-                    length: 5,
-                    angle: 360,
-                    fit: true,
-                },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: {
+                        type: LeadType.ARC,
+                        length: 5,
+                        angle: 360,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(config360.angle).toBe(360);
 
         const configNegative = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: {
-                    type: LeadType.ARC,
-                    length: 5,
-                    angle: -45,
-                    fit: true,
-                },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: {
+                        type: LeadType.ARC,
+                        length: 5,
+                        angle: -45,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(configNegative.angle).toBe(-45);
 
         const configLarge = createLeadOutConfig(
-            createTestCut({
-                leadOutConfig: {
-                    type: LeadType.ARC,
-                    length: 5,
-                    angle: 540,
-                    fit: true,
-                },
-            })
+            new Cut(
+                createTestCut({
+                    leadOutConfig: {
+                        type: LeadType.ARC,
+                        length: 5,
+                        angle: 540,
+                        fit: true,
+                    },
+                })
+            )
         );
         expect(configLarge.angle).toBe(540);
     });
@@ -322,7 +363,7 @@ describe('createLeadConfigs', () => {
             },
         });
 
-        const configs = createLeadConfigs(cut);
+        const configs = createLeadConfigs(new Cut(cut));
 
         // Check lead-in config
         expect(configs.leadIn.type).toBe(LeadType.ARC);
@@ -343,7 +384,7 @@ describe('createLeadConfigs', () => {
             leadOutConfig: undefined,
         });
 
-        const configs = createLeadConfigs(cut);
+        const configs = createLeadConfigs(new Cut(cut));
 
         // Check lead-in defaults
         expect(configs.leadIn.type).toBe(LeadType.NONE);
@@ -370,7 +411,7 @@ describe('createLeadConfigs', () => {
             leadOutConfig: undefined,
         });
 
-        const configs = createLeadConfigs(cut);
+        const configs = createLeadConfigs(new Cut(cut));
 
         // Check lead-in config
         expect(configs.leadIn.type).toBe(LeadType.ARC);
@@ -397,7 +438,7 @@ describe('createLeadConfigs', () => {
             },
         });
 
-        const configs = createLeadConfigs(cut);
+        const configs = createLeadConfigs(new Cut(cut));
 
         // Check lead-in defaults
         expect(configs.leadIn.type).toBe(LeadType.NONE);
@@ -430,9 +471,9 @@ describe('createLeadConfigs', () => {
             },
         });
 
-        const combinedConfigs = createLeadConfigs(cut);
-        const separateLeadIn = createLeadInConfig(cut);
-        const separateLeadOut = createLeadOutConfig(cut);
+        const combinedConfigs = createLeadConfigs(new Cut(cut));
+        const separateLeadIn = createLeadInConfig(new Cut(cut));
+        const separateLeadOut = createLeadOutConfig(new Cut(cut));
 
         // Verify lead-in configs match
         expect(combinedConfigs.leadIn).toEqual(separateLeadIn);
@@ -460,7 +501,7 @@ describe('createLeadConfigs', () => {
                 leadOutConfig: { type: outType, length: 5, fit: true },
             });
 
-            const configs = createLeadConfigs(cut);
+            const configs = createLeadConfigs(new Cut(cut));
 
             expect(configs.leadIn.type).toBe(inType);
             expect(configs.leadOut.type).toBe(outType);

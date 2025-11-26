@@ -3,9 +3,9 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { tessellateArc } from '$lib/geometry/arc/functions';
 import type { Lead, LeadConfig } from './interfaces';
-import type { CutData } from '$lib/cam/cut/interfaces';
 import { normalizeVector } from '$lib/geometry/math/functions';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
+import type { Cut } from '$lib/cam/cut/classes.svelte';
 
 /**
  * Convert LeadGeometry (Arc) to Point2D array for testing
@@ -25,7 +25,7 @@ export function convertLeadGeometryToPoints(lead: Lead): Point2D[] {
 /**
  * Create lead-in configuration from cut
  */
-export function createLeadInConfig(cut: CutData): LeadConfig {
+export function createLeadInConfig(cut: Cut): LeadConfig {
     if (cut.leadInConfig) {
         return {
             type: cut.leadInConfig.type,
@@ -49,7 +49,7 @@ export function createLeadInConfig(cut: CutData): LeadConfig {
 /**
  * Create lead-out configuration from cut
  */
-export function createLeadOutConfig(cut: CutData): LeadConfig {
+export function createLeadOutConfig(cut: Cut): LeadConfig {
     if (cut.leadOutConfig) {
         return {
             type: cut.leadOutConfig.type,
@@ -73,7 +73,7 @@ export function createLeadOutConfig(cut: CutData): LeadConfig {
 /**
  * Create both lead configurations from cut
  */
-export function createLeadConfigs(cut: CutData): {
+export function createLeadConfigs(cut: Cut): {
     leadIn: LeadConfig;
     leadOut: LeadConfig;
 } {

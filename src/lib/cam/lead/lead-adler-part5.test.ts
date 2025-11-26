@@ -4,7 +4,6 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { Chain } from '$lib/cam/chain/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
@@ -15,6 +14,8 @@ import { LeadType } from './enums';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -75,8 +76,11 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         // Parse with decompose polylines enabled (matching UI behavior)
         const parsed = await parseDXF(dxfContent);
 
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+
         // Detect chains with tolerance 0.1 (standard default)
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         // Detect parts
         const partResult = await detectParts(chains);
@@ -159,7 +163,9 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
 

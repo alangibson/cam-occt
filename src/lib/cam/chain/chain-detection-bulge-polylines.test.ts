@@ -1,3 +1,4 @@
+import { Shape } from '$lib/cam/shape/classes';
 import { describe, expect, it } from 'vitest';
 import { detectShapeChains } from './chain-detection';
 import { parseDXF } from '$lib/parsers/dxf/functions';
@@ -53,7 +54,10 @@ describe('Chain Detection for Polylines with Bulges', () => {
         expect(polyline2.closed).toBe(true);
 
         // Detect chains using a reasonable tolerance
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
 
         // Should have 2 separate chains (one for each polyline)
         expect(chains).toHaveLength(2);
@@ -69,8 +73,8 @@ describe('Chain Detection for Polylines with Bulges', () => {
         // Test that the chain detection algorithm correctly identifies these as closed chains
         // Import the chain closure detection function to test it directly
         // Both polylines should be detected as closed using the fixed algorithm
-        expect(isShapeClosed(drawing.shapes[0], 0.1)).toBe(true);
-        expect(isShapeClosed(drawing.shapes[1], 0.1)).toBe(true);
+        expect(isShapeClosed(new Shape(drawing.shapes[0]), 0.1)).toBe(true);
+        expect(isShapeClosed(new Shape(drawing.shapes[1]), 0.1)).toBe(true);
     });
 
     it('should correctly report chain closure status for polylines with bulges', async () => {
@@ -85,7 +89,10 @@ describe('Chain Detection for Polylines with Bulges', () => {
         const drawing = await parseDXF(dxfContent);
 
         // Detect chains using a reasonable tolerance
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
 
         // Both polylines should be detected as closed
         for (const chain of chains) {

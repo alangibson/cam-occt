@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { GeometryType } from '$lib/geometry/enums';
 import { describe, expect, it } from 'vitest';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
@@ -107,8 +108,11 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
             0
         );
 
-        // Run optimization
-        const result = optimizeStartPoints(chains, optimizationParams);
+        // Run optimization - wrap ChainData objects with Chain class
+        const result = optimizeStartPoints(
+            chains.map((c) => new Chain(c)),
+            optimizationParams
+        );
 
         // NEW EXPECTATION: All chains should be modified now that we support polylines
         // Each chain should have one shape split into two
@@ -176,7 +180,10 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
             ],
         };
 
-        const result = optimizeStartPoints([complexChain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(complexChain)],
+            optimizationParams
+        );
 
         // Now it SHOULD modify the chain since we support polylines
         expect(result.length).toBe(4); // 3 original + 1 from split
@@ -225,7 +232,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         };
 
         const result = optimizeStartPoints(
-            [adlerStyleChain],
+            [new Chain(adlerStyleChain)],
             optimizationParams
         );
 

@@ -1,3 +1,4 @@
+import { Shape } from '$lib/cam/shape/classes';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -54,7 +55,10 @@ describe('Tractor Seat Mount Debug Analysis', () => {
             const tolerances = [0.01, 0.05, 0.1, 0.5, 1.0];
 
             for (const tolerance of tolerances) {
-                const chains = detectShapeChains(parsed.shapes, { tolerance });
+                const chains = detectShapeChains(
+                    parsed.shapes.map((s) => new Shape(s)),
+                    { tolerance }
+                );
 
                 // Only proceed with part detection if we have reasonable number of chains
                 if (chains.length > 0 && chains.length <= 20) {

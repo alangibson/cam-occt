@@ -11,6 +11,7 @@ import {
     toClipper2Paths,
     calculateClipper2PathsArea,
 } from '$lib/cam/offset/convert';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Diagnostic - Area Ratio Analysis', () => {
     it('analyze area ratios for failing circle containment in Tractor Light Mount', async () => {
@@ -21,7 +22,10 @@ describe('Diagnostic - Area Ratio Analysis', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
         const drawing = await parseDXF(dxfContent);
 
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>
@@ -121,7 +125,10 @@ describe('Diagnostic - Area Ratio Analysis', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
         const drawing = await parseDXF(dxfContent);
 
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>

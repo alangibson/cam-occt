@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import {
     anyPointInsideChainExact,
@@ -184,54 +185,94 @@ describe('Point-in-Chain Exact Testing', () => {
         it('should correctly identify points inside a rectangle', () => {
             const chain = createRectangleChain(0, 0, 10, 10);
 
-            expect(isPointInsideChainExact({ x: 5, y: 5 }, chain)).toBe(true);
-            expect(isPointInsideChainExact({ x: 1, y: 1 }, chain)).toBe(true);
-            expect(isPointInsideChainExact({ x: 9, y: 9 }, chain)).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 5, y: 5 }, new Chain(chain))
+            ).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 1, y: 1 }, new Chain(chain))
+            ).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 9, y: 9 }, new Chain(chain))
+            ).toBe(true);
         });
 
         it('should correctly identify points outside a rectangle', () => {
             const chain = createRectangleChain(0, 0, 10, 10);
 
-            expect(isPointInsideChainExact({ x: -1, y: 5 }, chain)).toBe(false);
-            expect(isPointInsideChainExact({ x: 11, y: 5 }, chain)).toBe(false);
-            expect(isPointInsideChainExact({ x: 5, y: -1 }, chain)).toBe(false);
-            expect(isPointInsideChainExact({ x: 5, y: 11 }, chain)).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: -1, y: 5 }, new Chain(chain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 11, y: 5 }, new Chain(chain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 5, y: -1 }, new Chain(chain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 5, y: 11 }, new Chain(chain))
+            ).toBe(false);
         });
 
         it('should correctly identify points inside a circle', () => {
             const chain = createCircleChain(0, 0, 5);
 
-            expect(isPointInsideChainExact({ x: 0, y: 0 }, chain)).toBe(true);
-            expect(isPointInsideChainExact({ x: 3, y: 0 }, chain)).toBe(true);
-            expect(isPointInsideChainExact({ x: 0, y: 3 }, chain)).toBe(true);
-            expect(isPointInsideChainExact({ x: 2, y: 2 }, chain)).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 0, y: 0 }, new Chain(chain))
+            ).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 3, y: 0 }, new Chain(chain))
+            ).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 0, y: 3 }, new Chain(chain))
+            ).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 2, y: 2 }, new Chain(chain))
+            ).toBe(true);
         });
 
         it('should correctly identify points outside a circle', () => {
             const chain = createCircleChain(0, 0, 5);
 
-            expect(isPointInsideChainExact({ x: 6, y: 0 }, chain)).toBe(false);
-            expect(isPointInsideChainExact({ x: 0, y: 6 }, chain)).toBe(false);
-            expect(isPointInsideChainExact({ x: 4, y: 4 }, chain)).toBe(false);
-            expect(isPointInsideChainExact({ x: -6, y: 0 }, chain)).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 6, y: 0 }, new Chain(chain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 0, y: 6 }, new Chain(chain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 4, y: 4 }, new Chain(chain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: -6, y: 0 }, new Chain(chain))
+            ).toBe(false);
         });
 
         it('should handle rounded rectangle with mixed shapes', () => {
             const chain = createRoundedRectangleChain(0, 0, 20, 10, 2);
 
             // Points clearly inside
-            expect(isPointInsideChainExact({ x: 10, y: 5 }, chain)).toBe(true);
-            expect(isPointInsideChainExact({ x: 5, y: 3 }, chain)).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 10, y: 5 }, new Chain(chain))
+            ).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 5, y: 3 }, new Chain(chain))
+            ).toBe(true);
 
             // Points clearly outside
-            expect(isPointInsideChainExact({ x: -1, y: 5 }, chain)).toBe(false);
-            expect(isPointInsideChainExact({ x: 21, y: 5 }, chain)).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: -1, y: 5 }, new Chain(chain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 21, y: 5 }, new Chain(chain))
+            ).toBe(false);
 
             // Points near rounded corners (this is where exact testing shines)
-            expect(isPointInsideChainExact({ x: 1, y: 1 }, chain)).toBe(true); // Inside corner arc
-            expect(isPointInsideChainExact({ x: 0.5, y: 0.5 }, chain)).toBe(
-                false
-            ); // Outside corner arc
+            expect(
+                isPointInsideChainExact({ x: 1, y: 1 }, new Chain(chain))
+            ).toBe(true); // Inside corner arc
+            expect(
+                isPointInsideChainExact({ x: 0.5, y: 0.5 }, new Chain(chain))
+            ).toBe(false); // Outside corner arc
         });
 
         it('should throw error for open chains', () => {
@@ -258,7 +299,7 @@ describe('Point-in-Chain Exact Testing', () => {
             };
 
             expect(() => {
-                isPointInsideChainExact({ x: 5, y: 5 }, openChain);
+                isPointInsideChainExact({ x: 5, y: 5 }, new Chain(openChain));
             }).toThrow('Cannot check point containment for open chain');
         });
     });
@@ -273,13 +314,13 @@ describe('Point-in-Chain Exact Testing', () => {
                 { x: -1, y: 5 }, // outside
             ];
 
-            const results = arePointsInsideChainExact(points, chain);
+            const results = arePointsInsideChainExact(points, new Chain(chain));
             expect(results).toEqual([true, false, true, false]);
         });
 
         it('should handle empty point array', () => {
             const chain = createRectangleChain(0, 0, 10, 10);
-            const results = arePointsInsideChainExact([], chain);
+            const results = arePointsInsideChainExact([], new Chain(chain));
             expect(results).toEqual([]);
         });
     });
@@ -293,7 +334,9 @@ describe('Point-in-Chain Exact Testing', () => {
                 { x: -1, y: 5 }, // outside
             ];
 
-            expect(anyPointInsideChainExact(points, chain)).toBe(true);
+            expect(anyPointInsideChainExact(points, new Chain(chain))).toBe(
+                true
+            );
         });
 
         it('should return false if no points are inside', () => {
@@ -304,7 +347,9 @@ describe('Point-in-Chain Exact Testing', () => {
                 { x: 5, y: 15 }, // outside
             ];
 
-            expect(anyPointInsideChainExact(points, chain)).toBe(false);
+            expect(anyPointInsideChainExact(points, new Chain(chain))).toBe(
+                false
+            );
         });
 
         it('should short-circuit on first inside point', () => {
@@ -315,7 +360,9 @@ describe('Point-in-Chain Exact Testing', () => {
                 { x: -1, y: 5 }, // outside
             ];
 
-            expect(anyPointInsideChainExact(points, chain)).toBe(true);
+            expect(anyPointInsideChainExact(points, new Chain(chain))).toBe(
+                true
+            );
         });
     });
 
@@ -331,7 +378,9 @@ describe('Point-in-Chain Exact Testing', () => {
                 { x: 2, y: 2 }, // inside
             ];
 
-            expect(countPointsInsideChainExact(points, chain)).toBe(4);
+            expect(countPointsInsideChainExact(points, new Chain(chain))).toBe(
+                4
+            );
         });
 
         it('should return 0 for all outside points', () => {
@@ -343,7 +392,9 @@ describe('Point-in-Chain Exact Testing', () => {
                 { x: 5, y: -5 },
             ];
 
-            expect(countPointsInsideChainExact(points, chain)).toBe(0);
+            expect(countPointsInsideChainExact(points, new Chain(chain))).toBe(
+                0
+            );
         });
     });
 
@@ -406,20 +457,20 @@ describe('Point-in-Chain Exact Testing', () => {
             // Only one line crosses to the right with proper boundary handling
 
             // Test points inside star
-            expect(isPointInsideChainExact({ x: 0, y: 0 }, starChain)).toBe(
-                true
-            );
-            expect(isPointInsideChainExact({ x: 1, y: 0 }, starChain)).toBe(
-                true
-            );
+            expect(
+                isPointInsideChainExact({ x: 0, y: 0 }, new Chain(starChain))
+            ).toBe(true);
+            expect(
+                isPointInsideChainExact({ x: 1, y: 0 }, new Chain(starChain))
+            ).toBe(true);
 
             // Test points outside star
-            expect(isPointInsideChainExact({ x: 15, y: 0 }, starChain)).toBe(
-                false
-            );
-            expect(isPointInsideChainExact({ x: 0, y: 15 }, starChain)).toBe(
-                false
-            );
+            expect(
+                isPointInsideChainExact({ x: 15, y: 0 }, new Chain(starChain))
+            ).toBe(false);
+            expect(
+                isPointInsideChainExact({ x: 0, y: 15 }, new Chain(starChain))
+            ).toBe(false);
         });
 
         it('should demonstrate improvement over sampling for arc-heavy shapes', () => {
@@ -449,13 +500,16 @@ describe('Point-in-Chain Exact Testing', () => {
             // Test that the exact algorithm handles disconnected shapes appropriately
             // (throws error for non-chains, which is correct behavior)
             expect(() =>
-                isPointInsideChainExact({ x: 0, y: 0 }, flowerChain)
+                isPointInsideChainExact({ x: 0, y: 0 }, new Chain(flowerChain))
             ).toThrow('Cannot check point containment for open chain');
             expect(() =>
-                isPointInsideChainExact({ x: 2, y: 2 }, flowerChain)
+                isPointInsideChainExact({ x: 2, y: 2 }, new Chain(flowerChain))
             ).toThrow('Cannot check point containment for open chain');
             expect(() =>
-                isPointInsideChainExact({ x: 10, y: 10 }, flowerChain)
+                isPointInsideChainExact(
+                    { x: 10, y: 10 },
+                    new Chain(flowerChain)
+                )
             ).toThrow('Cannot check point containment for open chain');
         });
     });

@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import {
     calculateChainArea,
     getChainEndPoint,
@@ -68,7 +69,7 @@ describe('isChainClosed', () => {
         const shapes = createRectangle(0, 0, 10, 10);
         const chain = createTestChain('test', shapes);
 
-        expect(isChainClosed(chain, 0.1)).toBe(true);
+        expect(isChainClosed(new Chain(chain), 0.1)).toBe(true);
     });
 
     it('should return false for open chain', () => {
@@ -92,13 +93,13 @@ describe('isChainClosed', () => {
         ];
         const chain = createTestChain('test', shapes);
 
-        expect(isChainClosed(chain, 0.1)).toBe(false);
+        expect(isChainClosed(new Chain(chain), 0.1)).toBe(false);
     });
 
     it('should return false for empty chain', () => {
         const chain = createTestChain('test', []);
 
-        expect(isChainClosed(chain, 0.1)).toBe(false);
+        expect(isChainClosed(new Chain(chain), 0.1)).toBe(false);
     });
 
     it('should handle chain with points close but not within tolerance', () => {
@@ -138,8 +139,8 @@ describe('isChainClosed', () => {
         ];
         const chain = createTestChain('test', shapes);
 
-        expect(isChainClosed(chain, 0.1)).toBe(false);
-        expect(isChainClosed(chain, 0.3)).toBe(true);
+        expect(isChainClosed(new Chain(chain), 0.1)).toBe(false);
+        expect(isChainClosed(new Chain(chain), 0.3)).toBe(true);
     });
 });
 
@@ -148,7 +149,7 @@ describe('calculateChainArea', () => {
         const shapes = createRectangle(0, 0, 10, 10);
         const chain = createTestChain('test', shapes);
 
-        const area = calculateChainArea(chain, 0.1);
+        const area = calculateChainArea(new Chain(chain), 0.1);
         expect(area).toBeCloseTo(100, 1);
     });
 
@@ -173,7 +174,7 @@ describe('calculateChainArea', () => {
         ];
         const chain = createTestChain('test', shapes);
 
-        expect(calculateChainArea(chain, 0.1)).toBe(0);
+        expect(calculateChainArea(new Chain(chain), 0.1)).toBe(0);
     });
 
     it('should return 0 for chain with less than 3 points', () => {
@@ -189,7 +190,7 @@ describe('calculateChainArea', () => {
         ];
         const chain = createTestChain('test', shapes);
 
-        expect(calculateChainArea(chain, 0.1)).toBe(0);
+        expect(calculateChainArea(new Chain(chain), 0.1)).toBe(0);
     });
 
     it('should handle custom parameters', () => {
@@ -200,7 +201,7 @@ describe('calculateChainArea', () => {
             decimalPrecision: 4,
         };
 
-        const area = calculateChainArea(chain, 0.1, customParams);
+        const area = calculateChainArea(new Chain(chain), 0.1, customParams);
         expect(area).toBeCloseTo(100, 1);
     });
 });
@@ -212,7 +213,13 @@ describe('isChainContainedInChain', () => {
         const innerChain = createTestChain('inner', innerShapes);
         const outerChain = createTestChain('outer', outerShapes);
 
-        expect(isChainContainedInChain(innerChain, outerChain, 0.1)).toBe(true);
+        expect(
+            isChainContainedInChain(
+                new Chain(innerChain),
+                new Chain(outerChain),
+                0.1
+            )
+        ).toBe(true);
     });
 
     it('should return false when outer chain is not closed', () => {
@@ -238,9 +245,13 @@ describe('isChainContainedInChain', () => {
         const innerChain = createTestChain('inner', innerShapes);
         const outerChain = createTestChain('outer', outerShapes);
 
-        expect(isChainContainedInChain(innerChain, outerChain, 0.1)).toBe(
-            false
-        );
+        expect(
+            isChainContainedInChain(
+                new Chain(innerChain),
+                new Chain(outerChain),
+                0.1
+            )
+        ).toBe(false);
     });
 
     it('should handle open inner chain (linestring)', () => {
@@ -266,7 +277,13 @@ describe('isChainContainedInChain', () => {
         const innerChain = createTestChain('inner', innerShapes);
         const outerChain = createTestChain('outer', outerShapes);
 
-        expect(isChainContainedInChain(innerChain, outerChain, 0.1)).toBe(true);
+        expect(
+            isChainContainedInChain(
+                new Chain(innerChain),
+                new Chain(outerChain),
+                0.1
+            )
+        ).toBe(true);
     });
 
     it('should handle error cases gracefully', () => {
@@ -286,9 +303,13 @@ describe('isChainContainedInChain', () => {
         const outerChain = createTestChain('outer', outerShapes);
 
         // Should not throw and should return false
-        expect(isChainContainedInChain(innerChain, outerChain, 0.1)).toBe(
-            false
-        );
+        expect(
+            isChainContainedInChain(
+                new Chain(innerChain),
+                new Chain(outerChain),
+                0.1
+            )
+        ).toBe(false);
     });
 });
 
@@ -328,7 +349,7 @@ describe('getChainEndPoint', () => {
             ],
         });
 
-        const endPoint = getChainEndPoint(chain);
+        const endPoint = getChainEndPoint(new Chain(chain));
 
         expect(endPoint).toEqual({ x: 15, y: 10 });
     });
@@ -338,7 +359,7 @@ describe('getChainEndPoint', () => {
             shapes: [createTestShape({ x: 2, y: 3 }, { x: 8, y: 7 })],
         });
 
-        const endPoint = getChainEndPoint(chain);
+        const endPoint = getChainEndPoint(new Chain(chain));
 
         expect(endPoint).toEqual({ x: 8, y: 7 });
     });
@@ -348,7 +369,9 @@ describe('getChainEndPoint', () => {
             shapes: [],
         });
 
-        expect(() => getChainEndPoint(chain)).toThrow('Chain has no shapes');
+        expect(() => getChainEndPoint(new Chain(chain))).toThrow(
+            'Chain has no shapes'
+        );
     });
 
     it('should work with different shape types', () => {
@@ -368,7 +391,7 @@ describe('getChainEndPoint', () => {
             shapes: [arcShape],
         });
 
-        const endPoint = getChainEndPoint(chain);
+        const endPoint = getChainEndPoint(new Chain(chain));
 
         // For an arc from 0 to π/2, end point should be (0, 5)
         expect(endPoint.x).toBeCloseTo(0);

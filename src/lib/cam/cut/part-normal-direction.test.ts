@@ -1,3 +1,5 @@
+import { Chain } from '$lib/cam/chain/classes';
+import { Part } from '$lib/cam/part/classes.svelte';
 /**
  * Test for Cut Normal Direction on Parts
  *
@@ -331,9 +333,9 @@ describe('Cut Normal Direction on Parts', () => {
         // Test shell normal
         const shellChain: ChainData = part.shell;
         const shellNormalResult = calculateCutNormal(
-            shellChain,
+            new Chain(shellChain),
             CutDirection.CLOCKWISE,
-            part
+            new Part(part)
         );
 
         // Debug output
@@ -356,7 +358,10 @@ describe('Cut Normal Direction on Parts', () => {
                 shellNormalResult.normal.y * testDistance,
         };
 
-        const shellPointInsidePart = isPointInsidePart(shellTestPoint, part);
+        const shellPointInsidePart = isPointInsidePart(shellTestPoint, {
+            shell: new Chain(part.shell),
+            voids: part.voids.map((v) => ({ chain: new Chain(v.chain) })),
+        });
         console.log(
             `Shell test point at +${testDistance}:`,
             shellTestPoint,
@@ -377,9 +382,9 @@ describe('Cut Normal Direction on Parts', () => {
         // Test hole normal
         const holeChain: ChainData = part.voids[0].chain;
         const holeNormalResult = calculateCutNormal(
-            holeChain,
+            new Chain(holeChain),
             CutDirection.COUNTERCLOCKWISE,
-            part
+            new Part(part)
         );
 
         // Debug output
@@ -398,7 +403,10 @@ describe('Cut Normal Direction on Parts', () => {
                 holeNormalResult.normal.y * testDistance,
         };
 
-        const holePointInsidePart = isPointInsidePart(holeTestPoint, part);
+        const holePointInsidePart = isPointInsidePart(holeTestPoint, {
+            shell: new Chain(part.shell),
+            voids: part.voids.map((v) => ({ chain: new Chain(v.chain) })),
+        });
         console.log(
             `Hole test point at +${testDistance}:`,
             holeTestPoint,
@@ -621,9 +629,9 @@ describe('Cut Normal Direction on Parts', () => {
 
         // Calculate normal with cutChain that has no clockwise property
         const shellNormalResult = calculateCutNormal(
-            shellCutChain,
+            new Chain(shellCutChain),
             CutDirection.CLOCKWISE,
-            part
+            new Part(part)
         );
 
         console.log(
@@ -643,7 +651,10 @@ describe('Cut Normal Direction on Parts', () => {
                 shellNormalResult.normal.y * testDistance,
         };
 
-        const shellPointInsidePart = isPointInsidePart(shellTestPoint, part);
+        const shellPointInsidePart = isPointInsidePart(shellTestPoint, {
+            shell: new Chain(part.shell),
+            voids: part.voids.map((v) => ({ chain: new Chain(v.chain) })),
+        });
         console.log(
             'Shell test point is inside part:',
             shellPointInsidePart,
@@ -720,9 +731,9 @@ describe('Cut Normal Direction on Parts', () => {
         // leftNormal = (0,1), rightNormal = (0,-1)
         // Shell + CW should give leftNormal
         const normalCW = calculateCutNormal(
-            part.shell,
+            new Chain(part.shell),
             CutDirection.CLOCKWISE,
-            part
+            new Part(part)
         );
 
         expect(normalCW.normal.x).toBeCloseTo(0);
@@ -733,9 +744,9 @@ describe('Cut Normal Direction on Parts', () => {
         // Test with COUNTERCLOCKWISE cut direction on shell
         // Shell + CCW should give rightNormal
         const normalCCW = calculateCutNormal(
-            part.shell,
+            new Chain(part.shell),
             CutDirection.COUNTERCLOCKWISE,
-            part
+            new Part(part)
         );
 
         expect(normalCCW.normal.x).toBeCloseTo(0);
@@ -809,9 +820,9 @@ describe('Cut Normal Direction on Parts', () => {
         };
 
         const normalBroken = calculateCutNormal(
-            cutChainBroken,
+            new Chain(cutChainBroken),
             CutDirection.CLOCKWISE,
-            part
+            new Part(part)
         );
 
         // Without originalChainId, isChainShellInPart returns false
@@ -827,9 +838,9 @@ describe('Cut Normal Direction on Parts', () => {
         };
 
         const normalFixed = calculateCutNormal(
-            cutChainFixed,
+            new Chain(cutChainFixed),
             CutDirection.CLOCKWISE,
-            part
+            new Part(part)
         );
 
         // With originalChainId, isChainShellInPart returns true
@@ -904,9 +915,9 @@ describe('Cut Normal Direction on Parts', () => {
         // Start point (0,0), tangent (1,0)
         // Shell + CW → left normal (0,1) pointing up/outward
         const normalNoKerf = calculateCutNormal(
-            part.shell,
+            new Chain(part.shell),
             CutDirection.CLOCKWISE,
-            part
+            new Part(part)
         );
         expect(normalNoKerf.normal.x).toBeCloseTo(0);
         expect(normalNoKerf.normal.y).toBeCloseTo(1); // Points outward (up)
@@ -915,9 +926,9 @@ describe('Cut Normal Direction on Parts', () => {
         // Test shell with INNER kerf (should flip)
         // Shell + CW + INNER → right normal (0,-1) pointing down/inward
         const normalWithInnerKerf = calculateCutNormal(
-            part.shell,
+            new Chain(part.shell),
             CutDirection.CLOCKWISE,
-            part,
+            new Part(part),
             OffsetDirection.INSET
         );
         expect(normalWithInnerKerf.normal.x).toBeCloseTo(0);
@@ -1046,9 +1057,9 @@ describe('Cut Normal Direction on Parts', () => {
         // Start point (5,5), tangent (1,0)
         // Hole + CCW → left normal (0,1) pointing up/inward
         const normalNoKerf = calculateCutNormal(
-            holeChain,
+            new Chain(holeChain),
             CutDirection.COUNTERCLOCKWISE,
-            part
+            new Part(part)
         );
         expect(normalNoKerf.normal.x).toBeCloseTo(0);
         expect(normalNoKerf.normal.y).toBeCloseTo(1); // Points inward (up)
@@ -1057,9 +1068,9 @@ describe('Cut Normal Direction on Parts', () => {
         // Test hole with OUTER kerf (should flip)
         // Hole + CCW + OUTER → right normal (0,-1) pointing down/outward
         const normalWithOuterKerf = calculateCutNormal(
-            holeChain,
+            new Chain(holeChain),
             CutDirection.COUNTERCLOCKWISE,
-            part,
+            new Part(part),
             OffsetDirection.OUTSET
         );
         expect(normalWithOuterKerf.normal.x).toBeCloseTo(0);

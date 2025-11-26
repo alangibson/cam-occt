@@ -425,9 +425,15 @@
 
         // Fallback to offset shapes or original chain for backward compatibility
         if (!shapes) {
-            shapes =
-                cut.offset?.offsetShapes ||
-                chains.find((c: ChainData) => c.id === cut.chainId)?.shapes;
+            const offsetShapes = cut.offset?.offsetShapes;
+            const chainShapes = chains.find(
+                (c: ChainData) => c.id === cut.chainId
+            )?.shapes;
+            if (offsetShapes) {
+                shapes = offsetShapes.map((s) => new Shape(s.toData()));
+            } else if (chainShapes) {
+                shapes = chainShapes.map((s) => new Shape(s));
+            }
         }
 
         if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
@@ -467,7 +473,7 @@
                 const chainForLeads = cut.offset
                     ? new Chain({
                           ...chain.toData(),
-                          shapes: cut.offset.offsetShapes.map((s: Shape) =>
+                          shapes: cut.offset.offsetShapes.map((s) =>
                               s.toData()
                           ),
                       })
@@ -545,10 +551,12 @@
         // Fallback for backward compatibility
         if (!shapes) {
             if (!chain) return 0;
-            shapes =
-                cut.offset?.offsetShapes ||
-                cut.cutChain?.shapes ||
-                chain.shapes;
+            const offsetShapes = cut.offset?.offsetShapes;
+            if (offsetShapes) {
+                shapes = offsetShapes.map((s) => new Shape(s.toData()));
+            } else {
+                shapes = chain.shapes.map((s) => new Shape(s));
+            }
         }
 
         // Calculate chain distance
@@ -616,8 +624,8 @@
                         cut.offset && chain
                             ? new Chain({
                                   ...chain.toData(),
-                                  shapes: cut.offset.offsetShapes.map(
-                                      (s: Shape) => s.toData()
+                                  shapes: cut.offset.offsetShapes.map((s) =>
+                                      s.toData()
                                   ),
                               })
                             : chain;
@@ -941,10 +949,12 @@
         if (!shapes) {
             chain = chains.find((c: ChainData) => c.id === cut.chainId);
             if (!chain) return;
-            shapes =
-                cut.offset?.offsetShapes ||
-                cut.cutChain?.shapes ||
-                chain.shapes;
+            const offsetShapes = cut.offset?.offsetShapes;
+            if (offsetShapes) {
+                shapes = offsetShapes.map((s) => new Shape(s.toData()));
+            } else {
+                shapes = chain.shapes.map((s) => new Shape(s));
+            }
         }
 
         if (!shapes || shapes.length === 0) return;
@@ -1004,8 +1014,8 @@
                         cut.offset && chain
                             ? new Chain({
                                   ...chain.toData(),
-                                  shapes: cut.offset.offsetShapes.map(
-                                      (s: Shape) => s.toData()
+                                  shapes: cut.offset.offsetShapes.map((s) =>
+                                      s.toData()
                                   ),
                               })
                             : chain;
@@ -1209,10 +1219,10 @@
                 };
             case GeometryType.CIRCLE:
                 // Use natural direction
-                return getShapePointAt(shape, progress);
+                return getShapePointAt(new Shape(shape), progress);
             case GeometryType.ARC:
                 // Use natural direction
-                return getShapePointAt(shape, progress);
+                return getShapePointAt(new Shape(shape), progress);
             case GeometryType.POLYLINE:
                 const polyline = shape.geometry as Polyline;
                 const polylinePoints = polylineToPoints(polyline);

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { Chain } from '$lib/cam/chain/classes';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -12,7 +11,9 @@ import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
 import { getChainTangent, getChainStartPoint } from '$lib/cam/chain/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
+import { Chain } from '$lib/cam/chain/classes';
 
 /**
  * CRITICAL INVARIANT TESTS
@@ -257,7 +258,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 shell,
                 CutDirection.CLOCKWISE,
-                part
+                new Part(part)
             );
 
             const result = calculateLeads(
@@ -265,7 +266,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 
@@ -284,7 +285,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 shell,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 OffsetDirection.OUTSET
             );
 
@@ -293,7 +294,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 
@@ -312,7 +313,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 shell,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                new Part(part)
             );
 
             const result = calculateLeads(
@@ -320,7 +321,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 
@@ -339,7 +340,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 shell,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 OffsetDirection.OUTSET
             );
 
@@ -348,7 +349,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 
@@ -369,7 +370,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 hole,
                 CutDirection.CLOCKWISE,
-                part
+                new Part(part)
             );
 
             const result = calculateLeads(
@@ -377,7 +378,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 
@@ -396,7 +397,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 hole,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 OffsetDirection.OUTSET
             );
 
@@ -405,7 +406,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 
@@ -424,7 +425,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 hole,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                new Part(part)
             );
 
             const result = calculateLeads(
@@ -432,7 +433,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 
@@ -451,7 +452,7 @@ describe('Lead Tangent Following Invariant', () => {
             const cutNormal = calculateCutNormal(
                 hole,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 OffsetDirection.OUTSET
             );
 
@@ -460,7 +461,7 @@ describe('Lead Tangent Following Invariant', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 cutNormal.normal
             );
 

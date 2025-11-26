@@ -9,6 +9,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { PartDetectionParameters } from '$lib/cam/part/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
+import { Shape } from './classes';
 
 /**
  * Calculate the maximum chord error (sagitta) for a tessellated arc
@@ -71,7 +72,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(shape, params);
+        const points = tessellateShape(new Shape(shape), params);
         const maxError = calculateMaxChordError(arc, points);
 
         // The maximum error should not exceed the tolerance
@@ -103,7 +104,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(shape, params);
+        const points = tessellateShape(new Shape(shape), params);
         const maxError = calculateMaxChordError(arc, points);
 
         expect(maxError).toBeLessThanOrEqual(0.01);
@@ -140,8 +141,8 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const pointsCoarse = tessellateShape(shape, paramsCoarse);
-        const pointsFine = tessellateShape(shape, paramsFine);
+        const pointsCoarse = tessellateShape(new Shape(shape), paramsCoarse);
+        const pointsFine = tessellateShape(new Shape(shape), paramsFine);
 
         // Finer tolerance should produce more points
         expect(pointsFine.length).toBeGreaterThan(pointsCoarse.length);
@@ -170,7 +171,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(shape, params);
+        const points = tessellateShape(new Shape(shape), params);
         const maxError = calculateMaxChordError(arc, points);
 
         // Should still respect tolerance
@@ -202,7 +203,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(shape, params);
+        const points = tessellateShape(new Shape(shape), params);
         const maxError = calculateMaxChordError(arc, points);
 
         // Should still respect tolerance
@@ -234,7 +235,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(shape, params);
+        const points = tessellateShape(new Shape(shape), params);
         const maxError = calculateMaxChordError(arc, points);
 
         // Should respect tolerance regardless of direction
@@ -264,7 +265,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(shape, params);
+        const points = tessellateShape(new Shape(shape), params);
 
         // First point should be at start angle
         const startPoint = points[0];
@@ -306,7 +307,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(shape, params);
+        const points = tessellateShape(new Shape(shape), params);
 
         // Should be clamped to maximum
         expect(points.length).toBeLessThanOrEqual(1001); // 1000 segments = 1001 points

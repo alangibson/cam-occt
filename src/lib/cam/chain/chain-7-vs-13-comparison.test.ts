@@ -1,9 +1,10 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
-import { type ChainData } from '$lib/cam/chain/interfaces';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { isChainGeometricallyContained } from '$lib/cam/chain/functions';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
@@ -19,7 +20,10 @@ describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {
 
         // Detect chains
         const tolerance = 1.0;
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
 
         // Normalize chains
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
@@ -54,7 +58,7 @@ describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {
         // const typesMatch = JSON.stringify(chain7Types) === JSON.stringify(chain13Types);
 
         // Check closure after normalization
-        const checkChainClosure = (chain: ChainData, _name: string): number => {
+        const checkChainClosure = (chain: Chain, _name: string): number => {
             const firstShape = chain.shapes[0];
             const lastShape = chain.shapes[chain.shapes.length - 1];
             const firstStart = getShapeStartPoint(firstShape);

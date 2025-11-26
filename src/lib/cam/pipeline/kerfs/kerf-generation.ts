@@ -57,24 +57,22 @@ async function adjustKerfForLeadOverlap(
             `[Operation] Attempting to adjust start point for cut "${cut.name}"`
         );
 
-        const adjustedCut = await adjustCutStartPointForLeadKerfOverlap(
-            cut.toData(),
+        const wasAdjusted = await adjustCutStartPointForLeadKerfOverlap(
+            cut,
             tool,
-            originalChain.toData(),
             tolerance,
             parts
         );
 
-        if (adjustedCut) {
-            // Use the adjusted cut - update the original cut object
+        if (wasAdjusted) {
+            // Cut was adjusted in place
             console.log(
                 `[Operation] ✓ Start point adjustment SUCCEEDED for "${cut.name}"`
             );
-            Object.assign(cut.toData(), adjustedCut);
 
             // Regenerate kerf with the adjusted cut (with overlap checking enabled)
             console.log(`[Operation] Regenerating kerf with adjusted cut`);
-            const adjustedKerf = await cutToKerf(cut.toData(), tool, true);
+            const adjustedKerf = await cutToKerf(cut, tool, true);
 
             return {
                 adjustmentAttempted: true,
@@ -134,7 +132,7 @@ export async function generateAndAdjustKerf(
 
     try {
         // Pass checkOverlap flag to cutToKerf - only check when avoidLeadKerfOverlap is enabled
-        const kerf = await cutToKerf(cut.toData(), tool, avoidLeadKerfOverlap);
+        const kerf = await cutToKerf(cut, tool, avoidLeadKerfOverlap);
 
         let finalKerf = kerf;
         let adjustmentAttempted = false;

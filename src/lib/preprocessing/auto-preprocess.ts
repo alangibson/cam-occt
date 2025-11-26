@@ -15,6 +15,7 @@ import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positi
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
+import { Shape } from '$lib/cam/shape/classes';
 
 /**
  * Apply all enabled preprocessing steps in order
@@ -72,9 +73,12 @@ async function applyPreprocessingStep(
         case PreprocessingStep.JoinColinearLines:
             console.log('Applying: Join Co-linear Lines');
             // First detect chains from current shapes
-            const chainsForJoin = detectShapeChains(drawing.shapes, {
-                tolerance: algorithmParams.chainDetection.tolerance,
-            });
+            const chainsForJoin = detectShapeChains(
+                drawing.shapes.map((s) => new Shape(s)),
+                {
+                    tolerance: algorithmParams.chainDetection.tolerance,
+                }
+            );
 
             // Join collinear lines in the chains
             const joinedChains = joinColinearLines(

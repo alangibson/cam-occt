@@ -2,9 +2,8 @@
  * Offset calculation for chain kerf compensation
  */
 
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { offsetChain as polylineOffset } from '$lib/cam/offset';
@@ -20,7 +19,7 @@ import type { ChainOffsetResult } from './interfaces';
  * Returns offset result with warnings instead of directly updating stores.
  */
 export async function calculateChainOffset(
-    chain: ChainData,
+    chain: Chain,
     kerfCompensation: OffsetDirection,
     toolId: string | null,
     tools: Tool[]
@@ -71,12 +70,14 @@ export async function calculateChainOffset(
         }
 
         // Use the appropriate offset chain based on direction
-        let selectedChain: ShapeData[];
+        let selectedChain: Shape[];
 
         if (kerfCompensation === OffsetDirection.INSET) {
-            selectedChain = offsetResult.innerChain?.shapes || [];
+            selectedChain =
+                offsetResult.innerChain?.shapes.map((s) => new Shape(s)) || [];
         } else {
-            selectedChain = offsetResult.outerChain?.shapes || [];
+            selectedChain =
+                offsetResult.outerChain?.shapes.map((s) => new Shape(s)) || [];
         }
 
         if (!selectedChain || selectedChain.length === 0) {
@@ -89,13 +90,11 @@ export async function calculateChainOffset(
 
         // offsetChain already returns polylines correctly for single polyline inputs
         // No additional wrapping needed
-        const finalOffsetShapes: Shape[] = selectedChain.map(
-            (s) => new Shape(s)
-        );
+        const finalOffsetShapes: Shape[] = selectedChain;
 
         return {
             offsetShapes: finalOffsetShapes,
-            originalShapes: chain.shapes.map((s) => new Shape(s)),
+            originalShapes: chain.shapes,
             kerfWidth: kerfWidth,
             warnings: offsetResult.warnings || [],
         };

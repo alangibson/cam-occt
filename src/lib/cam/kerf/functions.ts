@@ -5,7 +5,6 @@
  * the material removal zone of the cutting tool.
  */
 
-import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Kerf } from './interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -13,6 +12,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import { GeometryType } from '$lib/geometry/enums';
 import { BoundingBox } from '$lib/geometry/bounding-box/classes';
@@ -40,6 +40,8 @@ import { getShapeLength } from '$lib/cam/shape/functions';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
+import type { Cut } from '$lib/cam/cut/classes.svelte';
+import type { CacheableLead } from '$lib/cam/lead/interfaces';
 
 /**
  * Algorithm version for kerf generation
@@ -148,7 +150,7 @@ function validateChainClosure(
  * @throws Error if cut is missing cutChain or tool is missing kerfWidth
  */
 export async function cutToKerf(
-    cut: CutData,
+    cut: Cut,
     tool: Tool,
     checkOverlap: boolean = false
 ): Promise<Kerf> {
@@ -445,7 +447,11 @@ export function doesLeadKerfOverlapChain(
 
     // Skip direction calculation for overlap detection (only need positions)
     // This eliminates 2 extra getShapePointAt() calls per sample point
-    const samples = sampleChain(originalChain, sampleInterval, false);
+    const samples = sampleChain(
+        new Chain(originalChain),
+        sampleInterval,
+        false
+    );
 
     console.log(
         `[Overlap Check] Checking chain "${originalChain.id}" with ${samples.length} sample points (interval: ${sampleInterval.toFixed(INTERVAL_DECIMAL_PLACES)} units, kerf: ${kerfWidth.toFixed(INTERVAL_DECIMAL_PLACES)} units)`
@@ -459,10 +465,10 @@ export function doesLeadKerfOverlapChain(
 
     // The outer chain from Clipper2 is already a closed polygon representing the lead kerf
     // Just use it directly as the polygon for ray tracing
-    const leadKerfPolygon: ChainData = {
+    const leadKerfPolygon = new Chain({
         id: leadKerfOuterChain.id,
         shapes: leadKerfOuterChain.shapes,
-    };
+    });
 
     // Test each sampled point against the Lead Kerf polygon using ray tracing
     for (const sample of samples) {
@@ -497,36 +503,35 @@ export function doesLeadKerfOverlapChain(
 
 /**
  * Adjust cut start point to avoid lead kerf overlap with original chain
+ * Mutates the cut in place if adjustment succeeds.
  *
  * When a lead kerf overlaps the original chain, iteratively try different start points
  * along the chain until finding one where the lead kerf doesn't overlap. Uses getChainPointAt()
  * to sample positions along the chain.
  *
- * @param cut - The cut with lead kerf overlap
+ * @param cut - The cut with lead kerf overlap (mutated in place if adjustment succeeds)
  * @param tool - The tool providing kerf width
- * @param originalChain - The original chain before offset
  * @param tolerance - Tolerance for chain closure detection
  * @param parts - Array of parts for determining part context (holes vs shells)
  * @param stepSize - Step size for trying positions (default DEFAULT_STEP_SIZE = 10% increments)
  * @param maxAttempts - Maximum positions to try (default DEFAULT_MAX_ATTEMPTS)
- * @returns Adjusted cut with new start point, or null if no solution found
+ * @returns true if adjustment succeeded, false if no solution found
  */
 export async function adjustCutStartPointForLeadKerfOverlap(
-    cut: CutData,
+    cut: Cut,
     tool: Tool,
-    _originalChain: ChainData,
     tolerance: number,
     parts: Part[],
     stepSize: number = DEFAULT_STEP_SIZE,
     maxAttempts: number = DEFAULT_MAX_ATTEMPTS
-): Promise<CutData | null> {
+): Promise<boolean> {
     console.log(
         `[Start Adjust] Starting adjustment for cut "${cut.name}" (max attempts: ${maxAttempts}, step size: ${stepSize})`
     );
 
     if (!cut.cutChain) {
-        console.log(`[Start Adjust] No cutChain - returning null`);
-        return null;
+        console.log(`[Start Adjust] No cutChain - returning false`);
+        return false;
     }
 
     // Only adjust closed chains (open chains can't be rotated)
@@ -534,7 +539,7 @@ export async function adjustCutStartPointForLeadKerfOverlap(
         console.warn(
             `[Start Adjust] Cannot adjust start point for open chain (cut: ${cut.name})`
         );
-        return null;
+        return false;
     }
 
     // Find part context for this cut's chain (needed for correct normal calculation)
@@ -561,12 +566,12 @@ export async function adjustCutStartPointForLeadKerfOverlap(
 
         try {
             // Get point at this position
-            const newStartPoint = getChainPointAt(cut.cutChain, t);
+            const newStartPoint = getChainPointAt(cut.cutChain!, t);
 
             // Rotate chain to start at this point
             // Find which shape contains this point and split it
             const rotatedChain = rotateChainToPoint(
-                cut.cutChain,
+                cut.cutChain!,
                 newStartPoint,
                 t
             );
@@ -579,10 +584,6 @@ export async function adjustCutStartPointForLeadKerfOverlap(
 
             // Create test cut with rotated chain
             const rotatedChainInstance = new Chain(rotatedChain);
-            const testCut: CutData = {
-                ...cut,
-                cutChain: rotatedChainInstance,
-            };
 
             // Recalculate normal for new start point WITH part context
             const normalResult = calculateCutNormal(
@@ -602,16 +603,21 @@ export async function adjustCutStartPointForLeadKerfOverlap(
                 normalResult.normal
             );
 
-            // Update test cut with new leads
+            // Temporarily mutate cut for testing
+            const originalCutChain: Chain | undefined = cut.cutChain;
+            const originalLeadIn: CacheableLead | undefined = cut.leadIn;
+            const originalLeadOut: CacheableLead | undefined = cut.leadOut;
+
+            cut.cutChain = rotatedChainInstance;
             if (leadResult.leadIn) {
-                testCut.leadIn = {
+                cut.leadIn = {
                     ...leadResult.leadIn,
                     generatedAt: new Date().toISOString(),
                     version: '1.0.0',
                 };
             }
             if (leadResult.leadOut) {
-                testCut.leadOut = {
+                cut.leadOut = {
                     ...leadResult.leadOut,
                     generatedAt: new Date().toISOString(),
                     version: '1.0.0',
@@ -619,7 +625,7 @@ export async function adjustCutStartPointForLeadKerfOverlap(
             }
 
             // Generate kerf for test cut
-            const testKerf = await cutToKerf(testCut, tool);
+            const testKerf = await cutToKerf(cut, tool);
 
             // Check if overlap is resolved
             const hasOverlap =
@@ -631,16 +637,23 @@ export async function adjustCutStartPointForLeadKerfOverlap(
             );
 
             if (!hasOverlap) {
-                // Success! Return the adjusted cut
+                // Success! Keep the mutated values
                 console.log(
                     `[Start Adjust] ✓ SUCCESS! Adjusted cut start point for "${cut.name}" to t=${t.toFixed(2)} to avoid lead kerf overlap`
                 );
-                return {
-                    ...testCut,
-                    normal: normalResult.normal,
-                    normalConnectionPoint: normalResult.connectionPoint,
-                    normalSide: normalResult.normalSide,
-                };
+                cut.normal = normalResult.normal;
+                cut.normalConnectionPoint = normalResult.connectionPoint;
+                cut.normalSide = normalResult.normalSide;
+                return true;
+            } else {
+                // Restore original values for next iteration
+                cut.cutChain = originalCutChain;
+                if (originalLeadIn !== undefined) {
+                    cut.leadIn = originalLeadIn;
+                }
+                if (originalLeadOut !== undefined) {
+                    cut.leadOut = originalLeadOut;
+                }
             }
         } catch (error) {
             console.warn(
@@ -655,7 +668,7 @@ export async function adjustCutStartPointForLeadKerfOverlap(
     console.warn(
         `[Start Adjust] ✗ FAILED: Could not find start point without lead kerf overlap for cut "${cut.name}" after ${maxAttempts} attempts`
     );
-    return null;
+    return false;
 }
 
 /**
@@ -683,7 +696,7 @@ function rotateChainToPoint(
     // For simplicity, just start at the nearest shape boundary
     // Calculate which shape contains the target point
     const shapeLengths: number[] = chain.shapes.map((shape) =>
-        getShapeLength(shape)
+        getShapeLength(new Shape(shape))
     );
     const totalLength: number = shapeLengths.reduce(
         (sum, length) => sum + length,

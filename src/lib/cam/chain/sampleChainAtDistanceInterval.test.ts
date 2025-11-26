@@ -8,6 +8,7 @@ import type { ChainData } from './interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
+import { Chain } from './classes';
 
 describe('sampleChainAtDistanceInterval', () => {
     it('should return empty array for empty chain', () => {
@@ -16,7 +17,7 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [],
         };
 
-        const samples = sampleChain(emptyChain, 1.0);
+        const samples = sampleChain(new Chain(emptyChain), 1.0);
 
         expect(samples).toEqual([]);
     });
@@ -36,7 +37,7 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [lineShape],
         };
 
-        const samples = sampleChain(chain, 0);
+        const samples = sampleChain(new Chain(chain), 0);
 
         expect(samples).toEqual([]);
     });
@@ -56,7 +57,7 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [lineShape],
         };
 
-        const samples = sampleChain(chain, 2.5);
+        const samples = sampleChain(new Chain(chain), 2.5);
 
         // Line is 10 units long, samples at 2.5, 5.0, 7.5, 10.0
         expect(samples.length).toBe(4);
@@ -94,7 +95,7 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [lineShape],
         };
 
-        const samples = sampleChain(chain, 3.0);
+        const samples = sampleChain(new Chain(chain), 3.0);
 
         // Line is 10 units long, samples at 3.0, 6.0, 9.0
         expect(samples.length).toBe(3);
@@ -135,7 +136,7 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [line1, line2],
         };
 
-        const samples = sampleChain(chain, 5.0);
+        const samples = sampleChain(new Chain(chain), 5.0);
 
         // Total length is 20 units (10 + 10)
         // Samples at 5, 10, 15, 20
@@ -177,7 +178,7 @@ describe('sampleChainAtDistanceInterval', () => {
         };
 
         // Sample every 0.001 units (CONTAINMENT_AREA_TOLERANCE)
-        const samples = sampleChain(chain, 0.001);
+        const samples = sampleChain(new Chain(chain), 0.001);
 
         // Should get many samples
         expect(samples.length).toBeGreaterThan(900);
@@ -205,7 +206,7 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [lineShape],
         };
 
-        const samples = sampleChain(chain, 3.0);
+        const samples = sampleChain(new Chain(chain), 3.0);
 
         // All direction vectors should be normalized (length ~= 1)
         samples.forEach((sample) => {
@@ -238,7 +239,7 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [lineShape],
         };
 
-        const samples = sampleChain(chain, 1.0);
+        const samples = sampleChain(new Chain(chain), 1.0);
 
         // Zero-length shape produces no samples
         expect(samples).toEqual([]);
@@ -261,7 +262,10 @@ describe('sampleChainAtDistanceInterval', () => {
             shapes: [lineShape],
         };
 
-        const samples = sampleChain(chain, CONTAINMENT_AREA_TOLERANCE);
+        const samples = sampleChain(
+            new Chain(chain),
+            CONTAINMENT_AREA_TOLERANCE
+        );
 
         // 0.1 unit line with 0.001 interval = ~99 samples
         expect(samples.length).toBeGreaterThan(90);

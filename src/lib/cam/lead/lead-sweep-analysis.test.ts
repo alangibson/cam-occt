@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -9,6 +8,7 @@ import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Sweep Direction Analysis', () => {
     /**

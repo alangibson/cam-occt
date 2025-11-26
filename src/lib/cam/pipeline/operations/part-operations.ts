@@ -2,7 +2,6 @@
  * Part operations module - handles cut generation for parts (shells, holes, and slots)
  */
 
-import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
@@ -51,9 +50,9 @@ export async function generateCutsForPartsWithOperation(
     ) as Part[];
 
     // Get all chains from part
-    const chains: ChainData[] = [part.shell];
-    chains.push(...part.voids.map((v) => v.chain));
-    chains.push(...part.slots.map((s) => s.chain));
+    const chains: Chain[] = [new Chain(part.shell)];
+    chains.push(...part.voids.map((v) => new Chain(v.chain)));
+    chains.push(...part.slots.map((s) => new Chain(s.chain)));
 
     const cutsToReturn: Cut[] = [];
     const warningsToReturn: {
@@ -64,10 +63,12 @@ export async function generateCutsForPartsWithOperation(
     }[] = [];
 
     // Create a cut for the shell chain using operation's preferred direction
-    const shellChain: ChainData | undefined = chains.find(
+    const shellChain: Chain | undefined = chains.find(
         (c) => c.id === part.shell.id
     );
-    const shellStoredDirection: CutDirection = getChainCutDirection(shellChain);
+    const shellStoredDirection: CutDirection = getChainCutDirection(
+        shellChain ? new Chain(shellChain) : undefined
+    );
     const shellCutDirection: CutDirection =
         shellStoredDirection === CutDirection.NONE
             ? CutDirection.NONE
@@ -128,7 +129,7 @@ export async function generateCutsForPartsWithOperation(
     let shellExecutionClockwise: boolean | null = null;
     if (shellChain) {
         const shellCutChainResult = createCutChain(
-            shellChain,
+            new Chain(shellChain),
             shellCutDirection,
             shellCalculatedOffset?.offsetShapes
         );
@@ -190,15 +191,12 @@ export async function generateCutsForPartsWithOperation(
         operation.optimizeStarts &&
         operation.optimizeStarts !== OptimizeStarts.NONE
     ) {
-        const optimizedCut = optimizeCutStartPoint(
+        const wasOptimized = optimizeCutStartPoint(
             shellCut,
             operation.optimizeStarts,
             tolerance
         );
-        if (optimizedCut) {
-            // Use the optimized cut with the new start point
-            Object.assign(shellCut, optimizedCut);
-
+        if (wasOptimized) {
             // Recalculate normal with the new start point
             const newShellCutNormalResult = calculateCutNormal(
                 shellCut.cutChain!,
@@ -254,11 +252,12 @@ export async function generateCutsForPartsWithOperation(
         for (let holeIndex = 0; holeIndex < holes.length; holeIndex++) {
             const hole = holes[holeIndex];
             // Use operation's preferred cut direction for the hole chain
-            const holeChain: ChainData | undefined = chains.find(
+            const holeChain: Chain | undefined = chains.find(
                 (c) => c.id === hole.chain.id
             );
-            const holeStoredDirection: CutDirection =
-                getChainCutDirection(holeChain);
+            const holeStoredDirection: CutDirection = getChainCutDirection(
+                holeChain ? new Chain(holeChain) : undefined
+            );
             const holeCutDirection: CutDirection =
                 holeStoredDirection === CutDirection.NONE
                     ? CutDirection.NONE
@@ -323,7 +322,7 @@ export async function generateCutsForPartsWithOperation(
             let holeExecutionClockwise: boolean | null = null;
             if (holeChain) {
                 const holeCutChainResult = createCutChain(
-                    holeChain,
+                    new Chain(holeChain),
                     holeCutDirection,
                     holeCalculatedOffset?.offsetShapes
                 );
@@ -385,15 +384,12 @@ export async function generateCutsForPartsWithOperation(
                 operation.optimizeStarts &&
                 operation.optimizeStarts !== OptimizeStarts.NONE
             ) {
-                const optimizedCut = optimizeCutStartPoint(
+                const wasOptimized = optimizeCutStartPoint(
                     holeCut,
                     operation.optimizeStarts,
                     tolerance
                 );
-                if (optimizedCut) {
-                    // Use the optimized cut with the new start point
-                    Object.assign(holeCut, optimizedCut);
-
+                if (wasOptimized) {
                     // Recalculate normal with the new start point
                     const newHoleCutNormalResult = calculateCutNormal(
                         holeCut.cutChain!,
@@ -451,11 +447,12 @@ export async function generateCutsForPartsWithOperation(
         for (let slotIndex = 0; slotIndex < slots.length; slotIndex++) {
             const slot = slots[slotIndex];
             // Use operation's preferred cut direction for the slot chain
-            const slotChain: ChainData | undefined = chains.find(
+            const slotChain: Chain | undefined = chains.find(
                 (c) => c.id === slot.chain.id
             );
-            const slotStoredDirection: CutDirection =
-                getChainCutDirection(slotChain);
+            const slotStoredDirection: CutDirection = getChainCutDirection(
+                slotChain ? new Chain(slotChain) : undefined
+            );
             const slotCutDirection: CutDirection =
                 slotStoredDirection === CutDirection.NONE
                     ? CutDirection.NONE
@@ -521,7 +518,7 @@ export async function generateCutsForPartsWithOperation(
             let slotExecutionClockwise: boolean | null = null;
             if (slotChain) {
                 const slotCutChainResult = createCutChain(
-                    slotChain,
+                    new Chain(slotChain),
                     slotCutDirection,
                     slotCalculatedOffset?.offsetShapes
                 );
@@ -588,15 +585,12 @@ export async function generateCutsForPartsWithOperation(
                 operation.optimizeStarts &&
                 operation.optimizeStarts !== OptimizeStarts.NONE
             ) {
-                const optimizedCut = optimizeCutStartPoint(
+                const wasOptimized = optimizeCutStartPoint(
                     slotCut,
                     operation.optimizeStarts,
                     tolerance
                 );
-                if (optimizedCut) {
-                    // Use the optimized cut with the new start point
-                    Object.assign(slotCut, optimizedCut);
-
+                if (wasOptimized) {
                     // Recalculate normal with the new start point
                     const newSlotCutNormalResult = calculateCutNormal(
                         slotCut.cutChain!,

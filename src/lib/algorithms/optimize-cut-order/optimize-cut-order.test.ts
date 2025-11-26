@@ -1,3 +1,5 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it, vi } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
 import type { CutData } from '$lib/cam/cut/interfaces';
@@ -19,8 +21,6 @@ import { OperationAction } from '$lib/cam/operation/enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
-import { Chain } from '$lib/cam/chain/classes';
-import { Shape } from '$lib/cam/shape/classes';
 
 // Helper to create a Chain map from ChainData entries
 function createChainMap(entries: [string, ChainData][]): Map<string, Chain> {

@@ -1,11 +1,11 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import { calculateSquaredDistance } from '$lib/geometry/math/functions';
 import { getShapePoints } from '$lib/cam/shape/functions';
 import { detectCutDirection } from '$lib/cam/cut/cut-direction';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 
 interface ChainDetectionOptions {
     tolerance: number;
@@ -22,9 +22,9 @@ interface ChainDetectionOptions {
  * Algorithm uses Union-Find (Disjoint Set) data structure for efficient chain detection.
  */
 export function detectShapeChains(
-    shapes: ShapeData[],
+    shapes: Shape[],
     options: ChainDetectionOptions = { tolerance: 0.05 }
-): ChainData[] {
+): Chain[] {
     if (shapes.length === 0) return [];
 
     const { tolerance }: { tolerance: number } = options;
@@ -50,23 +50,27 @@ export function detectShapeChains(
     }
 
     // Convert to ShapeChain objects
-    const chains: ChainData[] = [];
+    const chains: Chain[] = [];
     let chainId: number = 1;
 
     for (const [, shapeIndices] of chainGroups) {
         if (shapeIndices.length > 1) {
             // Multiple connected shapes form a chain
-            chains.push({
-                id: `chain-${chainId++}`,
-                shapes: shapeIndices.map((index) => shapes[index]),
-            });
+            chains.push(
+                new Chain({
+                    id: `chain-${chainId++}`,
+                    shapes: shapeIndices.map((index) => shapes[index].toData()),
+                })
+            );
         } else if (shapeIndices.length === 1) {
             // Single shape - ALL single shapes form chains (both open and closed)
-            const singleShape: ShapeData = shapes[shapeIndices[0]];
-            chains.push({
-                id: `chain-${chainId++}`,
-                shapes: [singleShape],
-            });
+            const singleShape: Shape = shapes[shapeIndices[0]];
+            chains.push(
+                new Chain({
+                    id: `chain-${chainId++}`,
+                    shapes: [singleShape.toData()],
+                })
+            );
         }
     }
 
@@ -77,8 +81,8 @@ export function detectShapeChains(
  * Check if two shapes are connected (any point from shape A overlaps with any point from shape B within tolerance)
  */
 function areShapesConnected(
-    shapeA: ShapeData,
-    shapeB: ShapeData,
+    shapeA: Shape,
+    shapeB: Shape,
     tolerance: number
 ): boolean {
     const pointsA: Point2D[] = getShapePoints(shapeA, {
@@ -162,20 +166,20 @@ class UnionFind {
  * @returns The chain with clockwise property set
  */
 function setChainDirection(
-    chain: ChainData,
+    chain: Chain,
     tolerance: number = CHAIN_CLOSURE_TOLERANCE
-): ChainData {
+): Chain {
     const direction = detectCutDirection(chain, tolerance);
 
-    return {
-        ...chain,
+    return new Chain({
+        ...chain.toData(),
         clockwise:
             direction === CutDirection.CLOCKWISE
                 ? true
                 : direction === CutDirection.COUNTERCLOCKWISE
                   ? false
                   : null,
-    };
+    });
 }
 
 /**
@@ -186,8 +190,8 @@ function setChainDirection(
  * @returns Array of chains with clockwise properties set
  */
 export function setChainsDirection(
-    chains: ChainData[],
+    chains: Chain[],
     tolerance: number = CHAIN_CLOSURE_TOLERANCE
-): ChainData[] {
+): Chain[] {
     return chains.map((chain) => setChainDirection(chain, tolerance));
 }

@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import { isChainGeometricallyContained } from '$lib/cam/chain/functions';
 import { GeometryType } from '$lib/geometry/enums';
@@ -149,9 +150,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', outerShapes);
         const innerChain = createTestChain('inner', innerShapes);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should detect when rectangles do not contain each other', () => {
@@ -160,8 +164,12 @@ describe('isChainGeometricallyContained', () => {
         const chain1 = createTestChain('chain1', rect1Shapes);
         const chain2 = createTestChain('chain2', rect2Shapes);
 
-        expect(isChainGeometricallyContained(chain1, chain2)).toBe(false);
-        expect(isChainGeometricallyContained(chain2, chain1)).toBe(false);
+        expect(
+            isChainGeometricallyContained(new Chain(chain1), new Chain(chain2))
+        ).toBe(false);
+        expect(
+            isChainGeometricallyContained(new Chain(chain2), new Chain(chain1))
+        ).toBe(false);
     });
 
     it('should handle circles correctly', () => {
@@ -170,9 +178,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', [outerCircle]);
         const innerChain = createTestChain('inner', [innerCircle]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle arcs correctly', () => {
@@ -188,9 +199,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', [outerCircle]);
         const innerChain = createTestChain('inner', [innerArc]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle clockwise arcs', () => {
@@ -206,9 +220,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', [outerCircle]);
         const innerChain = createTestChain('inner', [innerArc]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle ellipses correctly', () => {
@@ -227,9 +244,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', [outerEllipse]);
         const innerChain = createTestChain('inner', [innerEllipse]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle ellipse arcs', () => {
@@ -250,9 +270,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', [outerEllipse]);
         const innerChain = createTestChain('inner', [innerEllipseArc]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle splines with NURBS evaluation', () => {
@@ -266,9 +289,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', outerRect);
         const innerChain = createTestChain('inner', [innerSpline]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle splines that fallback to fit points', () => {
@@ -293,9 +319,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', outerRect);
         const innerChain = createTestChain('inner', [splineWithBadNURBS]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle splines that fallback to control points', () => {
@@ -320,9 +349,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', outerRect);
         const innerChain = createTestChain('inner', [splineWithNoFitPoints]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should handle polylines', () => {
@@ -338,9 +370,12 @@ describe('isChainGeometricallyContained', () => {
         const outerChain = createTestChain('outer', outerRect);
         const innerChain = createTestChain('inner', [polyline]);
 
-        expect(isChainGeometricallyContained(innerChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(innerChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 
     it('should throw error for chains that cannot form polygons', () => {
@@ -351,7 +386,10 @@ describe('isChainGeometricallyContained', () => {
         );
 
         expect(() => {
-            isChainGeometricallyContained(emptyChain, validChain);
+            isChainGeometricallyContained(
+                new Chain(emptyChain),
+                new Chain(validChain)
+            );
         }).toThrow(/Failed to extract polygons/);
     });
 
@@ -373,7 +411,10 @@ describe('isChainGeometricallyContained', () => {
         );
 
         expect(() => {
-            isChainGeometricallyContained(singleLineChain, validChain);
+            isChainGeometricallyContained(
+                new Chain(singleLineChain),
+                new Chain(validChain)
+            );
         }).toThrow(/Failed to extract polygons/);
     });
 
@@ -388,8 +429,11 @@ describe('isChainGeometricallyContained', () => {
         const mixedChain = createTestChain('mixed', mixedShapes);
 
         // This tests the duplicate point removal and polygon extraction logic
-        expect(isChainGeometricallyContained(mixedChain, outerChain)).toBe(
-            true
-        );
+        expect(
+            isChainGeometricallyContained(
+                new Chain(mixedChain),
+                new Chain(outerChain)
+            )
+        ).toBe(true);
     });
 });

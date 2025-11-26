@@ -1,8 +1,8 @@
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { isChainClosed } from '$lib/cam/chain/functions';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { MIN_VERTICES_FOR_POLYLINE } from '$lib/geometry/polyline/constants';
@@ -19,8 +19,8 @@ import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
  * Result of optimizing a single chain's start point
  */
 interface OptimizeResult {
-    originalChain: ChainData;
-    optimizedChain: ChainData | null;
+    originalChain: Chain;
+    optimizedChain: Chain | null;
     modified: boolean;
     reason?: string;
 }
@@ -29,9 +29,7 @@ interface OptimizeResult {
  * Splits a polyline at its midpoint, creating two polyline shapes
  * Uses the same chain-based approach to preserve arc geometry
  */
-function splitPolylineAtMidpoint(
-    polyline: ShapeData
-): [ShapeData, ShapeData] | null {
+function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
     if (polyline.type !== GeometryType.POLYLINE) return null;
 
     const geom: Polyline = polyline.geometry as Polyline;
@@ -41,8 +39,8 @@ function splitPolylineAtMidpoint(
 
     if (geom.shapes.length === 1) {
         // Single segment polyline - split the individual shape
-        const singleShape: ShapeData = geom.shapes[0];
-        let splitShapes: [ShapeData, ShapeData] | null = null;
+        const singleShape = new Shape(geom.shapes[0]);
+        let splitShapes: [Shape, Shape] | null = null;
 
         splitShapes = splitShapeAtMidpoint(singleShape);
 
@@ -51,12 +49,12 @@ function splitPolylineAtMidpoint(
         // Create two polylines from the split shapes
         const firstGeometry = {
             closed: false,
-            shapes: [splitShapes[0]],
+            shapes: [splitShapes[0].toData()],
         };
 
         const secondGeometry = {
             closed: false,
-            shapes: [splitShapes[1]],
+            shapes: [splitShapes[1].toData()],
         };
 
         const firstHalf = createSplitShape(
@@ -77,18 +75,15 @@ function splitPolylineAtMidpoint(
 
     // Multi-segment polyline - use chain logic
     // Create a temporary chain from the polyline's shapes
-    const tempChain: ChainData = {
-        id: `temp-${polyline.id}`,
-        shapes: geom.shapes,
-    };
+    const tempChainShapes = geom.shapes.map((s) => new Shape(s));
 
     // Find the best shape to split using the same logic as chains
-    const shapeIndexToSplit: number = findBestShapeToSplit(tempChain.shapes);
+    const shapeIndexToSplit: number = findBestShapeToSplit(tempChainShapes);
 
     if (shapeIndexToSplit === DEFAULT_ARRAY_NOT_FOUND_INDEX) return null;
 
-    const shapeToSplit: ShapeData = tempChain.shapes[shapeIndexToSplit];
-    let splitShapes: [ShapeData, ShapeData] | null = null;
+    const shapeToSplit: Shape = tempChainShapes[shapeIndexToSplit];
+    let splitShapes: [Shape, Shape] | null = null;
 
     // Split the shape based on its type
     if (shapeToSplit.type === GeometryType.POLYLINE) {
@@ -101,7 +96,7 @@ function splitPolylineAtMidpoint(
 
     // Reconstruct the polyline shapes using chain logic
     const newShapes = reconstructChainFromSplit(
-        tempChain.shapes,
+        tempChainShapes,
         shapeIndexToSplit,
         splitShapes
     );
@@ -114,13 +109,13 @@ function splitPolylineAtMidpoint(
     const firstGeometry = {
         closed: false,
 
-        shapes: newShapes.slice(0, halfIndex + 1),
+        shapes: newShapes.slice(0, halfIndex + 1).map((s) => s.toData()),
     };
 
     const secondGeometry = {
         closed: false,
 
-        shapes: newShapes.slice(halfIndex + 1),
+        shapes: newShapes.slice(halfIndex + 1).map((s) => s.toData()),
     };
 
     // Create first polyline with first half of shapes
@@ -145,7 +140,7 @@ function splitPolylineAtMidpoint(
 /**
  * Finds the best shape to split in a chain, preferring simple shapes like lines and arcs
  */
-function findBestShapeToSplit(shapes: ShapeData[]): number {
+function findBestShapeToSplit(shapes: Shape[]): number {
     // First pass: look for lines
     for (let i: number = 0; i < shapes.length; i++) {
         if (shapes[i].type === GeometryType.LINE) {
@@ -186,7 +181,7 @@ function findBestShapeToSplit(shapes: ShapeData[]): number {
  * Optimizes the start point of a single chain
  */
 export function optimizeChainStartPoint(
-    chain: ChainData,
+    chain: Chain,
     params: StartPointOptimizationParameters
 ): OptimizeResult {
     // Only process closed chains with multiple shapes
@@ -201,7 +196,7 @@ export function optimizeChainStartPoint(
 
     // Special handling for single-shape chains
     if (chain.shapes.length === 1) {
-        const singleShape: ShapeData = chain.shapes[0];
+        const singleShape: Shape = chain.shapes[0];
 
         // Only certain single shapes can be optimized (polylines, not circles)
         if (singleShape.type === GeometryType.CIRCLE) {
@@ -229,13 +224,16 @@ export function optimizeChainStartPoint(
 
                 if (hasClosedFlag || isGeometricallyClosed) {
                     // Split the polyline and create a new chain
-                    const splitShapes: [ShapeData, ShapeData] | null =
+                    const splitShapes: [Shape, Shape] | null =
                         splitPolylineAtMidpoint(singleShape);
                     if (splitShapes) {
-                        const optimizedChain: ChainData = {
+                        const optimizedChain = new Chain({
                             id: chain.id,
-                            shapes: [splitShapes[1], splitShapes[0]], // Start with second half
-                        };
+                            shapes: [
+                                splitShapes[1].toData(),
+                                splitShapes[0].toData(),
+                            ], // Start with second half
+                        });
 
                         return {
                             originalChain: chain,
@@ -269,8 +267,8 @@ export function optimizeChainStartPoint(
         };
     }
 
-    const shapeToSplit: ShapeData = chain.shapes[shapeIndexToSplit];
-    let splitShapes: [ShapeData, ShapeData] | null = null;
+    const shapeToSplit: Shape = chain.shapes[shapeIndexToSplit];
+    let splitShapes: [Shape, Shape] | null = null;
 
     // Split the shape based on its type
     if (shapeToSplit.type === GeometryType.POLYLINE) {
@@ -296,10 +294,10 @@ export function optimizeChainStartPoint(
     );
 
     // Create the optimized chain
-    const optimizedChain: ChainData = {
+    const optimizedChain = new Chain({
         id: chain.id,
-        shapes: newShapes,
-    };
+        shapes: newShapes.map((s) => s.toData()),
+    });
 
     return {
         originalChain: chain,
@@ -319,11 +317,11 @@ export function optimizeChainStartPoint(
  * @returns Array of all shapes with optimized chains replacing original ones
  */
 export function optimizeStartPoints(
-    chains: ChainData[],
+    chains: Chain[],
     params: StartPointOptimizationParameters
-): ShapeData[] {
+): Shape[] {
     const results: OptimizeResult[] = [];
-    const allShapes: ShapeData[] = [];
+    const allShapes: Shape[] = [];
 
     // Process each chain
     for (const chain of chains) {
@@ -331,8 +329,7 @@ export function optimizeStartPoints(
         results.push(result);
 
         // Use optimized chain if available, otherwise use original
-        const chainToUse: ChainData =
-            result.optimizedChain || result.originalChain;
+        const chainToUse: Chain = result.optimizedChain || result.originalChain;
         allShapes.push(...chainToUse.shapes);
     }
 

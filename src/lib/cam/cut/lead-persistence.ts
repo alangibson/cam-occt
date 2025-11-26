@@ -6,8 +6,8 @@
  * using the offset shapes instead of the original chain geometry.
  */
 
-import type { CutData } from '$lib/cam/cut/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -20,11 +20,13 @@ import {
     convertLeadGeometryToPoints,
 } from '$lib/cam/lead/functions';
 import { detectParts } from '$lib/cam/part/part-detection';
+import type { Cut } from './classes.svelte';
+import type { CutData } from './interfaces';
 
 /**
  * Check if cut has valid cached lead geometry
  */
-export function hasValidCachedLeads(cut: CutData): boolean {
+export function hasValidCachedLeads(cut: Cut | CutData): boolean {
     const currentVersion: string = '1.0.0'; // Should match the version in cuts.ts
 
     // Check if we have cached lead geometry
@@ -60,7 +62,7 @@ export function hasValidCachedLeads(cut: CutData): boolean {
 /**
  * Get cached lead geometry for display
  */
-export function getCachedLeadGeometry(cut: CutData): LeadResult {
+export function getCachedLeadGeometry(cut: Cut | CutData): LeadResult {
     return {
         leadIn: cut.leadIn,
         leadOut: cut.leadOut,
@@ -72,7 +74,7 @@ export function getCachedLeadGeometry(cut: CutData): LeadResult {
  * This function encapsulates the common lead calculation logic used in multiple places
  */
 export async function calculateLeadPoints(
-    cut: CutData,
+    cut: Cut,
     chainMap: Map<string, ChainData> | undefined,
     partMap: Map<string, PartData> | undefined,
     leadType: 'leadIn' | 'leadOut'
@@ -92,7 +94,10 @@ export async function calculateLeadPoints(
             await prepareLeadCalculation(cut, chain);
 
         // Use offset-based part context if available, otherwise fall back to original part context
-        const effectivePart = offsetPart || part;
+        const effectivePartData = offsetPart || part;
+        const effectivePart = effectivePartData
+            ? new Part(effectivePartData)
+            : undefined;
 
         const leadResult = calculateLeads(
             new Chain(chainForLeads),
@@ -130,7 +135,7 @@ export async function calculateLeadPoints(
  * Moved here to be shared across different modules
  */
 async function prepareLeadCalculation(
-    cut: CutData,
+    cut: Cut,
     chain: ChainData
 ): Promise<{
     chainForLeads: ChainData;
@@ -157,7 +162,7 @@ async function prepareLeadCalculation(
     if (cut.offset) {
         try {
             // Create a single-chain array for part detection on offset geometry
-            const offsetChains = [chainForLeads];
+            const offsetChains = [new Chain(chainForLeads)];
             const partDetectionResult = await detectParts(offsetChains);
 
             // Use the first detected part (there should only be one for a single chain)

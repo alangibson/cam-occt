@@ -42,6 +42,7 @@ import {
 } from '$lib/geometry/spline/functions';
 import type { Geometry } from '$lib/geometry/types';
 import { GeometryType } from '$lib/geometry/enums';
+import { Shape } from './classes';
 
 // Mock the dependencies
 vi.mock('$lib/geometry/spline/functions', async (importOriginal) => {
@@ -114,7 +115,7 @@ describe('getShapePoints', () => {
             geometry: lineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toEqual([
             { x: 0, y: 0 },
             { x: 10, y: 10 },
@@ -141,7 +142,7 @@ describe('getShapePoints', () => {
             geometry: circleGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(generateCirclePoints).toHaveBeenCalledWith({ x: 0, y: 0 }, 5);
         expect(points).toBe(mockPoints);
     });
@@ -168,7 +169,7 @@ describe('getShapePoints', () => {
             geometry: arcGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(tessellateArc).toHaveBeenCalledWith(
             arcGeometry,
             expect.any(Number)
@@ -195,7 +196,7 @@ describe('getShapePoints', () => {
             geometry: polylineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(polylineToPoints).toHaveBeenCalledWith(polylineGeometry);
         expect(points).toStrictEqual(mockPoints);
     });
@@ -221,7 +222,7 @@ describe('getShapePoints', () => {
             geometry: ellipseGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(sampleEllipse).toHaveBeenCalledWith(ellipseGeometry, 64);
         expect(points).toBe(mockPoints);
     });
@@ -261,7 +262,7 @@ describe('getShapePoints', () => {
             geometry: splineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(tessellateSpline).toHaveBeenCalledWith(splineGeometry, {
             numSamples: 64,
         });
@@ -297,7 +298,7 @@ describe('getShapePoints', () => {
             geometry: splineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toStrictEqual(fitPoints);
     });
 
@@ -327,7 +328,7 @@ describe('getShapePoints', () => {
             geometry: splineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toStrictEqual(controlPoints);
     });
 
@@ -351,7 +352,7 @@ describe('getShapePoints', () => {
             geometry: splineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toEqual([]);
     });
 
@@ -375,7 +376,7 @@ describe('getShapePoints', () => {
             geometry: splineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toEqual([]);
     });
 
@@ -386,7 +387,7 @@ describe('getShapePoints', () => {
             geometry: {} as unknown as Line,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toEqual([]);
     });
 
@@ -402,7 +403,7 @@ describe('getShapePoints', () => {
             geometry: lineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toEqual([
             { x: -5, y: -10 },
             { x: 15, y: 25 },
@@ -421,7 +422,7 @@ describe('getShapePoints', () => {
             geometry: lineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toEqual([
             { x: 5, y: 5 },
             { x: 5, y: 5 },
@@ -455,7 +456,7 @@ describe('getShapePoints', () => {
             geometry: splineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toStrictEqual(fitPoints);
     });
 
@@ -486,7 +487,7 @@ describe('getShapePoints', () => {
             geometry: splineGeometry,
         };
 
-        const points = getShapePoints(shape);
+        const points = getShapePoints(new Shape(shape));
         expect(points).toStrictEqual(controlPoints);
     });
 });
@@ -505,7 +506,10 @@ describe('samplePathAtDistanceIntervals', () => {
             };
 
             const shapes = [line];
-            const samples = sampleShapes(shapes, 5);
+            const samples = sampleShapes(
+                shapes.map((s) => new Shape(s)),
+                5
+            );
 
             // Function now always returns natural direction (from start to end)
             expect(samples.length).toBeGreaterThan(0);
@@ -534,7 +538,10 @@ describe('samplePathAtDistanceIntervals', () => {
             };
 
             const shapes = [line];
-            const samples = sampleShapes(shapes, 5);
+            const samples = sampleShapes(
+                shapes.map((s) => new Shape(s)),
+                5
+            );
 
             // For clockwise cuts, direction should be natural (pointing right)
             expect(samples.length).toBeGreaterThan(0);
@@ -572,8 +579,8 @@ describe('samplePathAtDistanceIntervals', () => {
                 } as Line,
             };
 
-            const originalSamples = sampleShapes([originalLine], 5);
-            const reversedSamples = sampleShapes([reversedLine], 5);
+            const originalSamples = sampleShapes([new Shape(originalLine)], 5);
+            const reversedSamples = sampleShapes([new Shape(reversedLine)], 5);
 
             expect(originalSamples.length).toBeGreaterThan(0);
             expect(reversedSamples.length).toBeGreaterThan(0);
@@ -608,9 +615,12 @@ describe('samplePathAtDistanceIntervals', () => {
 
             const shapes = [horizontalLine, verticalLine];
 
-            const originalSamples = sampleShapes(shapes, 5);
+            const originalSamples = sampleShapes(
+                shapes.map((s) => new Shape(s)),
+                5
+            );
             const reversedSamples = sampleShapes(
-                [verticalLine, horizontalLine],
+                [new Shape(verticalLine), new Shape(horizontalLine)],
                 5
             );
 
@@ -641,7 +651,10 @@ describe('samplePathAtDistanceIntervals', () => {
             };
 
             const shapes = [line];
-            const samples = sampleShapes(shapes, 5); // Sample every 5 units
+            const samples = sampleShapes(
+                shapes.map((s) => new Shape(s)),
+                5
+            ); // Sample every 5 units
 
             // Should have samples at positions ~5, ~10, ~15 (and possibly one more at end)
             expect(samples.length).toBeGreaterThanOrEqual(3);
@@ -673,10 +686,10 @@ describe('samplePathAtDistanceIntervals', () => {
                     end: { x: 10, y: 0 },
                 } as Line,
             };
-            expect(sampleShapes([line], 0)).toEqual([]);
+            expect(sampleShapes([new Shape(line)], 0)).toEqual([]);
 
             // Negative interval distance
-            expect(sampleShapes([line], -5)).toEqual([]);
+            expect(sampleShapes([new Shape(line)], -5)).toEqual([]);
         });
     });
 });
@@ -696,7 +709,7 @@ describe('Cut Direction Regression Tests', () => {
         };
 
         // Function now always returns natural direction
-        const samples = sampleShapes([line], 5);
+        const samples = sampleShapes([new Shape(line)], 5);
 
         expect(samples.length).toBeGreaterThan(0);
 
@@ -714,18 +727,26 @@ describe('isShapeContainedInShape', () => {
         const innerCircle = createCircle(5, 5, 2);
         const outerCircle = createCircle(5, 5, 5);
 
-        expect(isShapeContainedInShape(innerCircle, outerCircle, 0.1)).toBe(
-            true
-        );
+        expect(
+            isShapeContainedInShape(
+                new Shape(innerCircle),
+                new Shape(outerCircle),
+                0.1
+            )
+        ).toBe(true);
     });
 
     it('should detect circle not contained in smaller circle', () => {
         const innerCircle = createCircle(5, 5, 5);
         const outerCircle = createCircle(5, 5, 2);
 
-        expect(isShapeContainedInShape(innerCircle, outerCircle, 0.1)).toBe(
-            false
-        );
+        expect(
+            isShapeContainedInShape(
+                new Shape(innerCircle),
+                new Shape(outerCircle),
+                0.1
+            )
+        ).toBe(false);
     });
 
     it('should handle open shapes (lines)', () => {
@@ -739,7 +760,13 @@ describe('isShapeContainedInShape', () => {
         };
         const outerCircle = createCircle(5, 5, 5);
 
-        expect(isShapeContainedInShape(line, outerCircle, 0.1)).toBe(true);
+        expect(
+            isShapeContainedInShape(
+                new Shape(line),
+                new Shape(outerCircle),
+                0.1
+            )
+        ).toBe(true);
     });
 
     it('should return false for insufficient tessellation points', () => {
@@ -753,7 +780,11 @@ describe('isShapeContainedInShape', () => {
         };
 
         // This tests the error handling path when shapes don't tessellate properly
-        const result = isShapeContainedInShape(mockShape, mockShape, 0.1);
+        const result = isShapeContainedInShape(
+            new Shape(mockShape),
+            new Shape(mockShape),
+            0.1
+        );
 
         // The result depends on tessellation - could be true or false
         expect(typeof result).toBe('boolean');
@@ -773,11 +804,19 @@ describe('isShapeContainedInShape', () => {
 
         // Should not throw and return false due to error handling
         expect(() =>
-            isShapeContainedInShape(malformedShape, validShape, 0.1)
+            isShapeContainedInShape(
+                new Shape(malformedShape),
+                new Shape(validShape),
+                0.1
+            )
         ).not.toThrow();
-        expect(isShapeContainedInShape(malformedShape, validShape, 0.1)).toBe(
-            false
-        );
+        expect(
+            isShapeContainedInShape(
+                new Shape(malformedShape),
+                new Shape(validShape),
+                0.1
+            )
+        ).toBe(false);
     });
 });
 
@@ -792,7 +831,7 @@ describe('getShapeStartPoint', () => {
             } as Line,
         };
 
-        const result = getShapeStartPoint(line);
+        const result = getShapeStartPoint(new Shape(line));
         expect(result).toEqual({ x: 1, y: 2 });
     });
 
@@ -803,7 +842,7 @@ describe('getShapeStartPoint', () => {
             geometry: {} as unknown as Geometry,
         };
 
-        expect(() => getShapeStartPoint(unknownShape)).toThrow(
+        expect(() => getShapeStartPoint(new Shape(unknownShape))).toThrow(
             'Unknown shape type: unknown'
         );
     });
@@ -820,7 +859,7 @@ describe('getShapeEndPoint', () => {
             } as Line,
         };
 
-        const result = getShapeEndPoint(line);
+        const result = getShapeEndPoint(new Shape(line));
         expect(result).toEqual({ x: 3, y: 4 });
     });
 
@@ -831,7 +870,7 @@ describe('getShapeEndPoint', () => {
             geometry: {} as unknown as Geometry,
         };
 
-        expect(() => getShapeEndPoint(unknownShape)).toThrow(
+        expect(() => getShapeEndPoint(new Shape(unknownShape))).toThrow(
             'Unknown shape type: unknown'
         );
     });
@@ -848,7 +887,7 @@ describe('getShapePointAt', () => {
             } as Line,
         };
 
-        const result = getShapePointAt(line, 0.5);
+        const result = getShapePointAt(new Shape(line), 0.5);
         expect(result).toEqual({ x: 5, y: 0 });
     });
 
@@ -859,7 +898,7 @@ describe('getShapePointAt', () => {
             geometry: {} as unknown as Geometry,
         };
 
-        expect(() => getShapePointAt(unknownShape, 0.5)).toThrow(
+        expect(() => getShapePointAt(new Shape(unknownShape), 0.5)).toThrow(
             'Unknown shape type: unknown'
         );
     });
@@ -876,7 +915,7 @@ describe('getShapeLength', () => {
             } as Line,
         };
 
-        const result = getShapeLength(line);
+        const result = getShapeLength(new Shape(line));
         expect(result).toBe(5); // 3-4-5 triangle
     });
 
@@ -890,7 +929,7 @@ describe('getShapeLength', () => {
             },
         };
 
-        const result = getShapeLength(circle);
+        const result = getShapeLength(new Shape(circle));
         expect(result).toBeCloseTo(2 * Math.PI * 5);
     });
 
@@ -906,7 +945,7 @@ describe('getShapeLength', () => {
             },
         };
 
-        const result = getShapeLength(arc);
+        const result = getShapeLength(new Shape(arc));
         expect(result).toBeCloseTo(5 * (2 * Math.PI - 1.5 * Math.PI)); // Uses 2π - span
     });
 
@@ -929,7 +968,7 @@ describe('getShapeLength', () => {
             },
         };
 
-        const result = getShapeLength(polyline);
+        const result = getShapeLength(new Shape(polyline));
         expect(result).toBe(5);
     });
 
@@ -943,7 +982,7 @@ describe('getShapeLength', () => {
             },
         };
 
-        const result = getShapeLength(polyline);
+        const result = getShapeLength(new Shape(polyline));
         expect(result).toBe(0);
     });
 
@@ -978,7 +1017,7 @@ describe('getShapeLength', () => {
             methodUsed: 'test',
         });
 
-        const result = getShapeLength(spline);
+        const result = getShapeLength(new Shape(spline));
         expect(result).toBeGreaterThan(0);
     });
 
@@ -1000,7 +1039,7 @@ describe('getShapeLength', () => {
             throw new Error('NURBS sampling failed');
         });
 
-        const result = getShapeLength(spline);
+        const result = getShapeLength(new Shape(spline));
         expect(result).toBe(0);
     });
 
@@ -1026,7 +1065,7 @@ describe('getShapeLength', () => {
             },
         };
 
-        const result = getShapeLength(ellipse);
+        const result = getShapeLength(new Shape(ellipse));
         expect(result).toBeGreaterThan(0);
     });
 
@@ -1041,7 +1080,7 @@ describe('getShapeLength', () => {
             },
         };
 
-        const result = getShapeLength(ellipse);
+        const result = getShapeLength(new Shape(ellipse));
         expect(result).toBeGreaterThan(0);
     });
 
@@ -1052,7 +1091,7 @@ describe('getShapeLength', () => {
             geometry: {} as unknown as Geometry,
         };
 
-        const result = getShapeLength(unknownShape);
+        const result = getShapeLength(new Shape(unknownShape));
         expect(result).toBe(0);
     });
 });
@@ -1068,7 +1107,7 @@ describe('getShapeNormal', () => {
             } as Line,
         };
 
-        const result = getShapeNormal(line, 0.5);
+        const result = getShapeNormal(new Shape(line), 0.5);
         expect(result.x).toBeCloseTo(0);
         expect(result.y).toBeCloseTo(1); // Should be pointing up (90° rotation of rightward direction)
     });
@@ -1085,7 +1124,7 @@ describe('getShapeMidpoint', () => {
             } as Line,
         };
 
-        const result = getShapeMidpoint(line);
+        const result = getShapeMidpoint(new Shape(line));
         expect(result).toEqual({ x: 5, y: 0 });
     });
 
@@ -1099,7 +1138,7 @@ describe('getShapeMidpoint', () => {
             } as Line,
         };
 
-        const result = getShapeMidpoint(line, 0.25);
+        const result = getShapeMidpoint(new Shape(line), 0.25);
         expect(result).toEqual({ x: 2.5, y: 0 });
     });
 });
@@ -1115,7 +1154,7 @@ describe('reverseShape', () => {
             } as Line,
         };
 
-        const result = reverseShape(line);
+        const result = reverseShape(new Shape(line));
         expect(result.geometry).toEqual({
             start: { x: 10, y: 0 },
             end: { x: 0, y: 0 },
@@ -1129,7 +1168,7 @@ describe('reverseShape', () => {
             geometry: { test: 'value' } as unknown as Geometry,
         };
 
-        const result = reverseShape(unknownShape);
+        const result = reverseShape(new Shape(unknownShape));
         expect(result.geometry).toEqual({ test: 'value' });
     });
 });
@@ -1145,7 +1184,7 @@ describe('scaleShape', () => {
             },
         };
 
-        const result = scaleShape(line, 2, { x: 0, y: 0 });
+        const result = scaleShape(new Shape(line), 2, { x: 0, y: 0 });
         expect(result.geometry).toEqual({
             start: { x: 0, y: 0 },
             end: { x: 20, y: 0 },
@@ -1162,7 +1201,7 @@ describe('scaleShape', () => {
             },
         };
 
-        const result = scaleShape(circle, 2, { x: 0, y: 0 });
+        const result = scaleShape(new Shape(circle), 2, { x: 0, y: 0 });
         expect(result.geometry).toEqual({
             center: { x: 10, y: 10 },
             radius: 6,
@@ -1188,7 +1227,7 @@ describe('scaleShape', () => {
             },
         };
 
-        const result = scaleShape(polyline, 2, { x: 0, y: 0 });
+        const result = scaleShape(new Shape(polyline), 2, { x: 0, y: 0 });
         expect((result.geometry as Polyline).shapes[0].geometry).toEqual({
             start: { x: 0, y: 0 },
             end: { x: 10, y: 0 },
@@ -1216,7 +1255,7 @@ describe('scaleShape', () => {
             },
         };
 
-        const result = scaleShape(polyline, 2, { x: 0, y: 0 });
+        const result = scaleShape(new Shape(polyline), 2, { x: 0, y: 0 });
         expect((result.geometry as Polyline).shapes[0].geometry).toEqual({
             center: { x: 10, y: 10 },
             radius: 6,
@@ -1236,7 +1275,7 @@ describe('scaleShape', () => {
             },
         };
 
-        const result = scaleShape(ellipse, 2, { x: 0, y: 0 });
+        const result = scaleShape(new Shape(ellipse), 2, { x: 0, y: 0 });
         expect(result.geometry).toEqual({
             center: { x: 10, y: 10 },
             majorAxisEndpoint: { x: 6, y: 0 },
@@ -1264,7 +1303,7 @@ describe('scaleShape', () => {
             },
         };
 
-        const result = scaleShape(spline, 2, { x: 0, y: 0 });
+        const result = scaleShape(new Shape(spline), 2, { x: 0, y: 0 });
         expect((result.geometry as Spline).controlPoints).toEqual([
             { x: 0, y: 0 },
             { x: 10, y: 10 },
@@ -1287,7 +1326,10 @@ describe('rotateShape', () => {
             },
         };
 
-        const result = rotateShape(line, Math.PI / 2, { x: 0, y: 0 });
+        const result = rotateShape(new Shape(line), Math.PI / 2, {
+            x: 0,
+            y: 0,
+        });
         expect((result.geometry as Line).start.x).toBeCloseTo(0);
         expect((result.geometry as Line).start.y).toBeCloseTo(0);
         expect((result.geometry as Line).end.x).toBeCloseTo(0, 5);
@@ -1306,7 +1348,7 @@ describe('rotateShape', () => {
             },
         };
 
-        const result = rotateShape(arc, Math.PI / 4, { x: 0, y: 0 });
+        const result = rotateShape(new Shape(arc), Math.PI / 4, { x: 0, y: 0 });
         expect((result.geometry as Arc).startAngle).toBeCloseTo(Math.PI / 4);
         expect((result.geometry as Arc).endAngle).toBeCloseTo(
             (3 * Math.PI) / 4
@@ -1334,7 +1376,10 @@ describe('rotateShape', () => {
             },
         };
 
-        const result = rotateShape(polyline, Math.PI / 4, { x: 0, y: 0 });
+        const result = rotateShape(new Shape(polyline), Math.PI / 4, {
+            x: 0,
+            y: 0,
+        });
         expect(
             ((result.geometry as Polyline).shapes[0].geometry as Arc).startAngle
         ).toBeCloseTo(Math.PI / 4);
@@ -1362,7 +1407,10 @@ describe('rotateShape', () => {
             },
         };
 
-        const result = rotateShape(polyline, Math.PI / 2, { x: 0, y: 0 });
+        const result = rotateShape(new Shape(polyline), Math.PI / 2, {
+            x: 0,
+            y: 0,
+        });
         expect(
             ((result.geometry as Polyline).shapes[0].geometry as Circle).center
                 .x
@@ -1385,7 +1433,7 @@ describe('moveShape', () => {
             },
         };
 
-        const result = moveShape(line, { x: 5, y: 3 });
+        const result = moveShape(new Shape(line), { x: 5, y: 3 });
         expect(result.geometry).toEqual({
             start: { x: 5, y: 3 },
             end: { x: 15, y: 3 },
@@ -1402,7 +1450,7 @@ describe('moveShape', () => {
             },
         };
 
-        const result = moveShape(circle, { x: 5, y: 3 });
+        const result = moveShape(new Shape(circle), { x: 5, y: 3 });
         expect(result.geometry).toEqual({
             center: { x: 5, y: 3 },
             radius: 5,
@@ -1420,7 +1468,7 @@ describe('moveShape', () => {
             },
         };
 
-        const result = moveShape(ellipse, { x: 3, y: 2 });
+        const result = moveShape(new Shape(ellipse), { x: 3, y: 2 });
         expect(result.geometry).toEqual({
             center: { x: 3, y: 2 },
             majorAxisEndpoint: { x: 5, y: 0 },
@@ -1432,7 +1480,7 @@ describe('moveShape', () => {
 describe('isShapeClosed', () => {
     it('should return true for circle', () => {
         const circle = createCircle(0, 0, 5);
-        expect(isShapeClosed(circle, 0.1)).toBe(true);
+        expect(isShapeClosed(new Shape(circle), 0.1)).toBe(true);
     });
 
     it('should return false for arc', () => {
@@ -1446,7 +1494,7 @@ describe('isShapeClosed', () => {
                 endAngle: Math.PI,
             } as Arc,
         };
-        expect(isShapeClosed(arc, 0.1)).toBe(false);
+        expect(isShapeClosed(new Shape(arc), 0.1)).toBe(false);
     });
 
     it('should return false for line', () => {
@@ -1458,7 +1506,7 @@ describe('isShapeClosed', () => {
                 end: { x: 10, y: 0 },
             } as Line,
         };
-        expect(isShapeClosed(line, 0.1)).toBe(false);
+        expect(isShapeClosed(new Shape(line), 0.1)).toBe(false);
     });
 
     it('should return true for polyline with closed flag', () => {
@@ -1487,7 +1535,7 @@ describe('isShapeClosed', () => {
             { x: 0, y: 5 },
         ]);
 
-        expect(isShapeClosed(polyline, 0.1)).toBe(true);
+        expect(isShapeClosed(new Shape(polyline), 0.1)).toBe(true);
     });
 
     it('should return false for polyline with insufficient points', () => {
@@ -1502,7 +1550,7 @@ describe('isShapeClosed', () => {
 
         vi.mocked(polylineToPoints).mockReturnValue([{ x: 0, y: 0 }]);
 
-        expect(isShapeClosed(polyline, 0.1)).toBe(false);
+        expect(isShapeClosed(new Shape(polyline), 0.1)).toBe(false);
     });
 
     it('should handle spline with NURBS evaluation failure', () => {
@@ -1534,7 +1582,7 @@ describe('isShapeClosed', () => {
             throw new Error('NURBS evaluation failed');
         });
 
-        expect(isShapeClosed(spline, 0.1)).toBe(true); // Should use fitPoints fallback
+        expect(isShapeClosed(new Shape(spline), 0.1)).toBe(true); // Should use fitPoints fallback
     });
 
     it('should throw error for unknown shape type', () => {
@@ -1544,7 +1592,7 @@ describe('isShapeClosed', () => {
             geometry: {} as unknown as Geometry,
         };
 
-        expect(() => isShapeClosed(unknownShape, 0.1)).toThrow(
+        expect(() => isShapeClosed(new Shape(unknownShape), 0.1)).toThrow(
             'Unknown type unknown'
         );
     });
@@ -1561,7 +1609,7 @@ describe('splitShapeAtMidpoint', () => {
             },
         };
 
-        const result = splitShapeAtMidpoint(line);
+        const result = splitShapeAtMidpoint(new Shape(line));
         expect(result).not.toBeNull();
         expect(result).toHaveLength(2);
     });
@@ -1578,7 +1626,7 @@ describe('splitShapeAtMidpoint', () => {
             },
         };
 
-        const result = splitShapeAtMidpoint(arc);
+        const result = splitShapeAtMidpoint(new Shape(arc));
         expect(result).not.toBeNull();
         expect(result).toHaveLength(2);
     });
@@ -1586,7 +1634,7 @@ describe('splitShapeAtMidpoint', () => {
     it('should return null for unsupported shape types', () => {
         const circle = createCircle(0, 0, 5);
 
-        const result = splitShapeAtMidpoint(circle);
+        const result = splitShapeAtMidpoint(new Shape(circle));
         expect(result).toBeNull();
     });
 });
@@ -1612,7 +1660,7 @@ describe('tessellateShape', () => {
             } as Arc,
         };
 
-        const result = tessellateShape(clockwiseArc, mockParams);
+        const result = tessellateShape(new Shape(clockwiseArc), mockParams);
         expect(result.length).toBeGreaterThan(2);
     });
 
@@ -1629,7 +1677,7 @@ describe('tessellateShape', () => {
             } as Arc,
         };
 
-        const result = tessellateShape(ccwArc, mockParams);
+        const result = tessellateShape(new Shape(ccwArc), mockParams);
         expect(result.length).toBeGreaterThan(2);
     });
 
@@ -1654,7 +1702,7 @@ describe('tessellateShape', () => {
             } as Ellipse,
         };
 
-        const result = tessellateShape(ellipseArc, mockParams);
+        const result = tessellateShape(new Shape(ellipseArc), mockParams);
         expect(result.length).toBeGreaterThan(2);
     });
 
@@ -1677,7 +1725,7 @@ describe('tessellateShape', () => {
             } as Ellipse,
         };
 
-        const result = tessellateShape(ellipse, mockParams);
+        const result = tessellateShape(new Shape(ellipse), mockParams);
         expect(result.length).toBe(32); // numEllipsePoints
     });
 
@@ -1698,7 +1746,7 @@ describe('tessellateShape', () => {
             { x: 10, y: 0 },
         ]);
 
-        const result = tessellateShape(polyline, mockParams);
+        const result = tessellateShape(new Shape(polyline), mockParams);
         expect(result.length).toBe(3);
     });
 
@@ -1719,7 +1767,7 @@ describe('tessellateShape', () => {
             { x: 10, y: 0 },
         ]);
 
-        const result = tessellateShape(polyline, mockParams);
+        const result = tessellateShape(new Shape(polyline), mockParams);
         expect(result.length).toBe(2);
     });
 });
@@ -1735,7 +1783,7 @@ describe('getShapePoints for native shapes', () => {
             } as Circle,
         };
 
-        const result = getShapePoints(circle, true);
+        const result = getShapePoints(new Shape(circle), true);
         expect(result).toEqual([{ x: 7, y: 3 }]); // center.x + radius, center.y
     });
 
@@ -1751,7 +1799,7 @@ describe('getShapePoints for native shapes', () => {
             } as Arc,
         };
 
-        const result = getShapePoints(arc, true);
+        const result = getShapePoints(new Shape(arc), true);
         expect(result).toHaveLength(2);
         expect(result[0]).toEqual({ x: 5, y: 0 }); // Start point
         expect(result[1].x).toBeCloseTo(0, 5);
@@ -1779,7 +1827,7 @@ describe('getShapePoints for native shapes', () => {
             throw new Error('NURBS failed');
         });
 
-        const result = getShapePoints(spline);
+        const result = getShapePoints(new Shape(spline));
         expect(result).toEqual([
             { x: 1, y: 1 },
             { x: 2, y: 2 },
@@ -1807,7 +1855,7 @@ describe('getShapePoints for native shapes', () => {
             throw new Error('NURBS failed');
         });
 
-        const result = getShapePoints(spline);
+        const result = getShapePoints(new Shape(spline));
         expect(result).toEqual([
             { x: 3, y: 3 },
             { x: 4, y: 4 },
@@ -1832,7 +1880,7 @@ describe('getShapePoints for native shapes', () => {
             throw new Error('NURBS failed');
         });
 
-        const result = getShapePoints(spline);
+        const result = getShapePoints(new Shape(spline));
         expect(result).toEqual([]);
     });
 });
@@ -1851,7 +1899,7 @@ describe('getShapePoints - direction analysis mode', () => {
             } as Arc,
         };
 
-        const result = getShapePoints(clockwiseArc, {
+        const result = getShapePoints(new Shape(clockwiseArc), {
             mode: 'DIRECTION_ANALYSIS',
         });
         expect(result.length).toBeGreaterThan(2);
@@ -1870,7 +1918,9 @@ describe('getShapePoints - direction analysis mode', () => {
             } as Arc,
         };
 
-        const result = getShapePoints(ccwArc, { mode: 'DIRECTION_ANALYSIS' });
+        const result = getShapePoints(new Shape(ccwArc), {
+            mode: 'DIRECTION_ANALYSIS',
+        });
         expect(result.length).toBeGreaterThan(2);
     });
 });

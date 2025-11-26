@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -143,7 +144,7 @@ function createDrawingStore(): DrawingStore {
                 const shapes: ShapeData[] = state.drawing.shapes.map(
                     (shape: ShapeData) => {
                         if (shapeIds.includes(shape.id)) {
-                            return moveShape(shape, delta);
+                            return moveShape(new Shape(shape), delta).toData();
                         }
                         return shape;
                     }
@@ -171,7 +172,11 @@ function createDrawingStore(): DrawingStore {
                 const shapes: ShapeData[] = state.drawing.shapes.map(
                     (shape: ShapeData) => {
                         if (shapeIds.includes(shape.id)) {
-                            return scaleShape(shape, scaleFactor, origin);
+                            return scaleShape(
+                                new Shape(shape),
+                                scaleFactor,
+                                origin
+                            ).toData();
                         }
                         return shape;
                     }
@@ -195,7 +200,11 @@ function createDrawingStore(): DrawingStore {
                 const shapes: ShapeData[] = state.drawing.shapes.map(
                     (shape: ShapeData) => {
                         if (shapeIds.includes(shape.id)) {
-                            return rotateShape(shape, angle, origin);
+                            return rotateShape(
+                                new Shape(shape),
+                                angle,
+                                origin
+                            ).toData();
                         }
                         return shape;
                     }

@@ -14,6 +14,7 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import {
     isChainClosed,
     tessellateChainToShapes,
@@ -59,14 +60,15 @@ export async function offsetChain(
 
     try {
         // 1. Determine if chain is closed
-        const isClosed = isChainClosed(chain, params.tolerance);
+        const chainObj = new Chain(chain);
+        const isClosed = isChainClosed(chainObj, params.tolerance);
 
         // 2. Tessellate all shapes to polylines
         const CIRCLE_POINTS = 32;
         const DECIMAL_PRECISION = 3;
         const SKIP_LAST_POINT = -1;
 
-        const shapePointArrays = tessellateChainToShapes(chain, {
+        const shapePointArrays = tessellateChainToShapes(chainObj, {
             circleTessellationPoints: CIRCLE_POINTS,
             tessellationTolerance: getDefaults().geometry.tessellationTolerance,
             decimalPrecision: DECIMAL_PRECISION,

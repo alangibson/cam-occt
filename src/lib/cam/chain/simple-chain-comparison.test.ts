@@ -1,3 +1,4 @@
+import { Shape } from '$lib/cam/shape/classes';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -19,7 +20,10 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
 
         // Detect chains
         const tolerance = 1.0;
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
 
         // Normalize chains
         const normalizedChains = chains.map((chain) => normalizeChain(chain));

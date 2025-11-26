@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
@@ -48,7 +49,10 @@ describe('optimizeStartPoints', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should have 4 shapes now (original 3 minus 1 split shape plus 2 split halves)
         expect(result.length).toBe(4);
@@ -105,7 +109,10 @@ describe('optimizeStartPoints', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should have 4 shapes now (2 polylines + 2 arc halves)
         expect(result.length).toBe(4);
@@ -167,7 +174,10 @@ describe('optimizeStartPoints', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should have 3 shapes (spline + 2 line halves)
         expect(result.length).toBe(3);
@@ -210,7 +220,10 @@ describe('optimizeStartPoints', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should have same number of shapes
         expect(result.length).toBe(2);
@@ -238,7 +251,10 @@ describe('optimizeStartPoints', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should have same single shape
         expect(result.length).toBe(1);
@@ -284,7 +300,7 @@ describe('optimizeStartPoints', () => {
         };
 
         const result = optimizeStartPoints(
-            [chain1, chain2],
+            [new Chain(chain1), new Chain(chain2)],
             optimizationParams
         );
 

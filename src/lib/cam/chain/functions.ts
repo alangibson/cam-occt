@@ -3,12 +3,13 @@
  */
 
 import { GeometryType } from '$lib/geometry/enums';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ChainData } from './interfaces';
+import { Chain } from './classes';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
@@ -63,14 +64,15 @@ import {
  * @param chain - The chain to reverse
  * @returns A new chain with reversed direction
  */
-export function reverseChain(chain: ChainData): ChainData {
-    return {
-        ...chain,
+export function reverseChain(chain: Chain): Chain {
+    const chainData = chain.toData();
+    return new Chain({
+        ...chainData,
         shapes: chain.shapes
             .slice()
             .reverse()
-            .map((shape) => reverseShape(shape)),
-    };
+            .map((shape) => reverseShape(shape).toData()),
+    });
 }
 
 /**
@@ -218,7 +220,7 @@ export function calculatePolygonCentroid(points: Point2D[]): Point2D {
  * @param chain - The chain to find the center of
  * @returns The center point of the chain
  */
-export function getChainCentroid(chain: ChainData): Point2D {
+export function getChainCentroid(chain: Chain): Point2D {
     if (chain.shapes.length === 0) {
         return { x: 0, y: 0 };
     }
@@ -295,7 +297,7 @@ export function calculatePolygonPerimeter(points: Point2D[]): number {
  * Convert a chain to a series of points by tessellating all shapes
  */
 export function tessellateChain(
-    chain: ChainData,
+    chain: Chain,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): Point2D[] {
     const points: Point2D[] = [];
@@ -317,7 +319,7 @@ export function tessellateChain(
  * @returns Array of point arrays, one per shape
  */
 export function tessellateChainToShapes(
-    chain: ChainData,
+    chain: Chain,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): Point2D[][] {
     return chain.shapes.map((shape) => tessellateShape(shape, params));
@@ -325,7 +327,7 @@ export function tessellateChainToShapes(
 /**
  * Helper function to get all endpoints from a shape
  */
-function getShapeEndpoints(shape: ShapeData): Point2D[] {
+function getShapeEndpoints(shape: Shape): Point2D[] {
     const start: Point2D = getShapeStartPoint(shape);
     const end: Point2D = getShapeEndPoint(shape);
 
@@ -343,14 +345,14 @@ function getShapeEndpoints(shape: ShapeData): Point2D[] {
  * Enhanced version with special handling for single-shape circles, ellipses, and polylines
  */
 export function isChainClosed(
-    chain: ChainData,
+    chain: Chain,
     tolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): boolean {
     if (chain.shapes.length === 0) return false;
 
     // Special case: single-shape circles, ellipses, and closed polylines are inherently closed
     if (chain.shapes.length === 1) {
-        const shape: ShapeData = chain.shapes[0];
+        const shape: Shape = chain.shapes[0];
         if (shape.type === 'circle') {
             return true;
         }
@@ -382,8 +384,8 @@ export function isChainClosed(
 
     // A closed chain should have all endpoints paired up (each point appears exactly twice)
     // For a truly closed chain, the start of the first shape should connect to the end of the last shape
-    const firstShape: ShapeData = chain.shapes[0];
-    const lastShape: ShapeData = chain.shapes[chain.shapes.length - 1];
+    const firstShape: Shape = chain.shapes[0];
+    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
 
     const firstStart: Point2D = getShapeStartPoint(firstShape);
     const lastEnd: Point2D = getShapeEndPoint(lastShape);
@@ -402,7 +404,7 @@ export function isChainClosed(
  */
 
 export function calculateChainArea(
-    chain: ChainData,
+    chain: Chain,
     tolerance: number = CHAIN_CLOSURE_TOLERANCE,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): number {
@@ -442,8 +444,8 @@ export function calculateChainArea(
  */
 
 export function isChainContainedInChain(
-    innerChain: ChainData,
-    outerChain: ChainData,
+    innerChain: Chain,
+    outerChain: Chain,
     tolerance: number,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): boolean {
@@ -595,8 +597,8 @@ export function isChainContainedInChain(
  * @returns Promise<boolean> - True if inner is contained within outer
  */
 export async function isChainContainedInChainClipper2(
-    innerChain: ChainData,
-    outerChain: ChainData,
+    innerChain: Chain,
+    outerChain: Chain,
     tolerance: number,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): Promise<boolean> {
@@ -667,8 +669,8 @@ export async function isChainContainedInChainClipper2(
  */
 
 export function isChainGeometricallyContained(
-    innerChain: ChainData,
-    outerChain: ChainData
+    innerChain: Chain,
+    outerChain: Chain
 ): boolean {
     // Extract polygon points from both chains
     const innerPolygon: Point2D[] | null = extractPolygonFromChain(innerChain);
@@ -692,7 +694,7 @@ export function isChainGeometricallyContained(
  * Extracts a polygon representation from a chain for geometric operations
  */
 
-function extractPolygonFromChain(chain: ChainData): Point2D[] | null {
+function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     if (!chain || !chain.shapes || chain.shapes.length === 0) {
         return null;
     }
@@ -733,7 +735,7 @@ function extractPolygonFromChain(chain: ChainData): Point2D[] | null {
 /**
  * Extract all points from a chain for area calculation
  */
-export function getChainPoints(chain: ChainData): Point2D[] {
+export function getChainPoints(chain: Chain): Point2D[] {
     const points: Point2D[] = [];
 
     for (const shape of chain.shapes) {
@@ -749,7 +751,7 @@ export function getChainPoints(chain: ChainData): Point2D[] {
 /**
  * Get the start point of a shape chain
  */
-export function getChainStartPoint(chain: ChainData): Point2D {
+export function getChainStartPoint(chain: Chain): Point2D {
     if (chain.shapes.length === 0) {
         throw new Error('Chain has no shapes');
     }
@@ -761,12 +763,12 @@ export function getChainStartPoint(chain: ChainData): Point2D {
 /**
  * Get the end point of a shape chain
  */
-export function getChainEndPoint(chain: ChainData): Point2D {
+export function getChainEndPoint(chain: Chain): Point2D {
     if (chain.shapes.length === 0) {
         throw new Error('Chain has no shapes');
     }
 
-    const lastShape: ShapeData = chain.shapes[chain.shapes.length - 1];
+    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
     return getShapeEndPoint(lastShape);
 }
 
@@ -774,11 +776,11 @@ export function getChainEndPoint(chain: ChainData): Point2D {
  * Get the tangent direction at a point on the chain.
  */
 export function getChainTangent(
-    chain: ChainData,
+    chain: Chain,
     point: Point2D,
     isStart: boolean
 ): Point2D {
-    const shape: ShapeData = isStart
+    const shape: Shape = isStart
         ? chain.shapes[0]
         : chain.shapes[chain.shapes.length - 1];
 
@@ -816,7 +818,7 @@ export function getChainTangent(
  * @returns Point on the chain at the specified parameter
  * @throws Error if chain has no shapes or t is out of range
  */
-export function getChainPointAt(chain: ChainData, t: number): Point2D {
+export function getChainPointAt(chain: Chain, t: number): Point2D {
     if (chain.shapes.length === 0) {
         throw new Error('Chain has no shapes');
     }
@@ -891,7 +893,7 @@ export function getChainPointAt(chain: ChainData, t: number): Point2D {
  * @returns Array of sampled points with their direction vectors at each sample location
  */
 export function sampleChain(
-    chain: ChainData,
+    chain: Chain,
     intervalDistance: number,
     includeDirection: boolean = true
 ): { point: Point2D; direction: Point2D }[] {
@@ -906,7 +908,7 @@ export function sampleChain(
  * @returns The cut direction based on the chain's clockwise property
  */
 export function getChainCutDirection(
-    chain: ChainData | undefined
+    chain: ChainData | Chain | undefined
 ): CutDirection {
     if (!chain) return CutDirection.NONE;
 

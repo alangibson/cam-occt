@@ -1,10 +1,9 @@
-import type { CutData } from '$lib/cam/cut/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig } from '$lib/cam/lead/interfaces';
 import {
@@ -155,7 +154,7 @@ export function getCutStartPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
  * Helper function to get chain point (start or end) with offset geometry support
  */
 function getCutChainPoint(
-    cut: CutData,
+    cut: Cut,
     chain: Chain,
     getPointFn: (chain: Chain) => Point2D
 ): Point2D {
@@ -178,14 +177,14 @@ function getCutChainPoint(
 /**
  * Get the effective start point of a cut's chain, using offset geometry if available
  */
-export function getCutChainStartPoint(cut: CutData, chain: Chain): Point2D {
+export function getCutChainStartPoint(cut: Cut, chain: Chain): Point2D {
     return getCutChainPoint(cut, chain, getChainStartPoint);
 }
 
 /**
  * Get the effective end point of a cut's chain, using offset geometry if available
  */
-export function getCutChainEndPoint(cut: CutData, chain: Chain): Point2D {
+export function getCutChainEndPoint(cut: Cut, chain: Chain): Point2D {
     return getCutChainPoint(cut, chain, getChainEndPoint);
 }
 
@@ -194,11 +193,11 @@ export function getCutChainEndPoint(cut: CutData, chain: Chain): Point2D {
  * Extracted from optimize-start-points.ts to eliminate duplication
  */
 export function reconstructChainFromSplit(
-    originalShapes: ShapeData[],
+    originalShapes: Shape[],
     splitIndex: number,
-    splitShapes: [ShapeData, ShapeData]
-): ShapeData[] {
-    const newShapes: ShapeData[] = [];
+    splitShapes: [Shape, Shape]
+): Shape[] {
+    const newShapes: Shape[] = [];
 
     // Add the second half of the split shape (this becomes the new start)
     newShapes.push(splitShapes[1]);
@@ -223,25 +222,23 @@ export function reconstructChainFromSplit(
  * Create a split shape with consistent property handling
  */
 export function createSplitShape(
-    originalShape: ShapeData,
+    originalShape: Shape,
     splitIndex: string,
-    type: ShapeData['type'],
-    geometry: ShapeData['geometry']
-): ShapeData {
-    return {
+    type: Shape['type'],
+    geometry: Shape['geometry']
+): Shape {
+    return new Shape({
         id: `${originalShape.id}-split-${splitIndex}`,
         type,
         geometry,
         ...(originalShape.layer && { layer: originalShape.layer }),
-    };
+    });
 }
 
 /**
  * Splits a line shape at its midpoint, creating two line shapes
  */
-export function splitLineAtMidpoint(
-    shape: ShapeData
-): [ShapeData, ShapeData] | null {
+export function splitLineAtMidpoint(shape: Shape): [Shape, Shape] | null {
     if (shape.type !== 'line') return null;
 
     const geom = shape.geometry as Line;
@@ -267,9 +264,7 @@ export function splitLineAtMidpoint(
 /**
  * Splits an arc shape at its midpoint angle, creating two arc shapes
  */
-export function splitArcAtMidpoint(
-    shape: ShapeData
-): [ShapeData, ShapeData] | null {
+export function splitArcAtMidpoint(shape: Shape): [Shape, Shape] | null {
     if (shape.type !== GeometryType.ARC) return null;
 
     const geom = shape.geometry as Arc;

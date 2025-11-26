@@ -4,6 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('ADLER.dxf Part Detection', () => {
     it('should detect 9 parts with 1 hole from the ADLER.dxf file', async () => {
@@ -15,7 +16,10 @@ describe('ADLER.dxf Part Detection', () => {
         const parsed = await parseDXF(dxfContent);
 
         // Detect chains with tolerance 0.1 (matching current default)
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            parsed.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
 
         // Log details about each chain
         chains.forEach(() => {});
@@ -50,7 +54,10 @@ describe('ADLER.dxf Part Detection', () => {
 
         // This should not throw
         const parsed = await parseDXF(dxfContent);
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            parsed.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const partResult = await detectParts(chains);
 
         expect(parsed.shapes.length).toBeGreaterThan(0);

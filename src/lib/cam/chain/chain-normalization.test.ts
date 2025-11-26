@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math/constants';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
@@ -53,7 +54,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain], {
+            const results = analyzeChainTraversal([new Chain(chain)], {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 5,
             });
@@ -72,7 +73,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain], {
+            const results = analyzeChainTraversal([new Chain(chain)], {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 5,
             });
@@ -98,7 +99,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain], {
+            const results = analyzeChainTraversal([new Chain(chain)], {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 5,
             });
@@ -125,7 +126,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain], {
+            const results = analyzeChainTraversal([new Chain(chain)], {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 5,
             });
@@ -146,7 +147,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain], {
+            const results = analyzeChainTraversal([new Chain(chain)], {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 5,
             });
@@ -158,7 +159,7 @@ describe('Chain Normalization', () => {
 
         it('should handle empty chain', () => {
             const chain = createChain('chain-1', []);
-            const results = analyzeChainTraversal([chain], {
+            const results = analyzeChainTraversal([new Chain(chain)], {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 5,
             });
@@ -189,7 +190,7 @@ describe('Chain Normalization', () => {
             const chain = createChain('chain-1', shapes);
 
             // Normalize the chain
-            const normalizedChain = normalizeChain(chain, {
+            const normalizedChain = normalizeChain(new Chain(chain), {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 10,
             });
@@ -276,7 +277,7 @@ describe('Chain Normalization', () => {
             const chain = createChain('chain-1', shapes);
 
             // Normalize the chain - this should reorder shapes so connected shapes are adjacent
-            const normalizedChain = normalizeChain(chain, {
+            const normalizedChain = normalizeChain(new Chain(chain), {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 10,
             });
@@ -343,7 +344,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const normalizedChain = normalizeChain(chain);
+            const normalizedChain = normalizeChain(new Chain(chain));
 
             // Should reorder to: line2 -> line1 -> line3
             expect(normalizedChain.shapes).toHaveLength(3);
@@ -369,7 +370,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const normalizedChain = normalizeChain(chain);
+            const normalizedChain = normalizeChain(new Chain(chain));
 
             // Should keep line1, reverse line2, then add line3
             expect(normalizedChain.shapes).toHaveLength(3);
@@ -402,14 +403,14 @@ describe('Chain Normalization', () => {
             const chain = createChain('chain-1', shapes);
 
             // Before normalization - should have issues
-            const beforeAnalysis = analyzeChainTraversal([chain], {
+            const beforeAnalysis = analyzeChainTraversal([new Chain(chain)], {
                 traversalTolerance: 0.01,
                 maxTraversalAttempts: 10,
             });
             expect(beforeAnalysis[0].canTraverse).toBe(false);
             expect(beforeAnalysis[0].issues.length).toBeGreaterThan(0);
 
-            const normalizedChain = normalizeChain(chain);
+            const normalizedChain = normalizeChain(new Chain(chain));
 
             // After normalization - should be fixed
             const afterAnalysis = analyzeChainTraversal([normalizedChain], {
@@ -427,7 +428,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const normalizedChain = normalizeChain(chain);
+            const normalizedChain = normalizeChain(new Chain(chain));
 
             // Should still have 2 shapes
             expect(normalizedChain.shapes).toHaveLength(2);
@@ -471,7 +472,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const normalizedChain = normalizeChain(chain);
+            const normalizedChain = normalizeChain(new Chain(chain));
 
             // Find the reversed arc in the normalized chain
             const normalizedArc = normalizedChain.shapes.find(
@@ -532,7 +533,7 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const normalizedChain = normalizeChain(chain);
+            const normalizedChain = normalizeChain(new Chain(chain));
 
             // Find the polyline in normalized chain
             const normalizedPoly = normalizedChain.shapes.find(

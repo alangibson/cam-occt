@@ -5,6 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { getChainPartType } from '$lib/test/parts';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('UI Flow Integration Test', () => {
     it('should correctly identify part types in the complete 1997.dxf workflow', async () => {
@@ -13,8 +14,11 @@ describe('UI Flow Integration Test', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
 
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+
         // Step 2: Detect chains (matching UI flow)
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         chains.forEach(() => {});
 
@@ -67,8 +71,11 @@ describe('UI Flow Integration Test', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
 
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+
         // Step 2: Detect chains (matching UI flow)
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         // Step 3: Detect parts (matching UI flow)
         const partResult = await detectParts(chains);

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/cam/gcode/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { CutPath } from '$lib/cam/gcode/interfaces';
 import { Unit } from '$lib/config/units/units';
 
@@ -35,7 +36,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
     describe('Adaptive Feed Control (M52)', () => {
         it('should generate M52 P1 when adaptiveFeedControl is true', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -52,7 +53,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
         });
 
         it('should generate M52 P0 when adaptiveFeedControl is false', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -67,7 +68,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
         });
 
         it('should not generate M52 when adaptiveFeedControl is null', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -83,7 +84,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
     describe('THC Control (M65/M64 P2)', () => {
         it('should generate M65 P2 when enableTHC is true', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -99,7 +100,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
         });
 
         it('should generate M64 P2 when enableTHC is false', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -115,7 +116,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
         });
 
         it('should not generate M65/M64 when enableTHC is null', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -134,7 +135,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
     describe('Combined Settings', () => {
         it('should generate both M52 and M65 when both are enabled', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -153,7 +154,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
         });
 
         it('should generate M52 P0 and M64 P2 when both are disabled', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -170,7 +171,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
         });
 
         it('should only generate necessary commands when some settings are null', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,

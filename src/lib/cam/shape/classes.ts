@@ -35,7 +35,7 @@ export class Shape implements ShapeData {
     get tessellation(): TessellationCache {
         if (!this.#tessellationCache) {
             const points = tessellateShape(
-                this.#data,
+                this,
                 DEFAULT_PART_DETECTION_PARAMETERS
             );
             this.#tessellationCache = {

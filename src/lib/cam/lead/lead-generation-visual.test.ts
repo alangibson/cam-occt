@@ -6,7 +6,6 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -18,6 +17,7 @@ import {
     getChainEndPoint,
     getChainTangent,
 } from '$lib/cam/chain/functions';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Generation Visual Test with Specific Spline', () => {
     it('should generate SVG with spline and colored lead arcs', async () => {
@@ -134,12 +134,16 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
 
         // Add spline tangent lines at lead connection points for both chains
         // Chain 1 tangents and markers
-        const startPoint1 = getChainStartPoint(chain1);
-        const endPoint1 = getChainEndPoint(chain1);
+        const startPoint1 = getChainStartPoint(new Chain(chain1));
+        const endPoint1 = getChainEndPoint(new Chain(chain1));
 
         if (startPoint1) {
             svg.addIntersectionPoint(startPoint1, 'green', 3);
-            const startTangent1 = getChainTangent(chain1, startPoint1, true);
+            const startTangent1 = getChainTangent(
+                new Chain(chain1),
+                startPoint1,
+                true
+            );
             const tangentLength = 30;
             const tangentStart = {
                 x: startPoint1.x - startTangent1.x * tangentLength,
@@ -158,7 +162,11 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
 
         if (endPoint1) {
             svg.addIntersectionPoint(endPoint1, 'orange', 3);
-            const endTangent1 = getChainTangent(chain1, endPoint1, false);
+            const endTangent1 = getChainTangent(
+                new Chain(chain1),
+                endPoint1,
+                false
+            );
             const tangentLength = 30;
             const tangentStart = {
                 x: endPoint1.x - endTangent1.x * tangentLength,
@@ -176,12 +184,16 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         }
 
         // Chain 2 tangents and markers
-        const startPoint2 = getChainStartPoint(chain2);
-        const endPoint2 = getChainEndPoint(chain2);
+        const startPoint2 = getChainStartPoint(new Chain(chain2));
+        const endPoint2 = getChainEndPoint(new Chain(chain2));
 
         if (startPoint2) {
             svg.addIntersectionPoint(startPoint2, 'green', 3);
-            const startTangent2 = getChainTangent(chain2, startPoint2, true);
+            const startTangent2 = getChainTangent(
+                new Chain(chain2),
+                startPoint2,
+                true
+            );
             const tangentLength = 30;
             const tangentStart = {
                 x: startPoint2.x - startTangent2.x * tangentLength,
@@ -200,7 +212,11 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
 
         if (endPoint2) {
             svg.addIntersectionPoint(endPoint2, 'orange', 3);
-            const endTangent2 = getChainTangent(chain2, endPoint2, false);
+            const endTangent2 = getChainTangent(
+                new Chain(chain2),
+                endPoint2,
+                false
+            );
             const tangentLength = 30;
             const tangentStart = {
                 x: endPoint2.x - endTangent2.x * tangentLength,

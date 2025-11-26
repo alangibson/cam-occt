@@ -1,6 +1,9 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, it, expect } from 'vitest';
 import { cutToKerf } from './functions';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
@@ -9,8 +12,6 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
-import { Chain } from '$lib/cam/chain/classes';
-import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('cutToKerf', () => {
@@ -140,7 +141,7 @@ describe('cutToKerf', () => {
         const cut = createRectangularCut(0, 0, 100, 50);
         const tool = createTool(2.0);
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         expect(kerf).toBeDefined();
         expect(kerf.id).toBeDefined();
@@ -157,7 +158,7 @@ describe('cutToKerf', () => {
         const cut = createRectangularCut(0, 0, 100, 50);
         const tool = createTool(2.0);
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         expect(kerf.innerChain).toBeDefined();
         expect(kerf.outerChain).toBeDefined();
@@ -169,7 +170,7 @@ describe('cutToKerf', () => {
         const cut = createRectangularCut(0, 0, 100, 50);
         const tool = createTool(4.0); // 4mm kerf width
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         // Calculate bounding boxes to verify offset distances
         const innerBBox = calculateChainBoundingBox(kerf.innerChain);
@@ -195,7 +196,7 @@ describe('cutToKerf', () => {
         const cut = createCircularCut(50, 50, 20);
         const tool = createTool(3.0);
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         expect(kerf).toBeDefined();
         expect(kerf.innerChain).toBeDefined();
@@ -212,7 +213,7 @@ describe('cutToKerf', () => {
         const cut = createCircularCut(centerX, centerY, radius);
         const tool = createTool(kerfWidth);
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         // For a circle, the inner radius should be ~radius - kerfWidth/2
         // and outer radius should be ~radius + kerfWidth/2
@@ -234,7 +235,7 @@ describe('cutToKerf', () => {
         cut.cutChain = undefined;
         const tool = createTool(2.0);
 
-        await expect(cutToKerf(cut, tool)).rejects.toThrow(
+        await expect(cutToKerf(new Cut(cut), tool)).rejects.toThrow(
             'Cut must have a cutChain to generate kerf'
         );
     });
@@ -243,7 +244,7 @@ describe('cutToKerf', () => {
         const cut = createRectangularCut(0, 0, 100, 50);
         const tool = createTool(0);
 
-        await expect(cutToKerf(cut, tool)).rejects.toThrow(
+        await expect(cutToKerf(new Cut(cut), tool)).rejects.toThrow(
             'Tool must have a positive kerfWidth to generate kerf'
         );
     });
@@ -252,7 +253,7 @@ describe('cutToKerf', () => {
         const cut = createRectangularCut(0, 0, 100, 50);
         const tool = createTool(-2.0);
 
-        await expect(cutToKerf(cut, tool)).rejects.toThrow(
+        await expect(cutToKerf(new Cut(cut), tool)).rejects.toThrow(
             'Tool must have a positive kerfWidth to generate kerf'
         );
     });
@@ -261,7 +262,7 @@ describe('cutToKerf', () => {
         const cut = createRectangularCut(0, 0, 100, 50);
         const tool = createTool(2.0);
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         expect(kerf.cutId).toBe(cut.id);
     });
@@ -271,7 +272,7 @@ describe('cutToKerf', () => {
         const kerfWidth = 5.5;
         const tool = createTool(kerfWidth);
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         expect(kerf.kerfWidth).toBe(kerfWidth);
     });
@@ -282,7 +283,7 @@ describe('cutToKerf', () => {
 
         for (const kerfWidth of kerfWidths) {
             const tool = createTool(kerfWidth);
-            const kerf = await cutToKerf(cut, tool);
+            const kerf = await cutToKerf(new Cut(cut), tool);
 
             expect(kerf.kerfWidth).toBe(kerfWidth);
 
@@ -315,7 +316,7 @@ describe('cutToKerf', () => {
         const cut = createRectangularCut(0, 0, 100, 50);
         const tool = createTool(2.0);
 
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         // Check inner chain continuity
         const innerShapes = kerf.innerChain.shapes;
@@ -384,7 +385,7 @@ describe('cutToKerf', () => {
         };
 
         const tool = createTool(2.0);
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         // Verify the properties exist (they can be true or false)
         expect(kerf).toHaveProperty('leadInKerfOverlapsChain');
@@ -493,7 +494,7 @@ describe('cutToKerf', () => {
 
         // Use a tool with 2mm (0.002 units) kerf width
         const tool = createTool(0.002);
-        const kerf = await cutToKerf(cut, tool);
+        const kerf = await cutToKerf(new Cut(cut), tool);
 
         // The lead should NOT overlap with the original chain
         // This lead is positioned correctly for a hole - it stays inside the hole
@@ -586,7 +587,7 @@ describe('cutToKerf', () => {
         // the kerf zone will definitely overlap the original chain edge at x=0
         const tool = createTool(4.0);
         // Pass checkOverlap=true to enable overlap detection
-        const kerf = await cutToKerf(cut, tool, true);
+        const kerf = await cutToKerf(new Cut(cut), tool, true);
 
         // The lead kerf should overlap with the original chain
         // because the lead extends outward from x=10 toward x=0,

@@ -8,6 +8,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { EPSILON } from '$lib/geometry/math/constants';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
@@ -199,8 +200,8 @@ export class SVGBuilder {
                 type: GeometryType.ARC,
                 geometry: arc,
             };
-            const startPoint: Point2D = getShapeStartPoint(arcShape);
-            const endPoint: Point2D = getShapeEndPoint(arcShape);
+            const startPoint: Point2D = getShapeStartPoint(new Shape(arcShape));
+            const endPoint: Point2D = getShapeEndPoint(new Shape(arcShape));
             this.addCircle(
                 { center: startPoint, radius: CIRCLE_MARKER_RADIUS },
                 'green',
@@ -505,8 +506,10 @@ export class SVGBuilder {
                 type: GeometryType.ELLIPSE,
                 geometry: ellipse,
             };
-            const startPoint: Point2D = getShapeStartPoint(ellipseShape);
-            const endPoint: Point2D = getShapeEndPoint(ellipseShape);
+            const startPoint: Point2D = getShapeStartPoint(
+                new Shape(ellipseShape)
+            );
+            const endPoint: Point2D = getShapeEndPoint(new Shape(ellipseShape));
             this.addCircle(
                 { center: startPoint, radius: CIRCLE_MARKER_RADIUS },
                 'green',

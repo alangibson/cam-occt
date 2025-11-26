@@ -16,6 +16,7 @@ import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     test('Example 1: Circle with High-Precision Offsets', () => {
@@ -49,10 +50,11 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             geometry: { center: { x: 0, y: 0 }, radius: 50 },
         };
 
-        const chain: ChainData = {
+        const chainData: ChainData = {
             id: 'circle-offset-test',
             shapes: [circleShape],
         };
+        const chain = new Chain(chainData);
 
         console.log('\n=== EXAMPLE 1: Circle with High-Precision Offsets ===');
         console.log('Original circle: center=(0,0), radius=50');
@@ -153,7 +155,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
         };
 
-        const chain: ChainData = {
+        const chainData: ChainData = {
             id: 'rounded-rectangle',
             shapes: [
                 bottomLineShape,
@@ -162,6 +164,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
                 leftArcShape,
             ],
         };
+        const chain = new Chain(chainData);
 
         console.log('\n=== EXAMPLE 2: Complex Chain Classification ===');
         console.log('Rounded rectangle: 100×20 with radius-10 corners');
@@ -230,10 +233,11 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             geometry: { center: { x: 0, y: 0 }, radius: 10 },
         };
 
-        const chain: ChainData = {
+        const chainData: ChainData = {
             id: 'precision-circle',
             shapes: [circleShape],
         };
+        const chain = new Chain(chainData);
 
         console.log('\n=== EXAMPLE 3: High Precision Offset Testing ===');
         console.log('Circle: center=(0,0), radius=10.0');
@@ -314,10 +318,11 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
         ];
 
-        const chain: ChainData = {
+        const chainData: ChainData = {
             id: 'consistency-test',
             shapes,
         };
+        const chain = new Chain(chainData);
 
         const testPoint = { x: 25, y: 25 };
 
@@ -360,10 +365,11 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
         };
 
-        const circleChain: ChainData = {
+        const circleChainData: ChainData = {
             id: 'circle-shape',
             shapes: [circle],
         };
+        const circleChain = new Chain(circleChainData);
 
         console.log('\n=== EXAMPLE 5: Simple Circle Test ===');
         console.log('Testing circle shape:\n');

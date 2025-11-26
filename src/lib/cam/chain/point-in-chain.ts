@@ -5,7 +5,6 @@
  * Provides perfect accuracy for all shape types including arcs, circles, and splines.
  */
 
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -13,7 +12,8 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
+import { Shape } from '$lib/cam/shape/classes';
 import type { RayTracingConfig } from '$lib/algorithms/raytracing/types';
 import { DEFAULT_RAYTRACING_CONFIG } from '$lib/algorithms/raytracing/types';
 import { isChainClosed } from '$lib/cam/chain/functions';
@@ -44,7 +44,7 @@ import {
  */
 export function isPointInsideChainExact(
     point: Point2D,
-    chain: ChainData,
+    chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -84,7 +84,7 @@ export function isPointInsideChainExact(
  */
 function countRayShapeCrossings(
     ray: { origin: Point2D; direction: Point2D },
-    shape: ShapeData,
+    shape: Shape,
     config: RayTracingConfig
 ): number {
     // Check if this is a horizontal ray for optimized handling
@@ -164,7 +164,11 @@ function countRayPolylineCrossings(
     if (polyline.shapes && polyline.shapes.length > 0) {
         // Polyline with constituent shapes
         for (const segment of polyline.shapes) {
-            totalCrossings += countRayShapeCrossings(ray, segment, config);
+            totalCrossings += countRayShapeCrossings(
+                ray,
+                new Shape(segment),
+                config
+            );
         }
     } else {
         // Simple polyline - treat as connected line segments
@@ -188,7 +192,7 @@ function countRayPolylineCrossings(
  */
 export function arePointsInsideChainExact(
     points: Point2D[],
-    chain: ChainData,
+    chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean[] {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -209,7 +213,7 @@ export function arePointsInsideChainExact(
  */
 export function anyPointInsideChainExact(
     points: Point2D[],
-    chain: ChainData,
+    chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -235,7 +239,7 @@ export function anyPointInsideChainExact(
  */
 export function countPointsInsideChainExact(
     points: Point2D[],
-    chain: ChainData,
+    chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): number {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -262,7 +266,7 @@ export function countPointsInsideChainExact(
  */
 export function isPointInsidePart(
     point: Point2D,
-    part: { shell: ChainData; voids: { chain: ChainData }[] },
+    part: { shell: Chain; voids: { chain: Chain }[] },
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
     // For open chains, there's no meaningful "inside" concept

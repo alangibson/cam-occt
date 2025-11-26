@@ -8,6 +8,7 @@ import {
     isChainContainedInChainClipper2,
 } from '$lib/cam/chain/functions';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Diagnostic - Clipper2 Containment', () => {
     it('test Clipper2 containment for small circle chains in Tractor Light Mount', async () => {
@@ -18,7 +19,10 @@ describe('Diagnostic - Clipper2 Containment', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
         const drawing = await parseDXF(dxfContent);
 
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>
@@ -70,7 +74,10 @@ describe('Diagnostic - Clipper2 Containment', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
         const drawing = await parseDXF(dxfContent);
 
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>

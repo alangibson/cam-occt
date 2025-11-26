@@ -1,3 +1,4 @@
+import { Shape } from '$lib/cam/shape/classes';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
@@ -70,7 +71,10 @@ describe('visual-tests', () => {
             createLine(0, 50, 0, 0), // left
         ];
 
-        const detectedChains = detectShapeChains(shapes, { tolerance: 0.1 });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const chain = normalizeChain(detectedChains[0], {
             traversalTolerance: 0.1,
             maxTraversalAttempts: 5,
@@ -107,7 +111,10 @@ describe('visual-tests', () => {
             createArc(20, 20, 20, Math.PI, (3 * Math.PI) / 2), // bottom-left corner
         ];
 
-        const detectedChains = detectShapeChains(shapes, { tolerance: 0.1 });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const chain = normalizeChain(detectedChains[0], {
             traversalTolerance: 0.1,
             maxTraversalAttempts: 5,
@@ -138,7 +145,10 @@ describe('visual-tests', () => {
             createLine(100, 0, 100, 80), // vertical
         ];
 
-        const detectedChains = detectShapeChains(shapes, { tolerance: 0.1 });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const chain = normalizeChain(detectedChains[0], {
             traversalTolerance: 0.1,
             maxTraversalAttempts: 5,
@@ -172,7 +182,10 @@ describe('visual-tests', () => {
             createLine(140, 50, 170, 50), // end line
         ];
 
-        const detectedChains = detectShapeChains(shapes, { tolerance: 0.1 });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const chain = normalizeChain(detectedChains[0], {
             traversalTolerance: 0.1,
             maxTraversalAttempts: 5,
@@ -244,7 +257,10 @@ describe('visual-tests', () => {
             },
         ];
 
-        const detectedChains = detectShapeChains(shapes, { tolerance: 0.1 });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const chain = normalizeChain(detectedChains[0], {
             traversalTolerance: 0.1,
             maxTraversalAttempts: 5,
@@ -309,7 +325,10 @@ describe('visual-tests', () => {
             createLine(80, 80, 100, 50), // closing line
         ];
 
-        const detectedChains = detectShapeChains(shapes, { tolerance: 0.1 });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const chain = normalizeChain(detectedChains[0], {
             traversalTolerance: 0.1,
             maxTraversalAttempts: 5,
@@ -387,7 +406,10 @@ describe('visual-tests', () => {
             createLine(80, 80, 100, 50), // closing line
         ];
 
-        const detectedChains = detectShapeChains(shapes, { tolerance: 0.1 });
+        const detectedChains = detectShapeChains(
+            shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const chain = normalizeChain(detectedChains[0], {
             traversalTolerance: 0.1,
             maxTraversalAttempts: 5,

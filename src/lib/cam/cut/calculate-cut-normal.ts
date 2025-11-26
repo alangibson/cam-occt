@@ -20,8 +20,8 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ChainData } from '$lib/cam/chain/interfaces';
-import type { PartData } from '$lib/cam/part/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { CutDirection, NormalSide } from './enums';
 import { getChainStartPoint, getChainTangent } from '$lib/cam/chain/functions';
 import { isChainShellInPart } from '$lib/cam/lead/part-lookup-utils';
@@ -51,9 +51,9 @@ interface CutNormalResult {
  * @returns Normal vector and connection point
  */
 export function calculateCutNormal(
-    chain: ChainData,
+    chain: Chain,
     cutDirection: CutDirection,
-    part?: PartData,
+    part?: Part,
     kerfCompensation?: OffsetDirection
 ): CutNormalResult {
     // Get the cut start point

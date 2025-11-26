@@ -8,6 +8,7 @@ import { isChainClosed } from '$lib/cam/chain/functions';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { buildContainmentHierarchy } from '$lib/cam/part/geometric-containment';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
     const layerMap = new Map<string, ShapeData[]>();
@@ -43,7 +44,10 @@ describe('Diagnostic - Containment Hierarchy', () => {
         // Filter to largest layer to eliminate circle-only layers
         const filteredShapes = filterToLargestLayer(drawing.shapes);
 
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>
@@ -109,7 +113,10 @@ describe('Diagnostic - Containment Hierarchy', () => {
         // Filter to largest layer to eliminate circle-only layers
         const filteredShapes = filterToLargestLayer(drawing.shapes);
 
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>

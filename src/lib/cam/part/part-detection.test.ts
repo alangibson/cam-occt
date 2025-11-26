@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { generateId } from '$lib/domain/id';
 import type { ChainData as ShapeChain } from '$lib/cam/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Part Detection Algorithm', () => {
     // Helper function to create test shapes
@@ -12,25 +14,25 @@ describe('Part Detection Algorithm', () => {
         endX: number,
         endY: number
     ) {
-        return {
+        return new Shape({
             id: generateId(),
-            type: GeometryType.LINE as const,
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: startX, y: startY },
                 end: { x: endX, y: endY },
             },
-        };
+        });
     }
 
     function createCircle(centerX: number, centerY: number, radius: number) {
-        return {
+        return new Shape({
             id: generateId(),
-            type: GeometryType.CIRCLE as const,
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: centerX, y: centerY },
                 radius,
             },
-        };
+        });
     }
 
     // Helper function to create a rectangular chain (closed)
@@ -89,7 +91,9 @@ describe('Part Detection Algorithm', () => {
                 createOpenChain(20, 0, 30, 0),
             ];
 
-            const result = await detectParts(openChains);
+            const result = await detectParts(
+                openChains.map((c) => new Chain(c))
+            );
             expect(result.parts).toHaveLength(0);
             expect(result.warnings).toHaveLength(1);
             expect(result.warnings[0].type).toBe('overlapping_boundary');
@@ -99,7 +103,7 @@ describe('Part Detection Algorithm', () => {
         it('should detect a single part from a single closed chain', async () => {
             const chains = [createRectangleChain(0, 0, 10, 10)];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].shell.id).toBe(chains[0].id);
             expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
@@ -113,7 +117,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(20, 20, 10, 10), // Part 2 (separate)
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(2);
             expect(result.parts[0].voids).toHaveLength(0);
             expect(result.parts[1].voids).toHaveLength(0);
@@ -128,7 +132,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(5, 5, 10, 10), // Inner hole
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].shell.id).toBe(chains[0].id);
             expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
@@ -147,7 +151,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(20, 2, 8, 8), // Hole 2
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].shell.id).toBe(chains[0].id);
             expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
@@ -161,7 +165,7 @@ describe('Part Detection Algorithm', () => {
                 createCircleChain(10, 10, 3), // Circular hole
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].shell.id).toBe(chains[0].id);
             expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
@@ -182,7 +186,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(10, 10, 10, 10), // Part within the hole
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(2);
 
             // Find parts by their geometric properties instead of object identity
@@ -225,7 +229,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(15, 15, 10, 10), // Level 4: Hole in part
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(2);
 
             // Find parts by their geometric properties
@@ -281,7 +285,7 @@ describe('Part Detection Algorithm', () => {
                 createOpenChain(5, 5, 25, 25), // Line crossing boundary
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.warnings).toHaveLength(1);
             expect(result.warnings[0].type).toBe('overlapping_boundary');
@@ -297,7 +301,7 @@ describe('Part Detection Algorithm', () => {
                 createOpenChain(20, 20, 30, 30), // Line far away
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
         });
@@ -309,7 +313,7 @@ describe('Part Detection Algorithm', () => {
                 createOpenChain(10, 10, 30, 30), // Crossing line 2
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.warnings).toHaveLength(2);
             expect(
@@ -325,7 +329,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(0, 0, 10, 10), // Same size and position
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             // Should detect containment based on the algorithm's logic
             expect(result.parts.length).toBeGreaterThanOrEqual(1);
             expect(result.warnings).toHaveLength(0);
@@ -337,7 +341,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(-1, -1, 2, 2),
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].voids).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
@@ -346,7 +350,7 @@ describe('Part Detection Algorithm', () => {
         it('should handle chains with single shapes', async () => {
             const chains = [createCircleChain(0, 0, 10)];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].shell.id).toBe(chains[0].id);
             expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
@@ -360,7 +364,10 @@ describe('Part Detection Algorithm', () => {
             const circleChain = createCircleChain(10, 10, 5);
             const rectChain = createRectangleChain(0, 0, 30, 30);
 
-            const result = await detectParts([rectChain, circleChain]);
+            const result = await detectParts([
+                new Chain(rectChain),
+                new Chain(circleChain),
+            ]);
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].voids).toHaveLength(1); // Circle should be inside rectangle
             expect(result.warnings).toHaveLength(0);
@@ -372,7 +379,7 @@ describe('Part Detection Algorithm', () => {
                 createRectangleChain(-5, -5, 10, 10), // Small rectangle at origin
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].voids).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
@@ -384,7 +391,10 @@ describe('Part Detection Algorithm', () => {
             const closedChain = createRectangleChain(0, 0, 10, 10);
             const openChain = createOpenChain(0, 0, 10, 10);
 
-            const result = await detectParts([closedChain, openChain]);
+            const result = await detectParts([
+                new Chain(closedChain),
+                new Chain(openChain),
+            ]);
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].shell.id).toBe(closedChain.id);
             expect(result.parts[0].shell.shapes).toEqual(closedChain.shapes);
@@ -403,7 +413,7 @@ describe('Part Detection Algorithm', () => {
                 ],
             };
 
-            const result = await detectParts([nearlyClosedChain]);
+            const result = await detectParts([new Chain(nearlyClosedChain)]);
             expect(result.parts).toHaveLength(1); // Should be treated as closed
             expect(result.warnings).toHaveLength(0);
         });

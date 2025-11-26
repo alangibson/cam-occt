@@ -3,7 +3,6 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { SVGBuilder } from '$lib/test/svg-builder';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
@@ -19,6 +18,8 @@ import { detectParts } from '$lib/cam/part/part-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     let outputDir: string;
@@ -166,7 +167,11 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
         cutDirection: CutDirection,
         part?: PartData
     ): Point2D {
-        const result = calculateCutNormal(chain, cutDirection, part);
+        const result = calculateCutNormal(
+            chain,
+            cutDirection,
+            part ? new Part(part) : undefined
+        );
         return result.normal;
     }
 
@@ -192,7 +197,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             // Detect parts from the chains
             const partDetectionResult = await detectParts(
-                [rectangleChain, circleChain],
+                [new Chain(rectangleChain), new Chain(circleChain)],
                 0.001 // tolerance
             );
 

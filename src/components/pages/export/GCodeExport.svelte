@@ -7,9 +7,9 @@
     import { onMount, createEventDispatcher } from 'svelte';
     import { cutsToToolPaths } from '$lib/cam/gcode/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode/gcode-generator';
-    import type { ChainData } from '$lib/cam/chain/interfaces';
-    import type { PartData } from '$lib/cam/part/interfaces';
-    import type { ShapeData } from '$lib/cam/shape/interfaces';
+    import { Chain } from '$lib/cam/chain/classes';
+    import { Part } from '$lib/cam/part/classes.svelte';
+    import { Shape } from '$lib/cam/shape/classes';
     import { Unit } from '$lib/config/units/units';
 
     // Props from parent component
@@ -56,18 +56,21 @@
 
         try {
             // Create maps for chain and part data (simulation's approach)
-            const chainShapes = new SvelteMap<string, ShapeData[]>();
-            const chainMap = new SvelteMap<string, ChainData>();
+            const chainShapes = new SvelteMap<string, Shape[]>();
+            const chainMap = new SvelteMap<string, Chain>();
             chains.forEach((chain) => {
-                chainShapes.set(chain.id, chain.shapes);
-                chainMap.set(chain.id, chain);
+                chainShapes.set(
+                    chain.id,
+                    chain.shapes.map((s) => new Shape(s))
+                );
+                chainMap.set(chain.id, new Chain(chain));
             });
 
-            const partMap = new SvelteMap<string, PartData>();
+            const partMap = new SvelteMap<string, Part>();
             parts.forEach((part) => {
                 // Map parts by their shell chain ID for lead fitting
                 if (part.shell && part.shell.id) {
-                    partMap.set(part.shell.id, part);
+                    partMap.set(part.shell.id, new Part(part));
                 }
             });
 

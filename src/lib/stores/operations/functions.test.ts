@@ -1,3 +1,5 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
 import { generateCutsForChainsWithOperation } from '$lib/cam/pipeline/operations/chain-operations';
@@ -10,9 +12,8 @@ import {
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
 import { getChainCutDirection, reverseChain } from '$lib/cam/chain/functions';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import { Shape } from '$lib/cam/shape/classes';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
@@ -97,7 +98,7 @@ vi.mock('$lib/cam/lead/functions', () => ({
 }));
 
 describe('Operations Functions', () => {
-    const mockChain: ChainData = {
+    const mockChainData: ChainData = {
         id: 'chain-1',
         clockwise: true,
         shapes: [
@@ -108,6 +109,8 @@ describe('Operations Functions', () => {
             },
         ],
     };
+
+    const mockChain = new Chain(mockChainData);
 
     const mockTool: Tool = {
         id: 'tool-1',
@@ -217,26 +220,32 @@ describe('Operations Functions', () => {
         });
 
         it('should return CLOCKWISE when chain.clockwise is true', () => {
-            const result = getChainCutDirection({
-                ...mockChain,
-                clockwise: true,
-            });
+            const result = getChainCutDirection(
+                new Chain({
+                    ...mockChainData,
+                    clockwise: true,
+                })
+            );
             expect(result).toBe(CutDirection.CLOCKWISE);
         });
 
         it('should return COUNTERCLOCKWISE when chain.clockwise is false', () => {
-            const result = getChainCutDirection({
-                ...mockChain,
-                clockwise: false,
-            });
+            const result = getChainCutDirection(
+                new Chain({
+                    ...mockChainData,
+                    clockwise: false,
+                })
+            );
             expect(result).toBe(CutDirection.COUNTERCLOCKWISE);
         });
 
         it('should return NONE when chain.clockwise is null', () => {
-            const result = getChainCutDirection({
-                ...mockChain,
-                clockwise: null,
-            });
+            const result = getChainCutDirection(
+                new Chain({
+                    ...mockChainData,
+                    clockwise: null,
+                })
+            );
             expect(result).toBe(CutDirection.NONE);
         });
     });
@@ -471,7 +480,10 @@ describe('Operations Functions', () => {
 
     describe('createCutChain', () => {
         it('should handle user cut direction NONE', () => {
-            const result = createCutChain(mockChain, CutDirection.NONE);
+            const result = createCutChain(
+                new Chain(mockChain),
+                CutDirection.NONE
+            );
 
             expect(result.cutChain.id).toBe('chain-1-cut');
             expect(result.cutChain.shapes).toHaveLength(1);
@@ -479,21 +491,26 @@ describe('Operations Functions', () => {
         });
 
         it('should handle open chain (natural direction NONE) with CLOCKWISE user direction', () => {
-            const openChain = { ...mockChain, clockwise: null };
-            const result = createCutChain(openChain, CutDirection.CLOCKWISE);
+            const openChain = { ...mockChainData, clockwise: null };
+            const result = createCutChain(
+                new Chain(openChain),
+                CutDirection.CLOCKWISE
+            );
 
             expect(result.executionClockwise).toBe(true);
         });
 
         it('should handle open chain (natural direction NONE) with COUNTERCLOCKWISE user direction', () => {
-            const openChain = { ...mockChain, clockwise: null };
-            vi.mocked(reverseChain).mockReturnValue({
-                id: 'chain-1',
-                shapes: [mockChain.shapes[0]],
-            });
+            const openChain = { ...mockChainData, clockwise: null };
+            vi.mocked(reverseChain).mockReturnValue(
+                new Chain({
+                    id: 'chain-1',
+                    shapes: [mockChainData.shapes[0]],
+                })
+            );
 
             const result = createCutChain(
-                openChain,
+                new Chain(openChain),
                 CutDirection.COUNTERCLOCKWISE
             );
 
@@ -502,14 +519,16 @@ describe('Operations Functions', () => {
         });
 
         it('should handle closed chain with user direction opposite to natural', () => {
-            const closedChain = { ...mockChain, clockwise: true };
-            vi.mocked(reverseChain).mockReturnValue({
-                id: 'chain-1',
-                shapes: [mockChain.shapes[0]],
-            });
+            const closedChain = { ...mockChainData, clockwise: true };
+            vi.mocked(reverseChain).mockReturnValue(
+                new Chain({
+                    id: 'chain-1',
+                    shapes: [new Shape(mockChain.shapes[0])],
+                })
+            );
 
             const result = createCutChain(
-                closedChain,
+                new Chain(closedChain),
                 CutDirection.COUNTERCLOCKWISE
             );
 
@@ -518,8 +537,11 @@ describe('Operations Functions', () => {
         });
 
         it('should handle closed chain with user direction same as natural', () => {
-            const closedChain = { ...mockChain, clockwise: true };
-            const result = createCutChain(closedChain, CutDirection.CLOCKWISE);
+            const closedChain = { ...mockChainData, clockwise: true };
+            const result = createCutChain(
+                new Chain(closedChain),
+                CutDirection.CLOCKWISE
+            );
 
             expect(reverseChain).not.toHaveBeenCalled();
             expect(result.executionClockwise).toBe(true);
@@ -527,7 +549,7 @@ describe('Operations Functions', () => {
 
         it('should use offset shapes when provided', () => {
             const offsetShapes = [
-                new Shape({ ...mockChain.shapes[0], id: 'offset-shape-1' }),
+                new Shape({ ...mockChainData.shapes[0], id: 'offset-shape-1' }),
             ];
             const result = createCutChain(
                 mockChain,
@@ -1139,7 +1161,7 @@ describe('Operations Functions', () => {
             };
 
             const result = await calculateCutLeads(
-                cutNoLeads,
+                new Cut(cutNoLeads),
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -1154,11 +1176,13 @@ describe('Operations Functions', () => {
                 offset: {
                     offsetShapes: [
                         new Shape({
-                            ...mockChain.shapes[0],
+                            ...mockChainData.shapes[0],
                             id: 'offset-shape',
                         }),
                     ],
-                    originalShapes: mockChain.shapes.map((s) => new Shape(s)),
+                    originalShapes: mockChainData.shapes.map(
+                        (s) => new Shape(s)
+                    ),
                     direction: OffsetDirection.INSET,
                     kerfWidth: 2.0,
                     generatedAt: new Date().toISOString(),
@@ -1172,7 +1196,7 @@ describe('Operations Functions', () => {
             };
 
             const result = await calculateCutLeads(
-                cutWithOffset,
+                new Cut(cutWithOffset),
                 operationParts,
                 mockChain,
                 [mockPart]
@@ -1211,7 +1235,7 @@ describe('Operations Functions', () => {
                 ...mockCut,
                 calculatedOffset: {
                     offsetShapes: [],
-                    originalShapes: mockChain.shapes,
+                    originalShapes: mockChainData.shapes,
                     direction: OffsetDirection.INSET,
                     kerfWidth: 2.0,
                     generatedAt: new Date().toISOString(),
@@ -1220,7 +1244,7 @@ describe('Operations Functions', () => {
             };
 
             const result = await calculateCutLeads(
-                cutWithEmptyOffset,
+                new Cut(cutWithEmptyOffset),
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -1265,7 +1289,7 @@ describe('Operations Functions', () => {
             });
 
             const result = await calculateCutLeads(
-                mockCut,
+                new Cut(mockCut),
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -1281,7 +1305,7 @@ describe('Operations Functions', () => {
             });
 
             const result = await calculateCutLeads(
-                mockCut,
+                new Cut(mockCut),
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -1298,7 +1322,7 @@ describe('Operations Functions', () => {
             });
 
             const result = await calculateCutLeads(
-                mockCut,
+                new Cut(mockCut),
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -1315,7 +1339,10 @@ describe('Operations Functions', () => {
                 mockCut,
                 { ...mockCut, id: 'cut-2', chainId: 'chain-2' },
             ];
-            const _chains = [mockChain, { ...mockChain, id: 'chain-2' }];
+            const _chains = [
+                mockChain,
+                new Chain({ ...mockChainData, id: 'chain-2' }),
+            ];
 
             vi.mocked(createLeadInConfig).mockReturnValue({
                 type: LeadType.ARC,
@@ -1359,7 +1386,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateOperationLeads(
                 mockOperation,
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 _chains,
                 [mockPart]
             );
@@ -1376,7 +1403,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateOperationLeads(
                 mockOperation,
-                [mockCut],
+                [new Cut(mockCut)],
                 [mockChain],
                 [mockPart]
             );

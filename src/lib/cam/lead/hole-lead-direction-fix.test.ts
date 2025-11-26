@@ -7,11 +7,11 @@
 import { describe, expect, it } from 'vitest';
 import { calculateLeads } from './lead-calculation';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { detectParts } from '$lib/cam/part/part-detection';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Hole Lead Direction Fix', () => {
     it('should calculate hole leads pointing into hole void for offset chains', async () => {
@@ -130,7 +130,9 @@ describe('Hole Lead Direction Fix', () => {
         };
 
         // Create part detection for offset geometry
-        const offsetPartResult = await detectParts([offsetHoleChain]);
+        const offsetPartResult = await detectParts([
+            new Chain(offsetHoleChain),
+        ]);
         expect(offsetPartResult.parts.length).toBe(1);
         const offsetPart = offsetPartResult.parts[0];
 
@@ -254,8 +256,8 @@ describe('Hole Lead Direction Fix', () => {
         };
 
         // Create part contexts for both
-        const originalPartResult = await detectParts([originalHole]);
-        const offsetPartResult = await detectParts([offsetHole]);
+        const originalPartResult = await detectParts([new Chain(originalHole)]);
+        const offsetPartResult = await detectParts([new Chain(offsetHole)]);
 
         const leadConfig = {
             type: LeadType.ARC as const,

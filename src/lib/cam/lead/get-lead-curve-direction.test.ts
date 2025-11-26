@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -13,6 +13,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import { isArc } from '$lib/geometry/arc/functions';
 import { PartType } from '$lib/cam/part/enums';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
+import { Chain } from '$lib/cam/chain/classes';
 
 // Since getLeadCurveDirection is not exported, we test it indirectly
 // through calculateLeads and verify the resulting curve direction
@@ -78,7 +79,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
     // Helper to create a rectangular part with center hole
     function createRectangleWithHole(): {
-        part: PartData;
+        part: Part;
         shell: Chain;
         hole: Chain;
     } {
@@ -144,7 +145,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
             layerName: '0',
         };
 
-        return { part, shell, hole };
+        return { part: new Part(part), shell, hole };
     }
 
     const baseLeadConfig: LeadConfig = {
@@ -158,7 +159,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: PartData
+        part?: Part
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;

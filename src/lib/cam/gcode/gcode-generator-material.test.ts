@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/cam/gcode/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { CutPath } from '$lib/cam/gcode/interfaces';
 import { Unit } from '$lib/config/units/units';
 
@@ -39,7 +40,7 @@ describe('GCode Generator - Temporary Materials', () => {
             },
         };
 
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -103,7 +104,7 @@ describe('GCode Generator - Temporary Materials', () => {
             },
         ];
 
-        const gcode = generateGCode(mockCuts, mockDrawing, {
+        const gcode = generateGCode(mockCuts, new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -139,7 +140,7 @@ describe('GCode Generator - Temporary Materials', () => {
             // No parameters - this is a rapid move
         };
 
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -171,7 +172,7 @@ describe('GCode Generator - Temporary Materials', () => {
             },
         };
 
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,

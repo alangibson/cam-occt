@@ -9,6 +9,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { ChainData as ShapeChain } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
     const layerMap = new Map<string, ShapeData[]>();
@@ -35,8 +36,8 @@ function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
 function calculateChainGapDistanceTest(chain: ShapeChain): number {
     if (chain.shapes.length === 0) return 0;
 
-    const firstShape = chain.shapes[0];
-    const lastShape = chain.shapes[chain.shapes.length - 1];
+    const firstShape = new Shape(chain.shapes[0]);
+    const lastShape = new Shape(chain.shapes[chain.shapes.length - 1]);
 
     const firstStart = getShapeStartPoint(firstShape);
     const lastEnd = getShapeEndPoint(lastShape);
@@ -70,7 +71,10 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         });
 
         // Use the standard default tolerance (0.1) as would be used from Program page
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
 
         // CRITICAL: Normalize chains before analysis (matching part detection behavior)
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
@@ -123,7 +127,10 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         const filteredShapes = filterToLargestLayer(drawing.shapes);
 
         // Use the standard default tolerance (0.1) as would be used from Program page
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
 
         // Detect parts using the same tolerance as chain detection
         const partResult = await detectParts(chains, 0.1);

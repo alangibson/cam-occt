@@ -1,7 +1,7 @@
+import { Shape } from '$lib/cam/shape/classes';
 import { GeometryType } from '$lib/geometry/enums';
 import { describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { generateId } from '$lib/domain/id';
 import { detectShapeChains } from './chain-detection';
 
@@ -12,30 +12,30 @@ describe('Chain Detection Algorithm', () => {
         startY: number,
         endX: number,
         endY: number
-    ): ShapeData {
-        return {
+    ): Shape {
+        return new Shape({
             id: generateId(),
             type: GeometryType.LINE,
             geometry: {
                 start: { x: startX, y: startY },
                 end: { x: endX, y: endY },
             },
-        };
+        });
     }
 
     function createCircle(
         centerX: number,
         centerY: number,
         radius: number
-    ): ShapeData {
-        return {
+    ): Shape {
+        return new Shape({
             id: generateId(),
             type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: centerX, y: centerY },
                 radius,
             },
-        };
+        });
     }
 
     function createArc(
@@ -44,8 +44,8 @@ describe('Chain Detection Algorithm', () => {
         radius: number,
         startAngle: number,
         endAngle: number
-    ): ShapeData {
-        return {
+    ): Shape {
+        return new Shape({
             id: generateId(),
             type: GeometryType.ARC,
             geometry: {
@@ -55,23 +55,23 @@ describe('Chain Detection Algorithm', () => {
                 endAngle,
                 clockwise: false,
             },
-        };
+        });
     }
 
     function createPolyline(
         points: Array<{ x: number; y: number }>,
         closed: boolean = false
-    ): ShapeData {
+    ): Shape {
         const polylineShape = createPolylineFromVertices(
             points.map((p) => ({ ...p, bulge: 0 })),
             closed
         );
-        return polylineShape;
+        return new Shape(polylineShape);
     }
 
     describe('Basic Chain Detection', () => {
         it('should detect chains for isolated shapes', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // Isolated line 1
                 createLine(20, 0, 30, 0), // Isolated line 2
                 createLine(40, 0, 50, 0), // Isolated line 3
@@ -85,7 +85,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should detect a simple chain of connected lines', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // Line 1: (0,0) -> (10,0)
                 createLine(10, 0, 20, 0), // Line 2: (10,0) -> (20,0) - connects to Line 1
                 createLine(20, 0, 30, 0), // Line 3: (20,0) -> (30,0) - connects to Line 2
@@ -98,7 +98,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should detect multiple separate chains', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 // Chain 1: Connected lines
                 createLine(0, 0, 10, 0),
                 createLine(10, 0, 20, 0),
@@ -129,7 +129,7 @@ describe('Chain Detection Algorithm', () => {
 
     describe('Tolerance Testing', () => {
         it('should connect shapes within tolerance', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // End at (10, 0)
                 createLine(10.04, 0, 20, 0), // Start at (10.04, 0) - within 0.05 tolerance
             ];
@@ -140,7 +140,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should not connect shapes outside tolerance', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // End at (10, 0)
                 createLine(10.06, 0, 20, 0), // Start at (10.06, 0) - outside 0.05 tolerance
             ];
@@ -152,7 +152,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should work with different tolerance values', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0),
                 createLine(10.5, 0, 20, 0), // Gap of 0.5 units
             ];
@@ -174,7 +174,7 @@ describe('Chain Detection Algorithm', () => {
 
     describe('Mixed Shape Types', () => {
         it('should chain lines and circles', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // End at (10, 0)
                 createCircle(10, 0, 5), // Center at (10, 0) - edge points include (10, 0)
                 createLine(15, 0, 25, 0), // Start at (15, 0) - connects to circle edge
@@ -186,7 +186,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should chain lines and arcs', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // End at (10, 0)
                 createArc(15, 0, 5, Math.PI, 0), // Arc center (15,0), radius 5 - start at (10,0), end at (20,0)
                 createLine(20, 0, 30, 0), // Start at (20, 0) - connects to arc endpoint
@@ -198,7 +198,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should chain polylines with other shapes', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createPolyline([
                     { x: 0, y: 0 },
                     { x: 10, y: 0 },
@@ -216,7 +216,7 @@ describe('Chain Detection Algorithm', () => {
 
     describe('Complex Chain Scenarios', () => {
         it('should handle branching chains (Y-shaped connections)', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // Main line
                 createLine(10, 0, 20, 10), // Branch 1 from endpoint
                 createLine(10, 0, 20, -10), // Branch 2 from same endpoint
@@ -228,7 +228,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should handle closed loops', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0), // Bottom edge
                 createLine(10, 0, 10, 10), // Right edge
                 createLine(10, 10, 0, 10), // Top edge
@@ -241,7 +241,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should handle large chains with many shapes', () => {
-            const shapes: ShapeData[] = [];
+            const shapes: Shape[] = [];
 
             // Create a zigzag pattern of connected lines
             for (let i: number = 0; i < 20; i++) {
@@ -273,7 +273,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should handle zero tolerance', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0),
                 createLine(10, 0, 20, 0), // Exact connection
             ];
@@ -284,7 +284,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should handle very small tolerance', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0),
                 createLine(10.001, 0, 20, 0), // Very small gap
             ];
@@ -297,7 +297,7 @@ describe('Chain Detection Algorithm', () => {
         });
 
         it('should handle shapes with identical points', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0),
                 createLine(0, 0, 0, 10), // Shares start point with first line
                 createLine(10, 0, 10, 10), // Shares end point with first line
@@ -322,11 +322,7 @@ describe('Chain Detection Algorithm', () => {
                 true
             );
 
-            const polyline1: ShapeData = {
-                id: generateId(),
-                type: GeometryType.POLYLINE,
-                geometry: polyline1Shape,
-            } as unknown as ShapeData;
+            const polyline1 = new Shape(polyline1Shape);
 
             // Create second closed polyline with bulges - a rounded triangle, separate from the first
             const polyline2Shape = createPolylineFromVertices(
@@ -338,13 +334,9 @@ describe('Chain Detection Algorithm', () => {
                 true
             );
 
-            const polyline2: ShapeData = {
-                id: generateId(),
-                type: GeometryType.POLYLINE,
-                geometry: polyline2Shape,
-            } as unknown as ShapeData;
+            const polyline2 = new Shape(polyline2Shape);
 
-            const shapes: ShapeData[] = [polyline1, polyline2];
+            const shapes: Shape[] = [polyline1, polyline2];
             const chains = detectShapeChains(shapes, { tolerance: 0.05 });
 
             // Should detect 2 separate chains since the polylines don't touch
@@ -369,11 +361,7 @@ describe('Chain Detection Algorithm', () => {
                 true
             );
 
-            const polyline1: ShapeData = {
-                id: generateId(),
-                type: GeometryType.POLYLINE,
-                geometry: polyline1Shape,
-            } as unknown as ShapeData;
+            const polyline1 = new Shape(polyline1Shape);
 
             // Create second closed polyline with bulges - adjacent but not overlapping
             // Note: With bulges, the actual arc endpoints may differ from vertex positions
@@ -387,13 +375,9 @@ describe('Chain Detection Algorithm', () => {
                 true
             );
 
-            const polyline2: ShapeData = {
-                id: generateId(),
-                type: GeometryType.POLYLINE,
-                geometry: polyline2Shape,
-            } as unknown as ShapeData;
+            const polyline2 = new Shape(polyline2Shape);
 
-            const shapes: ShapeData[] = [polyline1, polyline2];
+            const shapes: Shape[] = [polyline1, polyline2];
             const chains = detectShapeChains(shapes, { tolerance: 0.05 });
 
             // Should detect 2 separate chains since polylines with bulges don't share points
@@ -409,7 +393,7 @@ describe('Chain Detection Algorithm', () => {
 
     describe('Default Parameters', () => {
         it('should use default tolerance of 0.05 when not specified', () => {
-            const shapes: ShapeData[] = [
+            const shapes: Shape[] = [
                 createLine(0, 0, 10, 0),
                 createLine(10.04, 0, 20, 0), // Within default tolerance
             ];

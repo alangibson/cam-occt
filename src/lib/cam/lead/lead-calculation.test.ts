@@ -3,14 +3,15 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { Chain } from '$lib/cam/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { convertLeadGeometryToPoints } from './functions';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('calculateLeads', () => {
     // Helper to create a simple line chain
@@ -56,7 +57,11 @@ describe('calculateLeads', () => {
         cutDirection: CutDirection,
         part?: PartData
     ): Point2D {
-        const result = calculateCutNormal(chain, cutDirection, part);
+        const result = calculateCutNormal(
+            chain,
+            cutDirection,
+            part ? new Part(part) : undefined
+        );
         return result.normal;
     }
 
@@ -239,7 +244,7 @@ describe('calculateLeads', () => {
             const cutNormalResult = calculateCutNormal(
                 holeChain,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                new Part(part)
             );
             const result = calculateLeads(
                 holeChain,
@@ -290,7 +295,7 @@ describe('calculateLeads', () => {
             const cutNormalResult = calculateCutNormal(
                 shellChain,
                 CutDirection.CLOCKWISE,
-                part
+                new Part(part)
             );
             const result = calculateLeads(
                 shellChain,

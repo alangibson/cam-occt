@@ -1,4 +1,4 @@
-import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
@@ -10,7 +10,7 @@ export interface DrawingSize {
 }
 
 export function calculateDrawingSize(
-    drawing: DrawingData | null
+    drawing: Drawing | null
 ): DrawingSize | null {
     if (!drawing || drawing.shapes.length === 0) {
         return null;

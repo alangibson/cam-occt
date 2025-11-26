@@ -2,6 +2,7 @@ import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import { Chain } from '$lib/cam/chain/classes';
+import { Shape } from '$lib/cam/shape/classes';
 import type { LayerData } from './interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { Part } from '$lib/cam/part/classes.svelte';
@@ -19,22 +20,26 @@ export class Layer implements LayerData {
         const layerName = data.name ?? '0';
 
         // Detect chains and normalize them to set clockwise property
-        const detectedChains = detectShapeChains(this.shapes, {
-            tolerance: 0.05,
-        });
+        const detectedChains = detectShapeChains(
+            this.shapes.map((s) => new Shape(s)),
+            {
+                tolerance: 0.05,
+            }
+        );
 
         this.#chains.push(
             ...detectedChains.map((chain) => {
                 // Prefix chain ID with layer name to ensure global uniqueness
+                const chainData = chain.toData();
                 const prefixedChain = {
-                    ...chain,
+                    ...chainData,
                     id: `${layerName}-${chain.id}`,
                 };
                 const normalizedChain = normalizeChain(
-                    prefixedChain,
+                    new Chain(prefixedChain),
                     DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
                 );
-                return new Chain(normalizedChain);
+                return normalizedChain;
             })
         );
 

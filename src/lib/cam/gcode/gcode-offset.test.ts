@@ -1,15 +1,17 @@
+import { Shape } from '$lib/cam/shape/classes';
 import { describe, expect, it } from 'vitest';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { CutterCompensation } from '$lib/cam/gcode/enums';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { GeometryType } from '$lib/geometry/enums';
 import { cutsToToolPaths } from '$lib/cam/gcode/cut-to-toolpath';
 import { generateGCode } from './gcode-generator';
-import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('G-code generation with offset cuts', () => {
@@ -89,7 +91,7 @@ describe('G-code generation with offset cuts', () => {
 
         const chainShapes = new Map([['chain-1', testShapes]]);
         const toolPaths = await cutsToToolPaths(
-            [testCut],
+            [new Cut(testCut)],
             chainShapes,
             [],
             CutterCompensation.SOFTWARE
@@ -104,7 +106,7 @@ describe('G-code generation with offset cuts', () => {
             { x: 0, y: 0 },
         ]);
 
-        const gcode = generateGCode(toolPaths, testDrawing, {
+        const gcode = generateGCode(toolPaths, new Drawing(testDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -150,7 +152,7 @@ describe('G-code generation with offset cuts', () => {
 
         const chainShapes = new Map([['chain-1', testShapes]]);
         const toolPaths = await cutsToToolPaths(
-            [testCut],
+            [new Cut(testCut)],
             chainShapes,
             [],
             CutterCompensation.SOFTWARE
@@ -166,7 +168,7 @@ describe('G-code generation with offset cuts', () => {
             { x: 1, y: 1 },
         ]);
 
-        const gcode = generateGCode(toolPaths, testDrawing, {
+        const gcode = generateGCode(toolPaths, new Drawing(testDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -241,7 +243,7 @@ describe('G-code generation with offset cuts', () => {
 
         const chainShapes = new Map([['chain-1', testShapes]]);
         const toolPaths = await cutsToToolPaths(
-            [testCut],
+            [new Cut(testCut)],
             chainShapes,
             [],
             CutterCompensation.SOFTWARE
@@ -269,7 +271,7 @@ describe('G-code generation with offset cuts', () => {
             expect(leadOutStart.y).toBeCloseTo(1, 1);
         }
 
-        const gcode = generateGCode(toolPaths, testDrawing, {
+        const gcode = generateGCode(toolPaths, new Drawing(testDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -319,13 +321,13 @@ describe('G-code generation with offset cuts', () => {
 
         const chainShapes = new Map([['chain-1', testShapes]]);
         const toolPaths = await cutsToToolPaths(
-            [testCut],
+            [new Cut(testCut)],
             chainShapes,
             [],
             CutterCompensation.SOFTWARE
         );
 
-        const gcode = generateGCode(toolPaths, testDrawing, {
+        const gcode = generateGCode(toolPaths, new Drawing(testDrawing), {
             units: Unit.MM,
             safeZ: 10.123456,
             rapidFeedRate: 5000,

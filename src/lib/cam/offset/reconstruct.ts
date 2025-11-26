@@ -5,7 +5,7 @@
  * Clipper2 returns point arrays which are converted to chains of Line shapes.
  */
 
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
@@ -25,15 +25,15 @@ import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
  * fill operations using the evenodd rule.
  *
  * @param pointArrays - Array of point arrays from Clipper2 (can be multiple polygons)
- * @returns Array of Line shapes representing all polygons concatenated together
+ * @returns Array of Shape instances representing all polygons concatenated together
  */
-export function reconstructChain(pointArrays: Point2D[][]): ShapeData[] {
+export function reconstructChain(pointArrays: Point2D[][]): Shape[] {
     // Handle empty input
     if (pointArrays.length === 0) {
         return [];
     }
 
-    const allShapes: ShapeData[] = [];
+    const allShapes: Shape[] = [];
 
     for (const points of pointArrays) {
         // Skip empty point arrays
@@ -48,11 +48,13 @@ export function reconstructChain(pointArrays: Point2D[][]): ShapeData[] {
                 end: { x: points[i + 1].x, y: points[i + 1].y },
             };
 
-            allShapes.push({
-                id: generateId(),
-                type: GeometryType.LINE,
-                geometry: line,
-            });
+            allShapes.push(
+                new Shape({
+                    id: generateId(),
+                    type: GeometryType.LINE,
+                    geometry: line,
+                })
+            );
         }
 
         // Each polygon from Clipper2 is inherently closed and needs a closing segment
@@ -74,11 +76,13 @@ export function reconstructChain(pointArrays: Point2D[][]): ShapeData[] {
                     end: { x: firstPoint.x, y: firstPoint.y },
                 };
 
-                allShapes.push({
-                    id: generateId(),
-                    type: GeometryType.LINE,
-                    geometry: line,
-                });
+                allShapes.push(
+                    new Shape({
+                        id: generateId(),
+                        type: GeometryType.LINE,
+                        geometry: line,
+                    })
+                );
             }
         }
     }
@@ -99,7 +103,7 @@ export function reconstructChain(pointArrays: Point2D[][]): ShapeData[] {
  * @returns Complete OffsetChain object
  */
 export function createOffsetChain(
-    shapes: ShapeData[],
+    shapes: Shape[],
     side: 'inner' | 'outer' | 'left' | 'right',
     originalChainId: string,
     closed: boolean
@@ -108,7 +112,7 @@ export function createOffsetChain(
         id: generateId(),
         originalChainId,
         side,
-        shapes,
+        shapes: shapes.map((s) => s.toData()),
         closed,
         continuous: true, // Clipper2 guarantees continuous offsets
         trimPoints: [], // Not applicable - Clipper2 handles trimming internally

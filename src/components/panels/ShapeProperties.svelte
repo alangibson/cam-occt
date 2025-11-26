@@ -1,6 +1,7 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
     import type { ShapeData } from '$lib/cam/shape/interfaces';
+    import { Shape } from '$lib/cam/shape/classes';
     import { GeometryType } from '$lib/geometry/enums';
     import type { Point2D } from '$lib/geometry/point/interfaces';
     import type { Line } from '$lib/geometry/line/interfaces';
@@ -97,17 +98,19 @@
 
               props.push({
                   property: 'Origin',
-                  value: formatPoint(getShapeOrigin(displayShape)),
+                  value: formatPoint(getShapeOrigin(new Shape(displayShape))),
               });
 
               props.push({
                   property: 'Start',
-                  value: formatPoint(getShapeStartPoint(displayShape)),
+                  value: formatPoint(
+                      getShapeStartPoint(new Shape(displayShape))
+                  ),
               });
 
               props.push({
                   property: 'End',
-                  value: formatPoint(getShapeEndPoint(displayShape)),
+                  value: formatPoint(getShapeEndPoint(new Shape(displayShape))),
               });
 
               // Add type-specific properties

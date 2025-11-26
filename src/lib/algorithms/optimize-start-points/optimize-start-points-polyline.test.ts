@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import {
@@ -43,7 +44,10 @@ describe('optimizeStartPoints - polyline splitting', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should have 3 shapes (2 original minus 1 + 2 split halves)
         expect(result.length).toBe(3);
@@ -102,7 +106,10 @@ describe('optimizeStartPoints - polyline splitting', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // The line will be preferred over the 3-point polyline
         const splitLines = result.filter((s) =>
@@ -161,7 +168,10 @@ describe('optimizeStartPoints - polyline splitting', () => {
             shapes,
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should split the second polyline (2-point polyline is preferred)
         const splitPolylines = result.filter((s) =>
@@ -238,7 +248,10 @@ describe('optimizeStartPoints - polyline splitting', () => {
             shapes: [polylineWithArcs],
         };
 
-        const result = optimizeStartPoints([chain], optimizationParams);
+        const result = optimizeStartPoints(
+            [new Chain(chain)],
+            optimizationParams
+        );
 
         // Should have optimized the polyline by splitting it into two pieces
         expect(result.length).toBe(2); // Should have exactly 2 polyline halves

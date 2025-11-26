@@ -1,5 +1,5 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, it, expect } from 'vitest';
-import { Chain } from './classes';
 import type { ChainData } from './interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';

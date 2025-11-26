@@ -7,13 +7,16 @@ import { detectParts } from '$lib/cam/part/part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Lead Solid Area Verification - Catch the Error', () => {
     it('Debug: Verify part 5 geometry and chain association', async () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
 

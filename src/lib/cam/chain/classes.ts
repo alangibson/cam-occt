@@ -63,7 +63,7 @@ export class Chain implements ChainData {
      * @returns The center point of the chain
      */
     centerPoint(): Point2D {
-        return getChainCentroid(this.#data);
+        return getChainCentroid(this);
     }
 
     /**

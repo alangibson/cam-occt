@@ -13,6 +13,7 @@ import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions'
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 const problematicChains = [
     'chain-34',
@@ -48,9 +49,12 @@ describe('ATT00079.dxf Part Detection Verification', () => {
         const parseResult = await parseDXF(dxfContent);
 
         // Detect chains
-        const chains = detectShapeChains(parseResult.shapes, {
-            tolerance: 0.1,
-        });
+        const chains = detectShapeChains(
+            parseResult.shapes.map((s) => new Shape(s)),
+            {
+                tolerance: 0.1,
+            }
+        );
 
         // Detect parts
         const partResult = await detectParts(chains, 0.1);

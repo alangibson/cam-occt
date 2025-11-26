@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 /**
  * Tests for adjustCutStartPointForLeadKerfOverlap function
  */
@@ -5,6 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import { adjustCutStartPointForLeadKerfOverlap } from './functions';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -13,7 +15,6 @@ import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { LeadType } from '$lib/cam/lead/enums';
-import { Chain } from '$lib/cam/chain/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('adjustCutStartPointForLeadKerfOverlap', () => {
@@ -123,7 +124,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         };
     }
 
-    it('should return null for cuts without cutChain', async () => {
+    it('should return false for cuts without cutChain', async () => {
         const cut: CutData = createCut(
             createSquareChain('square', 10),
             'test-tool'
@@ -131,20 +132,18 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         delete cut.cutChain;
 
         const tool = createTool(2);
-        const originalChain = createSquareChain('original', 10);
 
         const result = await adjustCutStartPointForLeadKerfOverlap(
-            cut,
+            new Cut(cut),
             tool,
-            originalChain,
             0.01,
             [] // Empty parts array
         );
 
-        expect(result).toBeNull();
+        expect(result).toBe(false);
     });
 
-    it('should return null for open chains', async () => {
+    it('should return false for open chains', async () => {
         const openChain: ChainData = {
             id: 'open-chain',
             shapes: [
@@ -163,14 +162,13 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         const tool = createTool(2);
 
         const result = await adjustCutStartPointForLeadKerfOverlap(
-            cut,
+            new Cut(cut),
             tool,
-            openChain,
             0.01,
             [] // Empty parts array
         );
 
-        expect(result).toBeNull();
+        expect(result).toBe(false);
     });
 
     it('should attempt to find non-overlapping start point', async () => {
@@ -181,64 +179,62 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
 
         // The function will try different positions
         const result = await adjustCutStartPointForLeadKerfOverlap(
-            cut,
+            new Cut(cut),
             tool,
-            squareChain,
             0.01,
             [], // Empty parts array
             0.25, // Step size: try at 25%, 50%, 75%
             3 // Max attempts
         );
 
-        // Result might be null or a Cut depending on whether overlap was found
-        // Just verify the function runs without error
-        expect(result === null || result.cutChain !== undefined).toBe(true);
+        // Result should be a boolean
+        expect(typeof result).toBe('boolean');
     });
 
-    it('should preserve cut properties when adjustment is successful', async () => {
+    it('should mutate cut properties when adjustment is successful', async () => {
         const squareChain = createSquareChain('square', 100);
-        const cut = createCut(squareChain, 'test-tool', 5);
+        const cutData = createCut(squareChain, 'test-tool', 5);
+        const cut = new Cut(cutData);
+        const originalCutId = cut.id;
+        const originalChainLength = cut.cutChain!.shapes.length;
         const tool = createTool(2);
 
         const result = await adjustCutStartPointForLeadKerfOverlap(
             cut,
             tool,
-            squareChain,
             0.01,
             [], // Empty parts array
             0.5, // Only try one position
             1
         );
 
-        if (result !== null) {
+        if (result === true) {
             // Verify essential properties are preserved
-            expect(result.id).toBe(cut.id);
-            expect(result.name).toBe(cut.name);
-            expect(result.chainId).toBe(cut.chainId);
-            expect(result.cutDirection).toBe(cut.cutDirection);
+            expect(cut.id).toBe(originalCutId);
+            expect(cut.name).toBe('Test Cut');
 
             // Verify cutChain was rotated
-            expect(result.cutChain).toBeDefined();
-            expect(result.cutChain!.shapes.length).toBe(
-                squareChain.shapes.length
-            );
+            expect(cut.cutChain).toBeDefined();
+            expect(cut.cutChain!.shapes.length).toBe(originalChainLength);
 
             // Verify normal was recalculated
-            expect(result.normal).toBeDefined();
-            expect(result.normalConnectionPoint).toBeDefined();
+            expect(cut.normal).toBeDefined();
+            expect(cut.normalConnectionPoint).toBeDefined();
+        } else {
+            // If false, cut should be unchanged
+            expect(cut.id).toBe(originalCutId);
         }
     });
 
-    it('should return null after max attempts', async () => {
+    it('should return false after max attempts', async () => {
         const squareChain = createSquareChain('square', 10);
         const cut = createCut(squareChain, 'test-tool', 5);
         const tool = createTool(2);
 
         // Try with very small chain and large lead - likely to always overlap
         const result = await adjustCutStartPointForLeadKerfOverlap(
-            cut,
+            new Cut(cut),
             tool,
-            squareChain,
             0.01,
             [], // Empty parts array
             0.1, // 10% steps
@@ -246,7 +242,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         );
 
         // Function should handle max attempts gracefully
-        expect(result === null || result !== null).toBe(true);
+        expect(typeof result).toBe('boolean');
     });
 
     it('should handle errors gracefully', async () => {
@@ -259,9 +255,8 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         // Should not throw, even with invalid tool
         await expect(
             adjustCutStartPointForLeadKerfOverlap(
-                cut,
+                new Cut(cut),
                 invalidTool,
-                squareChain,
                 0.01,
                 [] // Empty parts array
             )

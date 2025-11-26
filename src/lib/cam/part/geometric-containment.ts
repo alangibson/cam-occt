@@ -9,7 +9,7 @@
  * shapes within shapes, and polygon containment hierarchies.
  */
 
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
@@ -92,7 +92,7 @@ export function detectPolygonContainment(
  * Now uses Clipper2 for robust containment detection of complex tessellated geometry
  */
 export async function buildContainmentHierarchy(
-    chains: ChainData[],
+    chains: Chain[],
     tolerance: number,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): Promise<Map<string, string>> {
@@ -242,11 +242,11 @@ export function calculateNestingLevel(
  * Identify which chains are shells (root level or even nesting depth)
  */
 export function identifyShells(
-    chains: ChainData[],
+    chains: Chain[],
     containmentMap: Map<string, string>,
     tolerance: number
-): ChainData[] {
-    const shells: ChainData[] = [];
+): Chain[] {
+    const shells: Chain[] = [];
 
     // Only closed chains can be shells
     const closedChains = chains.filter((chain) =>

@@ -22,6 +22,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import { getChainTangent, tessellateChain } from '$lib/cam/chain/functions';
 import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { PartVoid, PartSlot } from '$lib/cam/part/interfaces';
 import {
     getShapeStartPoint,
@@ -361,7 +362,7 @@ export class ChainRenderer extends BaseRenderer {
             );
 
             if (startShape) {
-                const startPoint = getShapeStartPoint(startShape);
+                const startPoint = getShapeStartPoint(new Shape(startShape));
                 if (startPoint) {
                     // Draw start point marker if enabled
                     if (state.visibility.showChainStartPoints) {
@@ -381,7 +382,7 @@ export class ChainRenderer extends BaseRenderer {
             }
 
             if (endShape) {
-                const endPoint = getShapeEndPoint(endShape);
+                const endPoint = getShapeEndPoint(new Shape(endShape));
                 if (endPoint) {
                     // Draw end point marker if enabled
                     if (state.visibility.showChainEndPoints) {
@@ -442,7 +443,7 @@ export class ChainRenderer extends BaseRenderer {
     private drawChainTangent(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        chain: ChainData,
+        chain: Chain,
         point: Point2D,
         isStart: boolean
     ): void {
@@ -509,10 +510,10 @@ export class ChainRenderer extends BaseRenderer {
             );
 
             if (startShape) {
-                const startPoint = getShapeStartPoint(startShape);
+                const startPoint = getShapeStartPoint(new Shape(startShape));
                 if (startPoint) {
                     // Calculate normal at start point (t = 0)
-                    const normal = getShapeNormal(startShape, 0);
+                    const normal = getShapeNormal(new Shape(startShape), 0);
                     drawNormalLine(
                         ctx,
                         state,

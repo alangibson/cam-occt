@@ -6,6 +6,7 @@ import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompos
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: ShapeData[]) {
@@ -19,7 +20,7 @@ function calculateBounds(shapes: ShapeData[]) {
         maxY = -Infinity;
 
     shapes.forEach((shape) => {
-        const points = getShapePoints(shape, { mode: 'BOUNDS' });
+        const points = getShapePoints(new Shape(shape), { mode: 'BOUNDS' });
         points.forEach((point) => {
             minX = Math.min(minX, point.x);
             maxX = Math.max(maxX, point.x);

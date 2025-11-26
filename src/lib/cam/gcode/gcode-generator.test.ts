@@ -2,7 +2,9 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { describe, expect, it } from 'vitest';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { CutPath } from '$lib/cam/gcode/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { CutterCompensation } from '$lib/cam/gcode/enums';
@@ -48,7 +50,7 @@ describe('generateGCode', () => {
     };
 
     it('should generate valid G-code header', () => {
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -62,7 +64,7 @@ describe('generateGCode', () => {
     });
 
     it('should generate plasma-specific commands', () => {
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -76,7 +78,7 @@ describe('generateGCode', () => {
     });
 
     it('should include comments when requested', () => {
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -91,7 +93,7 @@ describe('generateGCode', () => {
     });
 
     it('should not include comments when not requested', () => {
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -105,7 +107,7 @@ describe('generateGCode', () => {
     });
 
     it('should handle imperial units', () => {
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             units: Unit.INCH,
             safeZ: 0.5,
             rapidFeedRate: 200,
@@ -118,7 +120,7 @@ describe('generateGCode', () => {
 
     describe('edge cases and advanced features', () => {
         it('should handle empty cuts array', () => {
-            const gcode = generateGCode([], mockDrawing, {
+            const gcode = generateGCode([], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -141,7 +143,7 @@ describe('generateGCode', () => {
                 leadOut: undefined,
             };
 
-            const gcode = generateGCode([rapidCut], mockDrawing, {
+            const gcode = generateGCode([rapidCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -164,7 +166,7 @@ describe('generateGCode', () => {
                 leadOut: undefined,
             };
 
-            const gcode = generateGCode([simpleCut], mockDrawing, {
+            const gcode = generateGCode([simpleCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -177,7 +179,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle material selection and THC features', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -195,7 +197,7 @@ describe('generateGCode', () => {
         });
 
         it('should disable velocity reduction when requested', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -218,7 +220,7 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([holeCut], mockDrawing, {
+            const gcode = generateGCode([holeCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -241,7 +243,7 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([holeCut], mockDrawing, {
+            const gcode = generateGCode([holeCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -263,7 +265,7 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([holeCut], mockDrawing, {
+            const gcode = generateGCode([holeCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -286,7 +288,7 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([holeCut], mockDrawing, {
+            const gcode = generateGCode([holeCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -305,13 +307,17 @@ describe('generateGCode', () => {
                 parameters: undefined,
             };
 
-            const gcode = generateGCode([cutWithoutParams], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [cutWithoutParams],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             // Should not crash and should include basic commands
             expect(gcode).toContain('G0'); // Rapid moves
@@ -337,10 +343,10 @@ describe('generateGCode', () => {
 
             const splineCut: CutPath = {
                 ...mockCut,
-                originalShape: splineShape,
+                originalShape: new Shape(splineShape),
             };
 
-            const gcode = generateGCode([splineCut], mockDrawing, {
+            const gcode = generateGCode([splineCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -370,10 +376,10 @@ describe('generateGCode', () => {
 
             const arcCut: CutPath = {
                 ...mockCut,
-                originalShape: arcShape,
+                originalShape: new Shape(arcShape),
             };
 
-            const gcode = generateGCode([arcCut], mockDrawing, {
+            const gcode = generateGCode([arcCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -399,11 +405,11 @@ describe('generateGCode', () => {
 
             const circleCut: CutPath = {
                 ...mockCut,
-                originalShape: circleShape,
+                originalShape: new Shape(circleShape),
                 executionClockwise: false, // Counterclockwise execution
             };
 
-            const gcode = generateGCode([circleCut], mockDrawing, {
+            const gcode = generateGCode([circleCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -429,14 +435,14 @@ describe('generateGCode', () => {
             };
             const holeCut: CutPath = {
                 ...mockCut,
-                originalShape: circleShape,
+                originalShape: new Shape(circleShape),
                 parameters: {
                     ...mockCut.parameters!,
                     isHole: true,
                 },
                 executionClockwise: true, // Clockwise execution for holes
             };
-            const gcode = generateGCode([holeCut], mockDrawing, {
+            const gcode = generateGCode([holeCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -466,10 +472,10 @@ describe('generateGCode', () => {
 
             const splineCut: CutPath = {
                 ...mockCut,
-                originalShape: incompleteSpline,
+                originalShape: new Shape(incompleteSpline),
             };
 
-            const gcode = generateGCode([splineCut], mockDrawing, {
+            const gcode = generateGCode([splineCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -495,13 +501,17 @@ describe('generateGCode', () => {
                 ],
             };
 
-            const gcode = generateGCode([precisionCut], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10.123456,
-                rapidFeedRate: 5000,
-                includeComments: false,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [precisionCut],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10.123456,
+                    rapidFeedRate: 5000,
+                    includeComments: false,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             // Check that coordinates appear with proper precision somewhere in the output
             // The exact formatting depends on how the cut is processed
@@ -515,7 +525,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle QtPlasmaC-specific tool syntax', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -528,7 +538,7 @@ describe('generateGCode', () => {
         });
 
         it('should generate proper HAL feed rate command', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -540,7 +550,7 @@ describe('generateGCode', () => {
         });
 
         it('should not include plasma commands in non-plasma mode', () => {
-            const gcode = generateGCode([mockCut], mockDrawing, {
+            const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
@@ -574,26 +584,34 @@ describe('generateGCode', () => {
         };
 
         it('should generate spot-specific M-codes', () => {
-            const gcode = generateGCode([mockSpotCut], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [mockSpotCut],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             expect(gcode).toContain('M3 $2'); // Spotting tool on
             expect(gcode).toContain('M5 $2'); // Spotting tool off
         });
 
         it('should generate minimal movement sequence for spot', () => {
-            const gcode = generateGCode([mockSpotCut], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [mockSpotCut],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             expect(gcode).toContain('G91'); // Relative mode
             expect(gcode).toContain('G1 X0.000001'); // Minimal movement
@@ -601,13 +619,17 @@ describe('generateGCode', () => {
         });
 
         it('should set high feed rate before moving to spot location', () => {
-            const gcode = generateGCode([mockSpotCut], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [mockSpotCut],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             expect(gcode).toContain('F99999'); // High feed rate
 
@@ -618,38 +640,50 @@ describe('generateGCode', () => {
         });
 
         it('should move to spot location', () => {
-            const gcode = generateGCode([mockSpotCut], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [mockSpotCut],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             expect(gcode).toContain('X50'); // Spot X coordinate
             expect(gcode).toContain('Y50'); // Spot Y coordinate
         });
 
         it('should include spot comment when comments enabled', () => {
-            const gcode = generateGCode([mockSpotCut], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [mockSpotCut],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             expect(gcode).toContain('(Spot 1)');
         });
 
         it('should not include pierce commands for spot operations', () => {
-            const gcode = generateGCode([mockSpotCut], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [mockSpotCut],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             // Spot operations should NOT have pierce delay
             const lines = gcode.split('\n');
@@ -682,13 +716,17 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([spotCutPath], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [spotCutPath],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             // Should generate spot G-code
             expect(gcode).toContain('M3 $2');
@@ -722,13 +760,17 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([cutCutPath], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [cutCutPath],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             // Should generate cut G-code
             expect(gcode).toContain('M3 $0');
@@ -759,13 +801,17 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([undefinedActionPath], mockDrawing, {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: true,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [undefinedActionPath],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: true,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             // Should default to cut G-code
             expect(gcode).toContain('M3 $0');
@@ -812,7 +858,7 @@ describe('generateGCode', () => {
                 },
             ];
 
-            const gcode = generateGCode(paths, mockDrawing, {
+            const gcode = generateGCode(paths, new Drawing(mockDrawing), {
                 units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,

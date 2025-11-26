@@ -1,5 +1,6 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import {
     getShapeEndPoint,
     getShapeOrigin,
@@ -17,9 +18,9 @@ export function generateShapePoints(
     shapes.forEach((shape) => {
         if (selectedShapeIds.has(shape.id)) {
             // Generate origin, start, and end points for selected shapes
-            const origin: Point2D | null = getShapeOrigin(shape);
-            const start: Point2D = getShapeStartPoint(shape);
-            const end: Point2D = getShapeEndPoint(shape);
+            const origin: Point2D | null = getShapeOrigin(new Shape(shape));
+            const start: Point2D = getShapeStartPoint(new Shape(shape));
+            const end: Point2D = getShapeEndPoint(new Shape(shape));
 
             if (origin) {
                 points.push({ ...origin, type: 'origin', shapeId: shape.id });

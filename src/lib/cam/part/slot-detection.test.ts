@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { generateId } from '$lib/domain/id';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Slot Detection in Parts', () => {
     // Helper function to create test shapes
@@ -12,14 +14,14 @@ describe('Slot Detection in Parts', () => {
         endX: number,
         endY: number
     ) {
-        return {
+        return new Shape({
             id: generateId(),
-            type: GeometryType.LINE as const,
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: startX, y: startY },
                 end: { x: endX, y: endY },
             },
-        };
+        });
     }
 
     // Helper function to create a rectangular chain (closed)
@@ -60,7 +62,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(5, 5, 15, 5), // Horizontal slot inside part
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(1);
             expect(result.parts[0].slots[0].chain.id).toBe(chains[1].id);
@@ -76,7 +78,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(15, 15, 20, 20), // Diagonal slot 3
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(3);
             expect(result.parts[0].voids).toHaveLength(0);
@@ -89,7 +91,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(25, 5, 35, 5), // Open chain outside part
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(0);
             // Open chain completely outside doesn't cross boundary, so no warning
@@ -102,7 +104,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(5, 10, 25, 10), // Crosses boundary (starts inside, ends outside)
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(0);
             // Should have a warning for boundary crossing
@@ -120,7 +122,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(35, 10, 45, 10), // Slot in part 2
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(2);
 
             // Each part should have exactly one slot
@@ -149,7 +151,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(20, 5, 20, 35), // Vertical slot
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].voids).toHaveLength(2);
             expect(result.parts[0].slots).toHaveLength(1);
@@ -166,7 +168,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(30, 30, 40, 40), // Diagonal slot
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].voids).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(3);
@@ -178,7 +180,7 @@ describe('Slot Detection in Parts', () => {
         it('should handle part with no slots', async () => {
             const chains = [createRectangleChain(0, 0, 20, 20)];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(0);
             expect(result.parts[0].slots).toEqual([]);
@@ -197,7 +199,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(1, 10, 19, 10), // Slot very close to edges
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
@@ -209,7 +211,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(5, 15, 25, 15), // Perfectly horizontal slot
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
@@ -221,7 +223,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(15, 5, 15, 25), // Perfectly vertical slot
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(1);
             expect(result.parts[0].slots).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
@@ -238,7 +240,7 @@ describe('Slot Detection in Parts', () => {
                 createOpenChain(20, 20, 30, 20), // Slot in nested part
             ];
 
-            const result = await detectParts(chains);
+            const result = await detectParts(chains.map((c) => new Chain(c)));
             expect(result.parts).toHaveLength(2);
 
             // Total slots across all parts should be 2

@@ -9,6 +9,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { convertLeadGeometryToPoints } from './functions';
+import { Shape } from '$lib/cam/shape/classes';
 import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
@@ -21,7 +22,9 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const parsed = await parseDXF(dxfContent);
 
         // Detect chains with tolerance 0.1 (standard default)
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         // Detect parts
         const partResult = await detectParts(chains);
@@ -71,7 +74,9 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
 
@@ -121,7 +126,9 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
-        const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
 

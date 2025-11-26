@@ -2,7 +2,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { describe, expect, it } from 'vitest';
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,
@@ -13,11 +13,11 @@ import { isPointInPolygon } from './constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 
 // Helper function to create test chains
-function createTestChain(id: string, shapes: ShapeData[]): ChainData {
-    return {
+function createTestChain(id: string, shapes: ShapeData[]): Chain {
+    return new Chain({
         id,
         shapes,
-    };
+    });
 }
 
 // Helper function to create test rectangle

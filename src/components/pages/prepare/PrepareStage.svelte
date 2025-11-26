@@ -2,6 +2,7 @@
     import { detectShapeChains } from '$lib/cam/chain/chain-detection';
     import { analyzeChainTraversal } from '$lib/cam/chain/chain-normalization';
     import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
+    import { Shape } from '$lib/cam/shape/classes';
     import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
     import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
@@ -219,7 +220,9 @@
 
         try {
             // First detect chains from current shapes
-            const chains = detectShapeChains(drawing.shapes, {
+            // Convert ShapeData to Shape instances for chain detection
+            const shapeInstances = drawing.shapes.map((s) => new Shape(s));
+            const chains = detectShapeChains(shapeInstances, {
                 tolerance: algorithmParams.chainDetection.tolerance,
             });
 

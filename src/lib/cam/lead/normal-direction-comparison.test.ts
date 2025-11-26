@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -10,6 +9,7 @@ import { GeometryType } from '$lib/geometry/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { getChainTangent } from '$lib/cam/chain/functions';
+import { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Test to isolate the bug where normal directions are calculated correctly on original chains
@@ -57,8 +57,12 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
 
     describe('Tangent calculation consistency', () => {
         it('should calculate identical tangents for identical geometry', () => {
-            const originalChain = createHorizontalLineChain();
-            const offsetChain = createIdenticalOffsetChain(originalChain);
+            const originalChainData = createHorizontalLineChain();
+            const offsetChainData =
+                createIdenticalOffsetChain(originalChainData);
+
+            const originalChain = new Chain(originalChainData);
+            const offsetChain = new Chain(offsetChainData);
 
             const originalStartPoint = { x: 0, y: 0 };
             const offsetStartPoint = { x: 0, y: 0 };

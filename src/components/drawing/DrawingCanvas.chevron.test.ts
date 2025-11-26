@@ -4,6 +4,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { GeometryType } from '$lib/geometry/enums';
+import { Shape } from '$lib/cam/shape/classes';
 
 /**
  * Integration tests for chevron arrow rendering
@@ -34,7 +35,9 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const originalShapes = [horizontalLine, verticalLine];
+            const originalShapes = [horizontalLine, verticalLine].map(
+                (s) => new Shape(s)
+            );
 
             // Simulate counterclockwise logic from DrawingCanvas.svelte
             const cutDirection = CutDirection.COUNTERCLOCKWISE;
@@ -44,8 +47,8 @@ describe('Chevron Arrow Integration Tests', () => {
                     : originalShapes;
 
             // This should be [verticalLine, horizontalLine] for counterclockwise
-            expect(shapesToSample[0]).toBe(verticalLine);
-            expect(shapesToSample[1]).toBe(horizontalLine);
+            expect(shapesToSample[0].id).toBe(verticalLine.id);
+            expect(shapesToSample[1].id).toBe(horizontalLine.id);
 
             const chevronSamples = sampleShapes(shapesToSample, 5);
 
@@ -83,7 +86,9 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const originalShapes = [horizontalLine, verticalLine];
+            const originalShapes = [horizontalLine, verticalLine].map(
+                (s) => new Shape(s)
+            );
 
             // Simulate clockwise logic from DrawingCanvas.svelte
             const cutDirection = CutDirection.CLOCKWISE;
@@ -95,8 +100,8 @@ describe('Chevron Arrow Integration Tests', () => {
                     : originalShapes;
 
             // This should be [horizontalLine, verticalLine] for clockwise (no reversal)
-            expect(shapesToSample[0]).toBe(horizontalLine);
-            expect(shapesToSample[1]).toBe(verticalLine);
+            expect(shapesToSample[0].id).toBe(horizontalLine.id);
+            expect(shapesToSample[1].id).toBe(verticalLine.id);
 
             const chevronSamples = sampleShapes(shapesToSample, 5);
 
@@ -152,7 +157,7 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const shapes = [bottom, right, top, left];
+            const shapes = [bottom, right, top, left].map((s) => new Shape(s));
 
             // Test clockwise direction
             const clockwiseShapes = shapes; // No reversal for clockwise
@@ -202,7 +207,7 @@ describe('Chevron Arrow Integration Tests', () => {
             };
 
             // For clockwise cuts on a single line, tool moves from start to end
-            const clockwiseSamples = sampleShapes([straightLine], 5);
+            const clockwiseSamples = sampleShapes([new Shape(straightLine)], 5);
             expect(clockwiseSamples.length).toBeGreaterThan(0);
 
             // All arrows should point right (positive X direction)
@@ -222,7 +227,10 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const counterclockwiseSamples = sampleShapes([reversedLine], 5);
+            const counterclockwiseSamples = sampleShapes(
+                [new Shape(reversedLine)],
+                5
+            );
             expect(counterclockwiseSamples.length).toBeGreaterThan(0);
 
             // All arrows should point left (negative X direction) because shape was reversed
@@ -258,8 +266,8 @@ describe('Chevron Arrow Integration Tests', () => {
             // This is the exact logic from drawCutChevrons
             const shapesToSample =
                 cut.cutDirection === CutDirection.COUNTERCLOCKWISE
-                    ? [testLine].reverse()
-                    : [testLine];
+                    ? [new Shape(testLine)].reverse()
+                    : [new Shape(testLine)];
 
             // For a single shape, reverse doesn't change the array, but the cut direction parameter should
             const chevronSamples = sampleShapes(shapesToSample, 5);

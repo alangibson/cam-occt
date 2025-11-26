@@ -14,6 +14,7 @@ import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
     const layerMap = new Map<string, ShapeData[]>();
@@ -59,7 +60,10 @@ describe('Tractor Seat Mount Part Detection', () => {
         });
 
         // Detect chains with standard tolerance
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.05 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.05 }
+        );
         console.log(`Total chains detected: ${chains.length}`);
 
         // Analyze chain closure for debugging

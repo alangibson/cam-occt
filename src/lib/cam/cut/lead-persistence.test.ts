@@ -1,3 +1,5 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 /**
  * Tests for lead persistence utilities
  */
@@ -9,15 +11,14 @@ import {
     hasValidCachedLeads,
 } from './lead-persistence';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from './classes.svelte';
 import { calculateCutLeads } from '$lib/cam/pipeline/leads/lead-orchestration';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
-import { Shape } from '$lib/cam/shape/classes';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { OperationData } from '$lib/cam/operation/interface';
 import type { LeadResult } from '$lib/cam/lead/interfaces';
@@ -185,7 +186,7 @@ describe('Lead Persistence Utils', () => {
                 calculatedLeadIn: undefined,
                 calculatedLeadOut: undefined,
             };
-            const result = hasValidCachedLeads(cutWithoutCache);
+            const result = hasValidCachedLeads(new Cut(cutWithoutCache));
             expect(result).toBe(false);
         });
 
@@ -218,7 +219,7 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            const result = hasValidCachedLeads(cutWithCache);
+            const result = hasValidCachedLeads(new Cut(cutWithCache));
             expect(result).toBe(true);
         });
 
@@ -243,7 +244,7 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            const result = hasValidCachedLeads(cutWithMismatch);
+            const result = hasValidCachedLeads(new Cut(cutWithMismatch));
             expect(result).toBe(false);
         });
 
@@ -264,7 +265,7 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            const result = hasValidCachedLeads(cutWithOldVersion);
+            const result = hasValidCachedLeads(new Cut(cutWithOldVersion));
             expect(result).toBe(false);
         });
 
@@ -283,7 +284,7 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            const result = hasValidCachedLeads(cutWithNoLeads);
+            const result = hasValidCachedLeads(new Cut(cutWithNoLeads));
             expect(result).toBe(true); // No leads needed, so cache is "valid"
         });
     });
@@ -318,7 +319,9 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            const result: LeadResult = getCachedLeadGeometry(cutWithCache);
+            const result: LeadResult = getCachedLeadGeometry(
+                new Cut(cutWithCache)
+            );
 
             expect(result.leadIn).toEqual({
                 geometry: {
@@ -347,7 +350,7 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should return undefined for missing cached leads', () => {
-            const result = getCachedLeadGeometry(mockCut);
+            const result = getCachedLeadGeometry(new Cut(mockCut));
 
             expect(result.leadIn).toBeUndefined();
             expect(result.leadOut).toBeUndefined();
@@ -382,9 +385,9 @@ describe('Lead Persistence Utils', () => {
             });
 
             const result = await calculateCutLeads(
-                mockCut,
+                new Cut(mockCut),
                 mockOperation,
-                mockChain,
+                new Chain(mockChain),
                 []
             );
 
@@ -454,9 +457,9 @@ describe('Lead Persistence Utils', () => {
             };
 
             const result = await calculateCutLeads(
-                cutWithOffset,
+                new Cut(cutWithOffset),
                 mockOperation,
-                mockChain,
+                new Chain(mockChain),
                 []
             );
 
@@ -503,9 +506,9 @@ describe('Lead Persistence Utils', () => {
             };
 
             const result = await calculateCutLeads(
-                cutWithEmptyOffset,
+                new Cut(cutWithEmptyOffset),
                 mockOperation,
-                mockChain,
+                new Chain(mockChain),
                 []
             );
 
@@ -539,9 +542,9 @@ describe('Lead Persistence Utils', () => {
             };
 
             const result = await calculateCutLeads(
-                cutNoLeads,
+                new Cut(cutNoLeads),
                 mockOperation,
-                mockChain,
+                new Chain(mockChain),
                 []
             );
 
@@ -556,9 +559,9 @@ describe('Lead Persistence Utils', () => {
             });
 
             const result = await calculateCutLeads(
-                mockCut,
+                new Cut(mockCut),
                 mockOperation,
-                mockChain,
+                new Chain(mockChain),
                 []
             );
 
@@ -588,7 +591,7 @@ describe('Lead Persistence Utils', () => {
 
         it('should return undefined when chainMap is undefined', async () => {
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 undefined,
                 mockPartMap,
                 'leadIn'
@@ -598,7 +601,7 @@ describe('Lead Persistence Utils', () => {
 
         it('should return undefined when partMap is undefined', async () => {
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 mockChainMap,
                 undefined,
                 'leadIn'
@@ -612,7 +615,7 @@ describe('Lead Persistence Utils', () => {
                 chainId: 'unknown-chain',
             };
             const result = await calculateLeadPoints(
-                cutWithUnknownChain,
+                new Cut(cutWithUnknownChain),
                 mockChainMap,
                 mockPartMap,
                 'leadIn'
@@ -622,7 +625,7 @@ describe('Lead Persistence Utils', () => {
 
         it('should calculate and return leadIn points', async () => {
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 mockChainMap,
                 mockPartMap,
                 'leadIn'
@@ -636,7 +639,7 @@ describe('Lead Persistence Utils', () => {
 
         it('should calculate and return leadOut points', async () => {
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 mockChainMap,
                 mockPartMap,
                 'leadOut'
@@ -674,7 +677,7 @@ describe('Lead Persistence Utils', () => {
             });
 
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 mockChainMap,
                 mockPartMap,
                 'leadIn'
@@ -690,7 +693,7 @@ describe('Lead Persistence Utils', () => {
             });
 
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 mockChainMap,
                 mockPartMap,
                 'leadIn'
@@ -721,7 +724,7 @@ describe('Lead Persistence Utils', () => {
             };
 
             const result = await calculateLeadPoints(
-                cutWithOffset,
+                new Cut(cutWithOffset),
                 mockChainMap,
                 mockPartMap,
                 'leadIn'
@@ -746,7 +749,7 @@ describe('Lead Persistence Utils', () => {
             });
 
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 mockChainMap,
                 mockPartMap,
                 'leadIn'
@@ -761,7 +764,7 @@ describe('Lead Persistence Utils', () => {
             });
 
             const result = await calculateLeadPoints(
-                mockCut,
+                new Cut(mockCut),
                 mockChainMap,
                 mockPartMap,
                 'leadOut'

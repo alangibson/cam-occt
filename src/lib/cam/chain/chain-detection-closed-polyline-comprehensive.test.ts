@@ -9,6 +9,7 @@ import {
     polylineToVertices,
 } from '$lib/geometry/polyline/functions';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Comprehensive Closed Polyline with Bulges Test', () => {
     it('should correctly handle closed polylines with bulges end-to-end', async () => {
@@ -67,11 +68,14 @@ describe('Comprehensive Closed Polyline with Bulges Test', () => {
         }
 
         // 3. Check that isShapeClosed function correctly identifies them as closed
-        expect(isShapeClosed(drawing.shapes[0], 0.1)).toBe(true);
-        expect(isShapeClosed(drawing.shapes[1], 0.1)).toBe(true);
+        expect(isShapeClosed(new Shape(drawing.shapes[0]), 0.1)).toBe(true);
+        expect(isShapeClosed(new Shape(drawing.shapes[1]), 0.1)).toBe(true);
 
         // 4. Check that chain detection creates chains from the polylines
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
 
         // Should have 2 separate chains (one for each polyline)
         expect(chains).toHaveLength(2);

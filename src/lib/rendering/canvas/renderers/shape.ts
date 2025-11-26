@@ -189,10 +189,10 @@ export class ShapeRenderer extends BaseRenderer {
 
             // Get midpoint of the shape
             const MIDPOINT_PARAM = 0.5;
-            const midpoint = getShapeMidpoint(shape, MIDPOINT_PARAM);
+            const midpoint = getShapeMidpoint(new Shape(shape), MIDPOINT_PARAM);
             if (midpoint) {
                 // Calculate normal at midpoint (t = 0.5)
-                const normal = getShapeNormal(shape, MIDPOINT_PARAM);
+                const normal = getShapeNormal(new Shape(shape), MIDPOINT_PARAM);
                 drawNormalLine(
                     ctx,
                     state,
@@ -227,7 +227,7 @@ export class ShapeRenderer extends BaseRenderer {
 
             // Get midpoint and direction of the shape
             const MIDPOINT_PARAM = 0.5;
-            const midpoint = getShapeMidpoint(shape, MIDPOINT_PARAM);
+            const midpoint = getShapeMidpoint(new Shape(shape), MIDPOINT_PARAM);
             if (midpoint) {
                 const direction = this.getShapeDirectionAtMidpoint(shape);
                 if (direction) {
@@ -295,8 +295,8 @@ export class ShapeRenderer extends BaseRenderer {
         const t1 = Math.max(0, MIDPOINT_PARAM - DELTA);
         const t2 = Math.min(1, MIDPOINT_PARAM + DELTA);
 
-        const p1 = getShapePointAt(shape, t1);
-        const p2 = getShapePointAt(shape, t2);
+        const p1 = getShapePointAt(new Shape(shape), t1);
+        const p2 = getShapePointAt(new Shape(shape), t2);
 
         if (!p1 || !p2) return null;
 
@@ -381,7 +381,7 @@ export class ShapeRenderer extends BaseRenderer {
 
             // Get tessellation points
             const tessellationPoints = tessellateShape(
-                shape,
+                new Shape(shape),
                 DEFAULT_PART_DETECTION_PARAMETERS
             );
 

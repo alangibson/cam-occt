@@ -5,6 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Tractor Seat Mount Current Behavior', () => {
     it('should confirm current behavior: detects 11 parts instead of 1 part with voids', async () => {
@@ -19,11 +20,17 @@ describe('Tractor Seat Mount Current Behavior', () => {
         const tolerances = [0.05, 0.1, 0.5, 1.0, 2.0];
 
         for (const tolerance of tolerances) {
-            detectShapeChains(drawing.shapes, { tolerance });
+            detectShapeChains(
+                drawing.shapes.map((s) => new Shape(s)),
+                { tolerance }
+            );
         }
 
         // Use aggressive tolerance to get maximum chains
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 1.0 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 1.0 }
+        );
 
         // Detect parts with user tolerance
         const userTolerance = 0.1;

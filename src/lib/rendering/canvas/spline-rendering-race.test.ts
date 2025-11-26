@@ -21,6 +21,7 @@ import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe.skip('Spline Rendering Race Condition', () => {
     // NOTE: These tests need to be refactored for the new layer-based chain system
@@ -51,7 +52,10 @@ describe.skip('Spline Rendering Race Condition', () => {
         chainStore.setTolerance(tolerance);
 
         // Detect chains
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
         const chainsWithDirection = setChainsDirection(chains);
         // @ts-expect-error - setChains no longer exists, test needs refactoring
         chainStore.setChains(chainsWithDirection);
@@ -180,7 +184,10 @@ describe.skip('Spline Rendering Race Condition', () => {
         chainStore.setTolerance(tolerance);
 
         // Detect chains and parts
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
         const chainsWithDirection = setChainsDirection(chains);
         // @ts-expect-error - setChains no longer exists, test needs refactoring
         chainStore.setChains(chainsWithDirection);
@@ -361,7 +368,10 @@ describe.skip('Spline Rendering Race Condition', () => {
         const tolerance = 0.01;
         chainStore.setTolerance(tolerance);
 
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
         const chainsWithDirection = setChainsDirection(chains);
         // @ts-expect-error - setChains no longer exists, test needs refactoring
         chainStore.setChains(chainsWithDirection);

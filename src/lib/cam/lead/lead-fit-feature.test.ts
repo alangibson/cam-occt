@@ -11,11 +11,11 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import { convertLeadGeometryToPoints } from './functions';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/enums';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Fit Feature', () => {
     // Create a simple test chain (square)

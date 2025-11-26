@@ -4,6 +4,7 @@
  */
 
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
@@ -141,7 +142,7 @@ function drawSpline(
 ): void {
     // Get tessellation
     const tessellatedPoints = tessellateShape(
-        shape,
+        new Shape(shape),
         DEFAULT_PART_DETECTION_PARAMETERS
     );
 

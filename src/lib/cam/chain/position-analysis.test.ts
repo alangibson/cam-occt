@@ -1,3 +1,4 @@
+import { Shape } from '$lib/cam/shape/classes';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
@@ -17,7 +18,10 @@ describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
 
         // Detect chains
         const tolerance = 1.0;
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
 
         // Normalize chains
         const normalizedChains = chains.map((chain) => normalizeChain(chain));

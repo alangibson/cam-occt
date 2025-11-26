@@ -9,7 +9,7 @@
  *
  */
 
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import {
     buildContainmentHierarchy,
@@ -36,7 +36,7 @@ import { Part } from './classes.svelte';
  * Detects parts from a collection of chains using geometric containment
  */
 export async function detectParts(
-    chains: ChainData[],
+    chains: Chain[],
     tolerance: number = CHAIN_CLOSURE_TOLERANCE,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS,
     layerName: string = '0'
@@ -44,15 +44,15 @@ export async function detectParts(
     const warnings: PartDetectionWarning[] = [];
 
     // CRITICAL: Normalize all chains BEFORE any analysis
-    const normalizedChains: ChainData[] = chains.map((chain) =>
+    const normalizedChains: Chain[] = chains.map((chain) =>
         normalizeChain(chain)
     );
 
     // Separate closed and open chains (using normalized chains)
-    const closedChains: ChainData[] = normalizedChains.filter((chain) =>
+    const closedChains: Chain[] = normalizedChains.filter((chain) =>
         isChainClosed(chain, tolerance)
     );
-    const openChains: ChainData[] = normalizedChains.filter(
+    const openChains: Chain[] = normalizedChains.filter(
         (chain) => !isChainClosed(chain, tolerance)
     );
 
@@ -73,19 +73,16 @@ export async function detectParts(
         params
     );
 
-    const allPartChains: ChainData[] = identifyPartChains(
+    const allPartChains: Chain[] = identifyPartChains(
         closedChains,
         containmentMap
     );
 
     // Detect slots from open chains
     // A slot is an open chain where both endpoints are inside the same part
-    const slotsByPart: Map<string, ChainData[]> = new Map<
-        string,
-        ChainData[]
-    >();
+    const slotsByPart: Map<string, Chain[]> = new Map<string, Chain[]>();
     let slotCounter: number = 1;
-    const nonSlotOpenChains: ChainData[] = [];
+    const nonSlotOpenChains: Chain[] = [];
 
     for (const openChain of openChains) {
         const containingPartId: string | null = detectSlotContainer(
@@ -134,10 +131,10 @@ export async function detectParts(
 
     for (const partChain of allPartChains) {
         // Find all chains directly contained within this part chain (these become holes)
-        const directHoles: ChainData[] = [];
+        const directHoles: Chain[] = [];
         for (const [childId, parentId] of containmentMap.entries()) {
             if (parentId === partChain.id) {
-                const holeChain: ChainData | undefined = closedChains.find(
+                const holeChain: Chain | undefined = closedChains.find(
                     (c) => c.id === childId
                 );
                 // Only add as hole if the child is not itself a part
@@ -148,10 +145,10 @@ export async function detectParts(
         }
 
         // Get slots for this part
-        const slotChains: ChainData[] = slotsByPart.get(partChain.id) || [];
+        const slotChains: Chain[] = slotsByPart.get(partChain.id) || [];
         const partSlots = slotChains.map((slotChain) => ({
             id: `${layerName}-slot-${slotCounter++}`,
-            chain: slotChain,
+            chain: slotChain.toData(),
             type: PartType.SLOT as const,
             boundingBox: chainBounds.get(slotChain.id)!,
         }));
@@ -159,12 +156,12 @@ export async function detectParts(
         // Create part structure
         const partData: PartData = {
             id: `${layerName}-part-${partCounter}`,
-            shell: partChain,
+            shell: partChain.toData(),
             type: PartType.SHELL,
             boundingBox: chainBounds.get(partChain.id)!,
             voids: directHoles.map((hole, idx) => ({
                 id: `${layerName}-hole-${partCounter}-${idx + 1}`,
-                chain: hole,
+                chain: hole.toData(),
                 type: PartType.HOLE,
                 boundingBox: chainBounds.get(hole.id)!,
             })),
@@ -208,10 +205,10 @@ export async function detectParts(
  * - And so on...
  */
 function identifyPartChains(
-    closedChains: ChainData[],
+    closedChains: Chain[],
     containmentMap: Map<string, string>
-): ChainData[] {
-    const partChains: ChainData[] = [];
+): Chain[] {
+    const partChains: Chain[] = [];
 
     // Calculate nesting level for each chain
     const nestingLevels: Map<string, number> = new Map<string, number>();
@@ -237,8 +234,8 @@ function identifyPartChains(
  * Checks if an open chain crosses part boundaries
  */
 function checkOpenChainBoundaryCrossing(
-    openChain: ChainData,
-    closedChains: ChainData[],
+    openChain: Chain,
+    closedChains: Chain[],
     chainBounds: Map<string, BoundingBoxData>
 ): string | null {
     for (const closedChain of closedChains) {
@@ -273,7 +270,7 @@ function checkOpenChainBoundaryCrossing(
 /**
  * Gets the starting point of an open chain
  */
-function getOpenChainStart(chain: ChainData): Point2D | null {
+function getOpenChainStart(chain: Chain): Point2D | null {
     if (chain.shapes.length === 0) return null;
     return getShapeStartPoint(chain.shapes[0]);
 }
@@ -281,7 +278,7 @@ function getOpenChainStart(chain: ChainData): Point2D | null {
 /**
  * Gets the ending point of an open chain
  */
-function getOpenChainEnd(chain: ChainData): Point2D | null {
+function getOpenChainEnd(chain: Chain): Point2D | null {
     if (chain.shapes.length === 0) return null;
     return getShapeEndPoint(chain.shapes[chain.shapes.length - 1]);
 }
@@ -311,8 +308,8 @@ function isPointInBoundingBox(
  * @returns The chain ID of the containing part, or null if not a slot
  */
 function detectSlotContainer(
-    openChain: ChainData,
-    partChains: ChainData[]
+    openChain: Chain,
+    partChains: Chain[]
 ): string | null {
     const startPoint: Point2D | null = getOpenChainStart(openChain);
     const endPoint: Point2D | null = getOpenChainEnd(openChain);

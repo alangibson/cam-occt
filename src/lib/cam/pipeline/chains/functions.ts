@@ -5,8 +5,6 @@
  * Handles chain direction analysis and cut chain creation with proper ordering.
  */
 
-import type { ChainData } from '$lib/cam/chain/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { getChainCutDirection, reverseChain } from '$lib/cam/chain/functions';
@@ -28,26 +26,22 @@ import { Chain } from '$lib/cam/chain/classes';
  * @returns Object containing the cut chain and execution clockwise direction
  */
 export function createCutChain(
-    originalChain: ChainData,
+    originalChain: Chain,
     userCutDirection: CutDirection,
     offsetShapes?: Shape[]
 ): CutChainResult {
     // Determine which shapes to clone (offset shapes take priority)
-    // Get shapes - if originalChain.shapes already returns Shape[], use them directly
-    // Otherwise wrap ShapeData in Shape instances
-    const shapesToClone: Shape[] =
-        offsetShapes ||
-        originalChain.shapes.map((s) =>
-            s instanceof Shape ? s : new Shape(s)
-        );
+    const shapesToClone: Shape[] = offsetShapes || originalChain.shapes;
 
     // Deep clone the shapes array to ensure Cut owns its execution order
-    const clonedShapes: ShapeData[] = shapesToClone.map((shape) => {
+    const clonedShapes: Shape[] = shapesToClone.map((shape) => {
         const data = shape.toData();
-        return {
-            ...data,
+        return new Shape({
+            id: data.id,
+            type: data.type,
+            layer: data.layer,
             geometry: { ...data.geometry },
-        };
+        });
     });
 
     // Get the natural direction of the ORIGINAL chain (geometric property)
@@ -58,14 +52,14 @@ export function createCutChain(
         return {
             cutChain: new Chain({
                 id: `${originalChain.id}-cut`,
-                shapes: clonedShapes,
+                shapes: clonedShapes.map((s) => s.toData()),
             }),
             executionClockwise: null,
         };
     }
 
     // Determine final execution order based on user preference vs natural direction
-    let executionShapes: ShapeData[];
+    let executionShapes: Shape[];
     let executionClockwise: boolean;
 
     // For open chains (naturalDirection is NONE), apply user's requested direction
@@ -74,10 +68,12 @@ export function createCutChain(
         // For open chains, we can interpret direction as traversal order:
         // CLOCKWISE = original order, COUNTERCLOCKWISE = reversed order
         if (userCutDirection === CutDirection.COUNTERCLOCKWISE) {
-            const reversedChain = reverseChain({
-                id: originalChain.id,
-                shapes: clonedShapes,
-            });
+            const reversedChain = reverseChain(
+                new Chain({
+                    id: originalChain.id,
+                    shapes: clonedShapes.map((s) => s.toData()),
+                })
+            );
             executionShapes = reversedChain.shapes;
         } else {
             executionShapes = clonedShapes;
@@ -85,10 +81,12 @@ export function createCutChain(
         executionClockwise = userCutDirection === CutDirection.CLOCKWISE;
     } else if (naturalDirection !== userCutDirection) {
         // Closed chain - user wants opposite of natural direction
-        const reversedChain = reverseChain({
-            id: originalChain.id,
-            shapes: clonedShapes,
-        });
+        const reversedChain = reverseChain(
+            new Chain({
+                id: originalChain.id,
+                shapes: clonedShapes.map((s) => s.toData()),
+            })
+        );
         executionShapes = reversedChain.shapes;
         executionClockwise = userCutDirection === CutDirection.CLOCKWISE;
     } else {
@@ -100,7 +98,7 @@ export function createCutChain(
     // Create cut chain with execution-ordered shapes
     const cutChain = new Chain({
         id: `${originalChain.id}-cut`,
-        shapes: executionShapes,
+        shapes: executionShapes.map((s) => s.toData()),
         originalChainId: originalChain.id, // Preserve reference to original chain for part lookup
         clockwise: executionClockwise, // Use execution winding direction (accounts for shape reversal)
     });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/cam/gcode/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { CutPath } from '$lib/cam/gcode/interfaces';
 import { Unit } from '$lib/config/units/units';
 
@@ -43,7 +44,7 @@ describe('GCode Generator - Units', () => {
             fileName: '',
         };
 
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             ...baseOptions,
             units: Unit.MM, // Use display unit, not drawing.units
         });
@@ -59,7 +60,7 @@ describe('GCode Generator - Units', () => {
             fileName: '',
         };
 
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             ...baseOptions,
             units: Unit.INCH, // Use display unit, not drawing.units
         });
@@ -81,15 +82,23 @@ describe('GCode Generator - Units', () => {
             fileName: '',
         };
 
-        const gcodeMetric = generateGCode([mockCut], mockDrawingMM, {
-            ...baseOptions,
-            units: Unit.MM, // Use display unit
-        });
+        const gcodeMetric = generateGCode(
+            [mockCut],
+            new Drawing(mockDrawingMM),
+            {
+                ...baseOptions,
+                units: Unit.MM, // Use display unit
+            }
+        );
 
-        const gcodeImperial = generateGCode([mockCut], mockDrawingInch, {
-            ...baseOptions,
-            units: Unit.INCH, // Use display unit
-        });
+        const gcodeImperial = generateGCode(
+            [mockCut],
+            new Drawing(mockDrawingInch),
+            {
+                ...baseOptions,
+                units: Unit.INCH, // Use display unit
+            }
+        );
 
         // MM should use 0.1 tolerance
         expect(gcodeMetric).toContain('G64 P0.1');
@@ -105,7 +114,7 @@ describe('GCode Generator - Units', () => {
             fileName: '',
         };
 
-        const gcode = generateGCode([mockCut], mockDrawing, {
+        const gcode = generateGCode([mockCut], new Drawing(mockDrawing), {
             ...baseOptions,
             units: Unit.MM, // Use display unit
         });
@@ -127,10 +136,14 @@ describe('GCode Generator - Units', () => {
             fileName: '',
         };
 
-        const gcodeMetric = generateGCode([mockCut], mockDrawingMM, {
-            ...baseOptions,
-            units: Unit.MM, // Display unit set to mm
-        });
+        const gcodeMetric = generateGCode(
+            [mockCut],
+            new Drawing(mockDrawingMM),
+            {
+                ...baseOptions,
+                units: Unit.MM, // Display unit set to mm
+            }
+        );
 
         // Simulate unit change to inches
         const mockDrawingInch: DrawingData = {
@@ -138,10 +151,14 @@ describe('GCode Generator - Units', () => {
             units: Unit.INCH,
         };
 
-        const gcodeImperial = generateGCode([mockCut], mockDrawingInch, {
-            ...baseOptions,
-            units: Unit.INCH, // Display unit changed to inch
-        });
+        const gcodeImperial = generateGCode(
+            [mockCut],
+            new Drawing(mockDrawingInch),
+            {
+                ...baseOptions,
+                units: Unit.INCH, // Display unit changed to inch
+            }
+        );
 
         // Verify they generate different unit codes
         expect(gcodeMetric).toContain('G21');

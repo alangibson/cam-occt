@@ -5,6 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
     const layerMap = new Map<string, ShapeData[]>();
@@ -41,7 +42,10 @@ describe('Tractor Seat Mount Final Test', () => {
         const filteredShapes = filterToLargestLayer(drawing.shapes);
 
         // Detect chains
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.05 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.05 }
+        );
 
         // Detect parts
         const partResult = await detectParts(chains);

@@ -5,6 +5,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { detectShapeChains } from './chain-detection';
 import { isShapeClosed } from '$lib/cam/shape/functions';
+import { Shape } from '$lib/cam/shape/classes';
 
 // Helper function to create ellipse shapes
 function createEllipse(
@@ -40,7 +41,9 @@ describe('Chain Detection - Ellipse Support', () => {
                 0.6
             );
 
-            const chains = detectShapeChains([ellipse], { tolerance: 0.05 });
+            const chains = detectShapeChains([new Shape(ellipse)], {
+                tolerance: 0.05,
+            });
 
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(1);
@@ -57,14 +60,16 @@ describe('Chain Detection - Ellipse Support', () => {
                 2 * Math.PI
             );
 
-            const chains = detectShapeChains([ellipse], { tolerance: 0.05 });
+            const chains = detectShapeChains([new Shape(ellipse)], {
+                tolerance: 0.05,
+            });
 
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(1);
             expect(chains[0].shapes[0].id).toBe('ellipse1');
 
             // Verify it's detected as closed
-            expect(isShapeClosed(ellipse, 0.05)).toBe(true);
+            expect(isShapeClosed(new Shape(ellipse), 0.05)).toBe(true);
         });
 
         it('should not connect separate full ellipses', () => {
@@ -81,9 +86,12 @@ describe('Chain Detection - Ellipse Support', () => {
                 0.8
             );
 
-            const chains = detectShapeChains([ellipse1, ellipse2], {
-                tolerance: 0.05,
-            });
+            const chains = detectShapeChains(
+                [new Shape(ellipse1), new Shape(ellipse2)],
+                {
+                    tolerance: 0.05,
+                }
+            );
 
             expect(chains).toHaveLength(2);
             expect(chains[0].shapes).toHaveLength(1);
@@ -104,9 +112,12 @@ describe('Chain Detection - Ellipse Support', () => {
                 0.8
             ); // Overlapping at right edge
 
-            const chains = detectShapeChains([ellipse1, ellipse2], {
-                tolerance: 5,
-            }); // Larger tolerance to ensure connection
+            const chains = detectShapeChains(
+                [new Shape(ellipse1), new Shape(ellipse2)],
+                {
+                    tolerance: 5,
+                }
+            ); // Larger tolerance to ensure connection
 
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(2);
@@ -124,7 +135,9 @@ describe('Chain Detection - Ellipse Support', () => {
                 Math.PI
             );
 
-            const chains = detectShapeChains([ellipseArc], { tolerance: 0.05 });
+            const chains = detectShapeChains([new Shape(ellipseArc)], {
+                tolerance: 0.05,
+            });
 
             // ALL shapes form chains, including open ellipse arcs
             expect(chains).toHaveLength(1);
@@ -132,7 +145,7 @@ describe('Chain Detection - Ellipse Support', () => {
             expect(chains[0].shapes[0].id).toBe('arc1');
 
             // Verify it's detected as open
-            expect(isShapeClosed(ellipseArc, 0.05)).toBe(false);
+            expect(isShapeClosed(new Shape(ellipseArc), 0.05)).toBe(false);
         });
 
         it('should connect ellipse arc with other shapes at endpoints', () => {
@@ -155,9 +168,12 @@ describe('Chain Detection - Ellipse Support', () => {
                 },
             };
 
-            const chains = detectShapeChains([ellipseArc, line], {
-                tolerance: 0.05,
-            });
+            const chains = detectShapeChains(
+                [new Shape(ellipseArc), new Shape(line)],
+                {
+                    tolerance: 0.05,
+                }
+            );
 
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(2);
@@ -188,7 +204,10 @@ describe('Chain Detection - Ellipse Support', () => {
                 Math.PI / 2
             );
 
-            const chains = detectShapeChains([arc1, arc2], { tolerance: 0.05 });
+            const chains = detectShapeChains(
+                [new Shape(arc1), new Shape(arc2)],
+                { tolerance: 0.05 }
+            );
 
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(2);
@@ -227,9 +246,12 @@ describe('Chain Detection - Ellipse Support', () => {
                 },
             };
 
-            const chains = detectShapeChains([ellipseArc, line, circle], {
-                tolerance: 0.1,
-            });
+            const chains = detectShapeChains(
+                [new Shape(ellipseArc), new Shape(line), new Shape(circle)],
+                {
+                    tolerance: 0.1,
+                }
+            );
 
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(3);
@@ -262,7 +284,10 @@ describe('Chain Detection - Ellipse Support', () => {
                 },
             ];
 
-            const chains = detectShapeChains(shapes, { tolerance: 5 });
+            const chains = detectShapeChains(
+                shapes.map((s) => new Shape(s)),
+                { tolerance: 5 }
+            );
 
             // Should detect some chains - exact count depends on proximity
             expect(chains.length).toBeGreaterThan(0);
@@ -278,7 +303,9 @@ describe('Chain Detection - Ellipse Support', () => {
                 0.5
             );
 
-            const chains = detectShapeChains([degenerate], { tolerance: 0.05 });
+            const chains = detectShapeChains([new Shape(degenerate)], {
+                tolerance: 0.05,
+            });
 
             // Should not crash, degenerate ellipse is still treated as a closed shape
             expect(chains).toHaveLength(1); // Even degenerate ellipse forms a chain if it's closed
@@ -292,7 +319,7 @@ describe('Chain Detection - Ellipse Support', () => {
                 0.01
             );
 
-            const chains = detectShapeChains([flatEllipse], {
+            const chains = detectShapeChains([new Shape(flatEllipse)], {
                 tolerance: 0.05,
             });
 
@@ -308,7 +335,7 @@ describe('Chain Detection - Ellipse Support', () => {
                 1.0
             );
 
-            const chains = detectShapeChains([circularEllipse], {
+            const chains = detectShapeChains([new Shape(circularEllipse)], {
                 tolerance: 0.05,
             });
 

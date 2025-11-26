@@ -4,10 +4,10 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import { Chain } from '$lib/cam/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { convertLeadGeometryToPoints } from './functions';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Direction Debug', () => {
     it('should debug cut direction logic', () => {

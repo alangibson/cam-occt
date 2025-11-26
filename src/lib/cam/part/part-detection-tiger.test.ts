@@ -8,6 +8,7 @@ import type { ChainData } from '$lib/cam/chain/interfaces';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import { isChainClosed } from '$lib/cam/chain/functions';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
+import { Shape } from '$lib/cam/shape/classes';
 
 /**
  * Calculate the gap distance between first and last shape in a chain
@@ -18,8 +19,8 @@ function calculateChainGap(chain: ChainData): number {
     const firstShape = chain.shapes[0];
     const lastShape = chain.shapes[chain.shapes.length - 1];
 
-    const firstStart = getShapeStartPoint(firstShape);
-    const lastEnd = getShapeEndPoint(lastShape);
+    const firstStart = getShapeStartPoint(new Shape(firstShape));
+    const lastEnd = getShapeEndPoint(new Shape(lastShape));
 
     return Math.sqrt(
         Math.pow(firstStart.x - lastEnd.x, 2) +
@@ -60,9 +61,12 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
         console.log(`Using default tolerance: ${tolerance}mm`);
 
         // Detect chains with default tolerance
-        const chains = detectShapeChains(drawing.shapes, {
-            tolerance: tolerance,
-        });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            {
+                tolerance: tolerance,
+            }
+        );
 
         console.log(`\nChains detected: ${chains.length}`);
         chains.forEach((chain, idx) => {
@@ -112,9 +116,12 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
         console.log(`Using forced-merge tolerance: ${tolerance}mm`);
 
         // Detect chains with very high tolerance
-        const chains = detectShapeChains(drawing.shapes, {
-            tolerance: tolerance,
-        });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            {
+                tolerance: tolerance,
+            }
+        );
 
         console.log(`\nChains detected: ${chains.length}`);
         chains.forEach((chain, idx) => {
@@ -168,8 +175,8 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
         console.log('\nChecking if individual splines are closed:');
         for (let i = 0; i < drawing.shapes.length; i++) {
             const shape = drawing.shapes[i];
-            const start = getShapeStartPoint(shape);
-            const end = getShapeEndPoint(shape);
+            const start = getShapeStartPoint(new Shape(shape));
+            const end = getShapeEndPoint(new Shape(shape));
             const selfGap = Math.sqrt(
                 Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2)
             );
@@ -180,9 +187,12 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
 
         // Detect chains with very tight tolerance to see actual structure
         const tightTolerance = 0.001;
-        const chainsVeryTight = detectShapeChains(drawing.shapes, {
-            tolerance: tightTolerance,
-        });
+        const chainsVeryTight = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            {
+                tolerance: tightTolerance,
+            }
+        );
 
         console.log(
             `\nWith very tight tolerance (${tightTolerance}): ${chainsVeryTight.length} chains`
@@ -192,7 +202,7 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
         console.log('\nAnalyzing spline endpoint connectivity:');
         for (let i = 0; i < drawing.shapes.length; i++) {
             const shape1 = drawing.shapes[i];
-            const end1 = getShapeEndPoint(shape1);
+            const end1 = getShapeEndPoint(new Shape(shape1));
 
             // Find closest start point in other shapes
             let minDist = Infinity;
@@ -201,7 +211,7 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
             for (let j = 0; j < drawing.shapes.length; j++) {
                 if (i === j) continue;
                 const shape2 = drawing.shapes[j];
-                const start2 = getShapeStartPoint(shape2);
+                const start2 = getShapeStartPoint(new Shape(shape2));
 
                 const dist = Math.sqrt(
                     Math.pow(end1.x - start2.x, 2) +
@@ -225,9 +235,12 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
         console.log('\nChain count by tolerance:');
         const tolerances = [0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0];
         for (const tol of tolerances) {
-            const chains = detectShapeChains(drawing.shapes, {
-                tolerance: tol,
-            });
+            const chains = detectShapeChains(
+                drawing.shapes.map((s) => new Shape(s)),
+                {
+                    tolerance: tol,
+                }
+            );
             console.log(`  ${tol}: ${chains.length} chains`);
         }
 

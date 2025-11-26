@@ -1,3 +1,5 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, it, expect, vi } from 'vitest';
 import {
     findNearestCut,
@@ -16,8 +18,6 @@ import { OffsetDirection } from '$lib/cam/offset/types';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { Cut } from './classes.svelte';
-import { Chain } from '$lib/cam/chain/classes';
-import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('cut-optimization-utils - branch coverage', () => {
@@ -231,13 +231,13 @@ describe('cut-optimization-utils - branch coverage', () => {
             };
 
             const result = createSplitShape(
-                shapeWithLayer,
+                new Shape(shapeWithLayer),
                 '1',
                 GeometryType.LINE,
                 { start: { x: 0, y: 0 }, end: { x: 5, y: 0 } }
             );
 
-            expect(result.layer).toBe('test-layer');
+            expect(result.toData().layer).toBe('test-layer');
         });
 
         it('should not include layer when not present', () => {
@@ -251,13 +251,13 @@ describe('cut-optimization-utils - branch coverage', () => {
             };
 
             const result = createSplitShape(
-                basicShape,
+                new Shape(basicShape),
                 '1',
                 GeometryType.LINE,
                 { start: { x: 0, y: 0 }, end: { x: 5, y: 0 } }
             );
 
-            expect(result).not.toHaveProperty('layer');
+            expect(result.toData()).not.toHaveProperty('layer');
         });
     });
 
@@ -274,7 +274,7 @@ describe('cut-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = splitLineAtMidpoint(nonLineShape);
+            const result = splitLineAtMidpoint(new Shape(nonLineShape));
             expect(result).toBeNull();
         });
     });
@@ -290,7 +290,7 @@ describe('cut-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = splitArcAtMidpoint(nonArcShape);
+            const result = splitArcAtMidpoint(new Shape(nonArcShape));
             expect(result).toBeNull();
         });
     });

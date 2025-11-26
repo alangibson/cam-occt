@@ -4,6 +4,7 @@ import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { isChainGeometricallyContained } from '$lib/cam/chain/functions';
+import { Chain } from '$lib/cam/chain/classes';
 
 // Helper function to create ellipse shapes for testing
 function createEllipseShape(
@@ -53,7 +54,10 @@ describe('Geometric Operations - Ellipse support', () => {
             // This will internally call getShapePoints which should generate polygon approximation
             // We test this indirectly through containment operations
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).not.toThrow();
         });
 
@@ -70,7 +74,10 @@ describe('Geometric Operations - Ellipse support', () => {
 
             // Test that polygon approximation works for arcs
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).not.toThrow();
         });
 
@@ -85,7 +92,10 @@ describe('Geometric Operations - Ellipse support', () => {
 
             // Test polygon generation for rotated ellipse
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).not.toThrow();
         });
     });
@@ -108,8 +118,8 @@ describe('Geometric Operations - Ellipse support', () => {
             const innerChain = createChain([innerEllipse], 'inner');
 
             const isContained = isChainGeometricallyContained(
-                innerChain,
-                outerChain
+                new Chain(innerChain),
+                new Chain(outerChain)
             );
             expect(isContained).toBe(true);
         });
@@ -130,8 +140,14 @@ describe('Geometric Operations - Ellipse support', () => {
             const chain1 = createChain([ellipse1], 'chain1');
             const chain2 = createChain([ellipse2], 'chain2');
 
-            const isContained1 = isChainGeometricallyContained(chain1, chain2);
-            const isContained2 = isChainGeometricallyContained(chain2, chain1);
+            const isContained1 = isChainGeometricallyContained(
+                new Chain(chain1),
+                new Chain(chain2)
+            );
+            const isContained2 = isChainGeometricallyContained(
+                new Chain(chain2),
+                new Chain(chain1)
+            );
 
             expect(isContained1).toBe(false);
             expect(isContained2).toBe(false);
@@ -157,8 +173,8 @@ describe('Geometric Operations - Ellipse support', () => {
 
             // Arc should be contained within full ellipse
             const isContained = isChainGeometricallyContained(
-                arcChain,
-                fullChain
+                new Chain(arcChain),
+                new Chain(fullChain)
             );
             expect(isContained).toBe(true);
         });
@@ -187,8 +203,8 @@ describe('Geometric Operations - Ellipse support', () => {
             const circleChain = createChain([circle], 'circle');
 
             const isContained = isChainGeometricallyContained(
-                circleChain,
-                ellipseChain
+                new Chain(circleChain),
+                new Chain(ellipseChain)
             );
             expect(isContained).toBe(true);
         });
@@ -241,8 +257,8 @@ describe('Geometric Operations - Ellipse support', () => {
             const ellipseChain = createChain([ellipse], 'ellipse');
 
             const isContained = isChainGeometricallyContained(
-                ellipseChain,
-                rectChain
+                new Chain(ellipseChain),
+                new Chain(rectChain)
             );
             expect(isContained).toBe(true);
         });
@@ -262,7 +278,10 @@ describe('Geometric Operations - Ellipse support', () => {
             // The polygon should be detailed enough for accurate point-in-polygon tests
             // This is tested implicitly through containment operations
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).not.toThrow();
         });
 
@@ -277,7 +296,10 @@ describe('Geometric Operations - Ellipse support', () => {
 
             // Should not throw even with very flat ellipse
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).not.toThrow();
         });
 
@@ -292,7 +314,10 @@ describe('Geometric Operations - Ellipse support', () => {
 
             // Should behave like a circle
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).not.toThrow();
         });
     });
@@ -310,7 +335,10 @@ describe('Geometric Operations - Ellipse support', () => {
             // For degenerate ellipses, the polygon extraction may fail
             // This is expected behavior - we should get an error about failed polygon extraction
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).toThrow(/Failed to extract polygons/);
         });
 
@@ -325,7 +353,10 @@ describe('Geometric Operations - Ellipse support', () => {
 
             // Should handle gracefully
             expect(() => {
-                isChainGeometricallyContained(chain, chain);
+                isChainGeometricallyContained(
+                    new Chain(chain),
+                    new Chain(chain)
+                );
             }).not.toThrow();
         });
     });

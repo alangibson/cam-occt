@@ -2,13 +2,13 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import { sampleShapes } from '$lib/cam/shape/functions';
 import { isCutEnabledForRendering } from '$lib/rendering/canvas/utils/renderer-utils';
 import { drawChevronArrow } from '$lib/rendering/canvas/utils/chevron-drawing';
+import { Shape } from '$lib/cam/shape/classes';
 
 /**
  * Physical spacing between cut direction chevrons in drawing units
@@ -69,11 +69,11 @@ export class ChevronRenderer extends BaseRenderer {
                 return;
             }
 
-            let shapesToSample: ShapeData[] = [];
+            let shapesToSample: Shape[] = [];
 
             // Use execution chain if available (contains shapes in correct execution order)
             if (cut.cutChain && cut.cutChain.shapes.length > 0) {
-                shapesToSample = cut.cutChain.shapes;
+                shapesToSample = cut.cutChain.shapes.map((s) => new Shape(s));
             } else {
                 // Fallback to original shapes for backward compatibility
                 // IMPORTANT: Don't manually apply cut direction here - it conflicts with stored chain direction
@@ -82,7 +82,9 @@ export class ChevronRenderer extends BaseRenderer {
                     cut.offset.offsetShapes &&
                     cut.offset.offsetShapes.length > 0
                 ) {
-                    shapesToSample = cut.offset.offsetShapes;
+                    shapesToSample = cut.offset.offsetShapes.map(
+                        (s) => new Shape(s)
+                    );
                 } else {
                     // Get the chain for this cut and use original shapes
                     const chain = state.chains.find(

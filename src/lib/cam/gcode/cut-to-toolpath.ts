@@ -1,11 +1,10 @@
 import { LeadType } from '$lib/cam/lead/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { CutPath } from './interfaces';
 import type { Lead } from './types';
 import { CutterCompensation } from './enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { getShapePoints } from '$lib/cam/shape/functions';
@@ -15,8 +14,8 @@ import {
     hasValidCachedLeads,
 } from '$lib/cam/cut/lead-persistence';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-import type { ChainData } from '$lib/cam/chain/interfaces';
-import type { PartData } from '$lib/cam/part/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
+import { Part } from '$lib/cam/part/classes.svelte';
 import {
     CAM_CALCULATION_TOLERANCE_MM,
     DEFAULT_CUT_HEIGHT_MM,
@@ -33,6 +32,7 @@ import {
     getToolKerfWidth,
 } from '$lib/config/units/tool-units';
 import { Unit } from '$lib/config/units/units';
+import type { Cut } from '$lib/cam/cut/classes.svelte';
 
 /**
  * Convert a Cut from the cut store to a ToolPath for G-code generation.
@@ -42,17 +42,17 @@ import { Unit } from '$lib/config/units/units';
  * 3. originalShapes (final fallback or for MACHINE mode)
  */
 export async function cutToToolPath(
-    cut: CutData,
-    originalShapes: ShapeData[],
+    cut: Cut,
+    originalShapes: Shape[],
     tools: Tool[],
     cutterCompensation: CutterCompensation | null,
-    chainMap?: Map<string, ChainData>,
-    partMap?: Map<string, PartData>,
+    chainMap?: Map<string, Chain>,
+    partMap?: Map<string, Part>,
     displayUnit?: Unit
 ): Promise<CutPath> {
     // Use simulation's validated geometry resolution approach
     // Priority: cutChain > calculatedOffset (if SOFTWARE mode) > original shapes
-    let shapesToUse: ShapeData[];
+    let shapesToUse: Shape[];
 
     // First priority: Use execution chain if available (contains shapes in correct execution order)
     if (cut.cutChain && cut.cutChain.shapes.length > 0) {
@@ -310,7 +310,7 @@ export async function cutToToolPath(
     };
 
     // Set originalShape for native command generation
-    const originalShape: ShapeData | undefined = canUseNativeShapes
+    const originalShape: Shape | undefined = canUseNativeShapes
         ? shapesToUse[0]
         : undefined;
 
@@ -337,23 +337,23 @@ export async function cutToToolPath(
  * Uses simulation's validated approach for geometry resolution
  */
 export async function cutsToToolPaths(
-    cuts: CutData[],
-    chainShapes: Map<string, ShapeData[]>,
+    cuts: Cut[],
+    chainShapes: Map<string, Shape[]>,
     tools: Tool[],
     cutterCompensation: CutterCompensation | null,
-    chainMap?: Map<string, ChainData>,
-    partMap?: Map<string, PartData>,
+    chainMap?: Map<string, Chain>,
+    partMap?: Map<string, Part>,
     displayUnit?: Unit
 ): Promise<CutPath[]> {
     const toolPaths: CutPath[] = [];
 
     // Sort cuts by their order field
-    const sortedCuts: CutData[] = [...cuts].sort((a, b) => a.order - b.order);
+    const sortedCuts: Cut[] = [...cuts].sort((a, b) => a.order - b.order);
 
     for (const cut of sortedCuts) {
         if (!cut.enabled) continue;
 
-        const originalShapes: ShapeData[] | undefined = chainShapes.get(
+        const originalShapes: Shape[] | undefined = chainShapes.get(
             cut.chainId
         );
         if (!originalShapes) continue;

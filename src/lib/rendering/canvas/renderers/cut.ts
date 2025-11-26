@@ -237,7 +237,7 @@ export class CutRenderer extends BaseRenderer {
 
             // Get start point of first shape
             if (state.visibility.showCutStartPoints) {
-                const startPoint = getShapeStartPoint(firstShape);
+                const startPoint = getShapeStartPoint(new Shape(firstShape));
                 if (startPoint) {
                     ctx.save();
                     ctx.fillStyle = 'rgb(0, 133, 84)'; // Green for start
@@ -256,7 +256,7 @@ export class CutRenderer extends BaseRenderer {
 
             // Get end point of last shape
             if (state.visibility.showCutEndPoints) {
-                const endPoint = getShapeEndPoint(lastShape);
+                const endPoint = getShapeEndPoint(new Shape(lastShape));
                 if (endPoint) {
                     ctx.save();
                     ctx.fillStyle = 'rgb(133, 18, 0)'; // Red for end
@@ -301,7 +301,7 @@ export class CutRenderer extends BaseRenderer {
             const firstShape = shapesToUse[0];
             if (!firstShape) return;
 
-            const startPoint = getShapeStartPoint(firstShape);
+            const startPoint = getShapeStartPoint(new Shape(firstShape));
             if (!startPoint) return;
 
             // Get the tangent at the start of the first shape
@@ -336,7 +336,9 @@ export class CutRenderer extends BaseRenderer {
                     // For other shapes, use simple forward difference
                     if (shapesToUse.length > 1) {
                         const secondShape = shapesToUse[1];
-                        const secondStart = getShapeStartPoint(secondShape);
+                        const secondStart = getShapeStartPoint(
+                            new Shape(secondShape)
+                        );
                         if (secondStart) {
                             tangent = {
                                 x: secondStart.x - startPoint.x,
@@ -544,7 +546,7 @@ export class CutRenderer extends BaseRenderer {
             const lastShape = shapesToUse[shapesToUse.length - 1];
 
             if (firstShape) {
-                const startPoint = getShapeStartPoint(firstShape);
+                const startPoint = getShapeStartPoint(new Shape(firstShape));
                 if (startPoint) {
                     const dx = point.x - startPoint.x;
                     const dy = point.y - startPoint.y;
@@ -562,7 +564,7 @@ export class CutRenderer extends BaseRenderer {
             }
 
             if (lastShape) {
-                const endPoint = getShapeEndPoint(lastShape);
+                const endPoint = getShapeEndPoint(new Shape(lastShape));
                 if (endPoint) {
                     const dx = point.x - endPoint.x;
                     const dy = point.y - endPoint.y;

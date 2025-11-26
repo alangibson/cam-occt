@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, it, expect } from 'vitest';
 import { getChainPointAt } from './functions';
 import type { ChainData } from './interfaces';
@@ -13,7 +14,7 @@ describe('getChainPointAt', () => {
             shapes: [],
         };
 
-        expect(() => getChainPointAt(emptyChain, 0.5)).toThrow(
+        expect(() => getChainPointAt(new Chain(emptyChain), 0.5)).toThrow(
             'Chain has no shapes'
         );
     });
@@ -33,7 +34,7 @@ describe('getChainPointAt', () => {
             shapes: [lineShape],
         };
 
-        const point = getChainPointAt(chain, 0);
+        const point = getChainPointAt(new Chain(chain), 0);
         expect(point.x).toBe(0);
         expect(point.y).toBe(0);
     });
@@ -53,7 +54,7 @@ describe('getChainPointAt', () => {
             shapes: [lineShape],
         };
 
-        const point = getChainPointAt(chain, 1);
+        const point = getChainPointAt(new Chain(chain), 1);
         expect(point.x).toBe(100);
         expect(point.y).toBe(0);
     });
@@ -73,7 +74,7 @@ describe('getChainPointAt', () => {
             shapes: [lineShape],
         };
 
-        const point = getChainPointAt(chain, 0.5);
+        const point = getChainPointAt(new Chain(chain), 0.5);
         expect(point.x).toBe(50);
         expect(point.y).toBe(0);
     });
@@ -104,17 +105,17 @@ describe('getChainPointAt', () => {
 
         // Total length = 200 (100 + 100)
         // t=0.25 should be at 50 units along first line
-        const point1 = getChainPointAt(chain, 0.25);
+        const point1 = getChainPointAt(new Chain(chain), 0.25);
         expect(point1.x).toBe(50);
         expect(point1.y).toBe(0);
 
         // t=0.5 should be at the junction (end of first line)
-        const point2 = getChainPointAt(chain, 0.5);
+        const point2 = getChainPointAt(new Chain(chain), 0.5);
         expect(point2.x).toBe(100);
         expect(point2.y).toBe(0);
 
         // t=0.75 should be 50 units along second line
-        const point3 = getChainPointAt(chain, 0.75);
+        const point3 = getChainPointAt(new Chain(chain), 0.75);
         expect(point3.x).toBe(100);
         expect(point3.y).toBe(50);
     });
@@ -139,17 +140,17 @@ describe('getChainPointAt', () => {
         };
 
         // t=0 should be at start (100, 0)
-        const start = getChainPointAt(chain, 0);
+        const start = getChainPointAt(new Chain(chain), 0);
         expect(start.x).toBeCloseTo(100, 5);
         expect(start.y).toBeCloseTo(0, 5);
 
         // t=1 should be at end (0, 100)
-        const end = getChainPointAt(chain, 1);
+        const end = getChainPointAt(new Chain(chain), 1);
         expect(end.x).toBeCloseTo(0, 5);
         expect(end.y).toBeCloseTo(100, 5);
 
         // t=0.5 should be at 45° (roughly 70.7, 70.7)
-        const mid = getChainPointAt(chain, 0.5);
+        const mid = getChainPointAt(new Chain(chain), 0.5);
         expect(mid.x).toBeCloseTo(70.71, 1);
         expect(mid.y).toBeCloseTo(70.71, 1);
     });
@@ -170,12 +171,12 @@ describe('getChainPointAt', () => {
         };
 
         // t < 0 should return start point
-        const pointNegative = getChainPointAt(chain, -0.5);
+        const pointNegative = getChainPointAt(new Chain(chain), -0.5);
         expect(pointNegative.x).toBe(0);
         expect(pointNegative.y).toBe(0);
 
         // t > 1 should return end point
-        const pointOver = getChainPointAt(chain, 1.5);
+        const pointOver = getChainPointAt(new Chain(chain), 1.5);
         expect(pointOver.x).toBe(100);
         expect(pointOver.y).toBe(0);
     });
@@ -214,12 +215,12 @@ describe('getChainPointAt', () => {
         // Total ≈ 257.08
 
         // t=0 should be at line start
-        const start = getChainPointAt(chain, 0);
+        const start = getChainPointAt(new Chain(chain), 0);
         expect(start.x).toBeCloseTo(0, 5);
         expect(start.y).toBeCloseTo(0, 5);
 
         // t=1 should be at arc end
-        const end = getChainPointAt(chain, 1);
+        const end = getChainPointAt(new Chain(chain), 1);
         expect(end.x).toBeCloseTo(200, 5);
         expect(end.y).toBeCloseTo(100, 5);
     });

@@ -5,6 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
     it('should detect 1 part with 12 holes after chain normalization', async () => {
@@ -17,7 +18,10 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
 
         // Use standard tolerance for chain detection
         const tolerance = 1.0; // Using 1.0 to get more chains connected
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
 
         // Check closure status before normalization
         // Closure analysis removed as it was not used in the test

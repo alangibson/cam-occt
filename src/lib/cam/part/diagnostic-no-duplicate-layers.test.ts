@@ -7,6 +7,7 @@ import { join } from 'path';
 import { isChainClosed } from '$lib/cam/chain/functions';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { buildContainmentHierarchy } from '$lib/cam/part/geometric-containment';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Diagnostic - Part Detection Without Duplicate Layers', () => {
     it('diagnose Tractor Light Mount without layer 0 duplicates', async () => {
@@ -24,7 +25,10 @@ describe('Diagnostic - Part Detection Without Duplicate Layers', () => {
         console.log(`Original shapes: ${drawing.shapes.length}`);
         console.log(`Filtered shapes: ${filteredShapes.length}`);
 
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>
@@ -86,7 +90,10 @@ describe('Diagnostic - Part Detection Without Duplicate Layers', () => {
         console.log(`Original shapes: ${drawing.shapes.length}`);
         console.log(`Filtered shapes: ${filteredShapes.length}`);
 
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            filteredShapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         const closedChains = normalizedChains.filter((chain) =>

@@ -5,6 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { isChainGeometricallyContained } from '$lib/cam/chain/functions';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Test Circle Face Creation and Containment', () => {
     it('should successfully create faces for circle chains and test boundary containment', async () => {
@@ -17,7 +18,10 @@ describe('Test Circle Face Creation and Containment', () => {
 
         // Detect chains
         const tolerance = 1.0;
-        const chains = detectShapeChains(drawing.shapes, { tolerance });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance }
+        );
 
         // Normalize chains
         const normalizedChains = chains.map((chain) => normalizeChain(chain));

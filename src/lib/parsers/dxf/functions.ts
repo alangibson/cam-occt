@@ -3,6 +3,7 @@ import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { PolylineVertex } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
@@ -287,8 +288,8 @@ function convertInsertEntity(
 
             // Apply transformation to each shape
             for (const shapeToTransform of shapesToTransform) {
-                const transformedShape: ShapeData | null = transformShape(
-                    shapeToTransform,
+                const transformed = transformShape(
+                    new Shape(shapeToTransform),
                     {
                         insertX,
                         insertY,
@@ -299,8 +300,8 @@ function convertInsertEntity(
                         blockBaseY: basePoint.y,
                     }
                 );
-                if (transformedShape) {
-                    insertedShapes.push(transformedShape);
+                if (transformed) {
+                    insertedShapes.push(transformed.toData());
                 }
             }
         }
@@ -456,26 +457,34 @@ export async function parseDXF(content: string): Promise<DrawingData> {
                         // Multiple shapes (decomposed polyline or INSERT entities)
                         result.forEach((shape) => {
                             // Scale coordinates if needed (cm/m → mm conversion)
-                            const scaledShape =
+                            const scaled =
                                 coordinateScaleFactor !== 1.0
-                                    ? scaleShape(shape, coordinateScaleFactor, {
-                                          x: 0,
-                                          y: 0,
-                                      })
-                                    : shape;
-                            shapes.push(scaledShape);
+                                    ? scaleShape(
+                                          new Shape(shape),
+                                          coordinateScaleFactor,
+                                          {
+                                              x: 0,
+                                              y: 0,
+                                          }
+                                      )
+                                    : new Shape(shape);
+                            shapes.push(scaled.toData());
                         });
                     } else {
                         // Single shape
                         // Scale coordinates if needed (cm/m → mm conversion)
-                        const scaledShape =
+                        const scaled =
                             coordinateScaleFactor !== 1.0
-                                ? scaleShape(result, coordinateScaleFactor, {
-                                      x: 0,
-                                      y: 0,
-                                  })
-                                : result;
-                        shapes.push(scaledShape);
+                                ? scaleShape(
+                                      new Shape(result),
+                                      coordinateScaleFactor,
+                                      {
+                                          x: 0,
+                                          y: 0,
+                                      }
+                                  )
+                                : new Shape(result);
+                        shapes.push(scaled.toData());
                     }
                 }
             } catch (error) {

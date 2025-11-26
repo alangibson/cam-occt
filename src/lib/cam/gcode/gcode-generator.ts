@@ -1,6 +1,6 @@
 import type { Unit } from '$lib/config/units/units';
-import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -44,7 +44,7 @@ interface GCodeOptions {
 
 export function generateGCode(
     cuts: CutPath[],
-    drawing: DrawingData,
+    drawing: Drawing,
     options: GCodeOptions
 ): string {
     const commands: GCodeCommand[] = [];
@@ -724,7 +724,7 @@ function generateFooter(options: GCodeOptions): GCodeCommand[] {
 }
 
 function generateNativeSplineCommands(
-    shape: ShapeData,
+    shape: Shape,
     options: GCodeOptions,
     toolCut?: CutPath
 ): GCodeCommand[] {

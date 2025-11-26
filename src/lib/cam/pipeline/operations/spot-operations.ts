@@ -2,7 +2,6 @@
  * Spot operations module - handles spot cut generation for cyclic chains
  */
 
-import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
@@ -24,7 +23,7 @@ export async function generateSpotsForChainsWithOperation(
     index: number
 ): Promise<CutGenerationResult> {
     // Get chain from operation targets
-    const chain = operation.targets[index] as ChainData;
+    const chain = operation.targets[index] as Chain;
     const tool = operation.tool;
 
     // Return empty arrays if chain not found or tool missing

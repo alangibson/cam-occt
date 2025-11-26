@@ -22,6 +22,7 @@ import { join } from 'path';
 import { detectParts } from './part-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
     const layerMap = new Map<string, ShapeData[]>();
@@ -56,7 +57,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const drawing = await parseDXF(dxfContent);
 
         // Detect chains
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
 
         // Normalize chains
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
@@ -79,7 +83,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
@@ -96,7 +103,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
@@ -113,7 +123,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
@@ -130,7 +143,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
@@ -147,7 +163,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
@@ -171,7 +190,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         // Filter to largest layer to eliminate circle-only layers
         const filteredShapes = filterToLargestLayer(drawing.shapes);
 
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = filteredShapes.map((s) => new Shape(s));
+
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
@@ -188,7 +210,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(
+            drawing.shapes.map((s) => new Shape(s)),
+            { tolerance: 0.1 }
+        );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         // Count closed chains by detecting which chains became parts or holes
@@ -220,7 +245,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         // Filter to largest layer to eliminate circle-only layers
         const filteredShapes = filterToLargestLayer(drawing.shapes);
 
-        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
+        // Convert ShapeData to Shape instances for chain detection
+        const shapeInstances = filteredShapes.map((s) => new Shape(s));
+
+        const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>

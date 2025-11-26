@@ -4,6 +4,7 @@
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { CutDirection } from '$lib/cam/cut/enums';
+    import { Chain } from '$lib/cam/chain/classes';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive part data
@@ -45,7 +46,7 @@
               });
 
               const direction = detectCutDirection(
-                  selectedPart.shell,
+                  new Chain(selectedPart.shell),
                   algorithmParams.chainDetection.tolerance
               );
               props.push({

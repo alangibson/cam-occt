@@ -2,7 +2,6 @@ import type { Part } from '$lib/cam/part/classes.svelte';
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 import type { CutGenerationResult } from './interfaces';
 import type { Operation } from '$lib/cam/operation/classes.svelte';
-import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes';
 import { generateCutsForChainsWithOperation } from './chain-operations';
 import { generateCutsForPartsWithOperation } from './part-operations';
@@ -93,20 +92,20 @@ export async function createCutsFromOperation(
         operation.action === OperationAction.CUT
     ) {
         // Get all chains from targets
-        const allChains: ChainData[] = [];
+        const allChains: Chain[] = [];
         const allParts: Part[] = [];
 
         for (const target of operation.targets) {
             if ('shapes' in target) {
                 // It's a Chain
-                allChains.push(target as ChainData);
+                allChains.push(target as Chain);
             } else {
                 // It's a Part
                 const part = target as Part;
                 allParts.push(part);
-                allChains.push(part.shell);
-                allChains.push(...part.voids.map((v) => v.chain));
-                allChains.push(...part.slots.map((s) => s.chain));
+                allChains.push(new Chain(part.shell));
+                allChains.push(...part.voids.map((v) => new Chain(v.chain)));
+                allChains.push(...part.slots.map((s) => new Chain(s.chain)));
             }
         }
 

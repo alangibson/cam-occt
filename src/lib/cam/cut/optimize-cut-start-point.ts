@@ -5,7 +5,7 @@
  * Uses the same algorithm as chain start point optimization.
  */
 
-import type { CutData } from '$lib/cam/cut/interfaces';
+import type { Cut } from '$lib/cam/cut/classes.svelte';
 import { OptimizeStarts } from './enums';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { StartPointOptimizationParameters } from '$lib/preprocessing/algorithm-parameters';
@@ -13,30 +13,31 @@ import { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Optimizes the start point of a cut by optimizing its cutChain.
+ * Mutates the cut in place if optimization is applied.
  *
- * @param cut - The cut to optimize
+ * @param cut - The cut to optimize (mutated in place if optimization succeeds)
  * @param optimizeMode - The optimization mode (NONE or MIDPOINT)
  * @param tolerance - Tolerance for determining if a chain is closed
- * @returns A new Cut with optimized cutChain, or null if no optimization was performed
+ * @returns true if optimization was performed, false otherwise
  */
 export function optimizeCutStartPoint(
-    cut: CutData,
+    cut: Cut,
     optimizeMode: OptimizeStarts,
     tolerance: number
-): CutData | null {
+): boolean {
     // Skip if optimization is disabled
     if (optimizeMode === OptimizeStarts.NONE) {
-        return null;
+        return false;
     }
 
     // Skip if cut has no cutChain
     if (!cut.cutChain) {
-        return null;
+        return false;
     }
 
     // Only MIDPOINT mode is currently supported
     if (optimizeMode !== OptimizeStarts.MIDPOINT) {
-        return null;
+        return false;
     }
 
     // Create optimization parameters
@@ -48,14 +49,12 @@ export function optimizeCutStartPoint(
     // Optimize the cut's chain
     const result = optimizeChainStartPoint(cut.cutChain, params);
 
-    // If no optimization was performed, return null
+    // If no optimization was performed, return false
     if (!result.modified || !result.optimizedChain) {
-        return null;
+        return false;
     }
 
-    // Return a new cut with the optimized chain
-    return {
-        ...cut,
-        cutChain: new Chain(result.optimizedChain),
-    };
+    // Mutate the cut with the optimized chain
+    cut.cutChain = new Chain(result.optimizedChain);
+    return true;
 }

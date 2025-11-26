@@ -1,6 +1,8 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -12,8 +14,6 @@ import { cutToToolPath, cutsToToolPaths } from './cut-to-toolpath';
 import { GeometryType } from '$lib/geometry/enums';
 import { getShapePoints } from '$lib/cam/shape/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
-import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 // Mock getShapePoints function
@@ -107,7 +107,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 tools,
                 CutterCompensation.NONE
@@ -176,7 +176,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: ShapeData[] = [
+            const originalShapes: Shape[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -186,7 +186,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 originalShapes,
                 [],
                 CutterCompensation.NONE
@@ -221,7 +221,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -261,7 +261,7 @@ describe('cutToToolPath', () => {
                 ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -292,7 +292,7 @@ describe('cutToToolPath', () => {
                 ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -324,7 +324,7 @@ describe('cutToToolPath', () => {
                 ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -356,7 +356,7 @@ describe('cutToToolPath', () => {
                 ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -402,7 +402,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -469,7 +469,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: ShapeData[] = [
+            const originalShapes: Shape[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -481,7 +481,7 @@ describe('cutToToolPath', () => {
             // Using real convertLeadGeometryToPoints function
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 originalShapes,
                 [],
                 CutterCompensation.NONE
@@ -545,7 +545,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: ShapeData[] = [
+            const originalShapes: Shape[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -555,7 +555,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 originalShapes,
                 [],
                 CutterCompensation.NONE
@@ -590,7 +590,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -614,7 +614,7 @@ describe('cutToToolPath', () => {
                     geometry: {
                         center: { x: 12.5, y: 0 },
                         radius: 2.5,
-                        startAngle: 180,
+                        startAngle: Math.PI,
                         endAngle: 0,
                         clockwise: false,
                     },
@@ -633,7 +633,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -697,7 +697,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: ShapeData[] = [
+            const originalShapes: Shape[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -707,7 +707,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 originalShapes,
                 [],
                 CutterCompensation.NONE
@@ -772,7 +772,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: ShapeData[] = [
+            const originalShapes: Shape[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -782,7 +782,7 @@ describe('cutToToolPath', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 originalShapes,
                 [],
                 CutterCompensation.NONE
@@ -798,7 +798,7 @@ describe('cutToToolPath', () => {
             const shapes: Shape[] = [];
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -816,7 +816,7 @@ describe('cutToToolPath', () => {
             mockGetShapePoints.mockReturnValueOnce([{ x: 5, y: 5 }]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -874,7 +874,7 @@ describe('cutsToToolPaths', () => {
                 createMockCut({ id: 'cut-3', order: 3 }),
             ];
 
-            const chainShapes = new Map<string, ShapeData[]>([
+            const chainShapes = new Map<string, Shape[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -887,7 +887,7 @@ describe('cutsToToolPaths', () => {
             ]);
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -908,7 +908,7 @@ describe('cutsToToolPaths', () => {
                 createMockCut({ id: 'cut-3', order: 3, enabled: true }),
             ];
 
-            const chainShapes = new Map<string, ShapeData[]>([
+            const chainShapes = new Map<string, Shape[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -921,7 +921,7 @@ describe('cutsToToolPaths', () => {
             ]);
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -939,7 +939,7 @@ describe('cutsToToolPaths', () => {
                 createMockCut({ id: 'cut-2', chainId: 'missing-chain' }),
             ];
 
-            const chainShapes = new Map<string, ShapeData[]>([
+            const chainShapes = new Map<string, Shape[]>([
                 [
                     'existing-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -952,7 +952,7 @@ describe('cutsToToolPaths', () => {
             ]);
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -970,7 +970,7 @@ describe('cutsToToolPaths', () => {
                 createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
-            const chainShapes = new Map<string, ShapeData[]>([
+            const chainShapes = new Map<string, Shape[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -983,7 +983,7 @@ describe('cutsToToolPaths', () => {
             ]);
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -1010,7 +1010,7 @@ describe('cutsToToolPaths', () => {
                     order: 2,
                     leadIn: {
                         geometry: {
-                            center: { x: -2.5, y: 5 },
+                            center: { x: -2.5, y: 0 },
                             radius: 2.5,
                             startAngle: Math.PI,
                             endAngle: 0,
@@ -1023,7 +1023,7 @@ describe('cutsToToolPaths', () => {
                 }),
             ];
 
-            const chainShapes = new Map<string, ShapeData[]>([
+            const chainShapes = new Map<string, Shape[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -1036,17 +1036,18 @@ describe('cutsToToolPaths', () => {
             ]);
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
             );
 
             const rapid = result[1];
-            expect(rapid.points).toEqual([
-                { x: 10, y: 0 }, // End of first cut
-                { x: -5, y: 5 }, // Start of lead-in for second cut
-            ]);
+            expect(rapid.points).toHaveLength(2);
+            expect(rapid.points[0].x).toBeCloseTo(10, 5);
+            expect(rapid.points[0].y).toBeCloseTo(0, 5);
+            expect(rapid.points[1].x).toBeCloseTo(-5, 5);
+            expect(rapid.points[1].y).toBeCloseTo(0, 5);
         });
 
         it('should not generate rapid for zero distance moves', async () => {
@@ -1055,7 +1056,7 @@ describe('cutsToToolPaths', () => {
                 createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
-            const chainShapes = new Map<string, ShapeData[]>([
+            const chainShapes = new Map<string, Shape[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 0, y: 0 })],
@@ -1065,7 +1066,7 @@ describe('cutsToToolPaths', () => {
             mockGetShapePoints.mockReturnValue([{ x: 0, y: 0 }]);
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -1081,7 +1082,7 @@ describe('cutsToToolPaths', () => {
                 createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
-            const chainShapes = new Map<string, ShapeData[]>([
+            const chainShapes = new Map<string, Shape[]>([
                 [
                     'test-chain',
                     [
@@ -1105,7 +1106,7 @@ describe('cutsToToolPaths', () => {
                 ]);
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -1118,10 +1119,10 @@ describe('cutsToToolPaths', () => {
     describe('empty input handling', () => {
         it('should handle empty cuts array', async () => {
             const cuts: CutData[] = [];
-            const chainShapes = new Map<string, ShapeData[]>();
+            const chainShapes = new Map<string, Shape[]>();
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -1132,10 +1133,10 @@ describe('cutsToToolPaths', () => {
 
         it('should handle empty chainShapes map', async () => {
             const cuts: CutData[] = [createMockCut()];
-            const chainShapes = new Map<string, ShapeData[]>();
+            const chainShapes = new Map<string, Shape[]>();
 
             const result = await cutsToToolPaths(
-                cuts,
+                cuts.map((c) => new Cut(c)),
                 chainShapes,
                 [],
                 CutterCompensation.NONE
@@ -1158,7 +1159,7 @@ describe('cutsToToolPaths', () => {
             mockGetShapePoints.mockReturnValueOnce([{ x: 50, y: 50 }]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -1182,7 +1183,7 @@ describe('cutsToToolPaths', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE
@@ -1205,7 +1206,7 @@ describe('cutsToToolPaths', () => {
             ]);
 
             const result = await cutToToolPath(
-                cut,
+                new Cut(cut),
                 shapes,
                 [],
                 CutterCompensation.NONE

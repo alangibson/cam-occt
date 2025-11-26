@@ -19,6 +19,7 @@ import {
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { LeadConfig, LeadResult } from '$lib/cam/lead/interfaces';
@@ -142,7 +143,9 @@ export class LeadRenderer extends BaseRenderer {
     ): LeadResult {
         try {
             // First check if we have valid cached lead geometry
-            if (hasValidCachedLeads(cut)) {
+            // Convert CutData to Cut for the validation function
+            const cutInstance = new Cut(cut);
+            if (hasValidCachedLeads(cutInstance)) {
                 // For cached leads, we need to add normal and connection point if missing
                 const leadIn = cut.leadIn ? { ...cut.leadIn } : undefined;
                 const leadOut = cut.leadOut ? { ...cut.leadOut } : undefined;

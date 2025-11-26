@@ -1,5 +1,6 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
@@ -16,8 +17,8 @@ export function generateChainEndpoints(chains: ChainData[]): ChainEndpoint[] {
         const firstShape: ShapeData = chain.shapes[0];
         const lastShape: ShapeData = chain.shapes[chain.shapes.length - 1];
 
-        const start: Point2D = getShapeStartPoint(firstShape);
-        const end: Point2D = getShapeEndPoint(lastShape);
+        const start: Point2D = getShapeStartPoint(new Shape(firstShape));
+        const end: Point2D = getShapeEndPoint(new Shape(lastShape));
 
         endpoints.push({ ...start, type: 'start', chainId: chain.id });
 

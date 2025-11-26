@@ -1,3 +1,4 @@
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import { isPointInsidePart } from '$lib/cam/chain/point-in-chain';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -59,7 +60,10 @@ describe('Part Selection - Point-in-Part Detection', () => {
             },
         ];
 
-        const part = { shell, voids };
+        const part = {
+            shell: new Chain(shell),
+            voids: voids.map((v) => ({ chain: new Chain(v.chain) })),
+        };
 
         // Point inside shell but outside void - should return true
         const pointInPart: Point2D = { x: 25, y: 25 };

@@ -4,13 +4,13 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Concave Area Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting

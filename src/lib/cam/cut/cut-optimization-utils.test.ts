@@ -1,3 +1,5 @@
+import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { describe, expect, it } from 'vitest';
 import {
     prepareChainsAndLeadConfigs,
@@ -13,8 +15,6 @@ import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { Cut } from './classes.svelte';
-import { Chain } from '$lib/cam/chain/classes';
-import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 // Test data setup

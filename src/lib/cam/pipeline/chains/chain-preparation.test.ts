@@ -11,6 +11,7 @@ import type { ChainData } from '$lib/cam/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { GeometryType } from '$lib/geometry/enums';
 import { Shape } from '$lib/cam/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('getChainCutDirection', () => {
     it('should return NONE for undefined chain', () => {
@@ -72,7 +73,7 @@ describe('createCutChain', () => {
         };
 
         const result = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.CLOCKWISE,
             undefined
         );
@@ -92,9 +93,11 @@ describe('createCutChain', () => {
             clockwise: true,
         };
 
-        const result = createCutChain(originalChain, CutDirection.CLOCKWISE, [
-            offsetShape,
-        ]);
+        const result = createCutChain(
+            new Chain(originalChain),
+            CutDirection.CLOCKWISE,
+            [offsetShape]
+        );
 
         expect(result.cutChain.shapes[0].id).toBe('offset');
     });
@@ -106,7 +109,10 @@ describe('createCutChain', () => {
             clockwise: true,
         };
 
-        const result = createCutChain(originalChain, CutDirection.NONE);
+        const result = createCutChain(
+            new Chain(originalChain),
+            CutDirection.NONE
+        );
 
         expect(result.executionClockwise).toBe(null);
     });
@@ -121,7 +127,7 @@ describe('createCutChain', () => {
         };
 
         const result = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.CLOCKWISE,
             undefined
         );
@@ -141,7 +147,7 @@ describe('createCutChain', () => {
         };
 
         const result = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.COUNTERCLOCKWISE,
             undefined
         );
@@ -160,7 +166,7 @@ describe('createCutChain', () => {
         };
 
         const result = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.CLOCKWISE,
             undefined
         );
@@ -176,14 +182,14 @@ describe('createCutChain', () => {
         };
 
         const resultCW = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.CLOCKWISE,
             undefined
         );
         expect(resultCW.cutChain.clockwise).toBe(true);
 
         const resultCCW = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.COUNTERCLOCKWISE,
             undefined
         );
@@ -200,7 +206,7 @@ describe('createCutChain', () => {
         };
 
         const result = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.CLOCKWISE,
             undefined
         );
@@ -220,7 +226,7 @@ describe('createCutChain', () => {
         };
 
         const result = createCutChain(
-            originalChain,
+            new Chain(originalChain),
             CutDirection.COUNTERCLOCKWISE,
             undefined
         );

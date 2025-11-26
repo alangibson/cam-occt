@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/enums';
-import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('SimulateStage offset cut detection', () => {
     let mockCut: CutData;
@@ -63,7 +62,7 @@ describe('SimulateStage offset cut detection', () => {
 
         mockChain = {
             id: 'chain1',
-            shapes: mockShapes,
+            shapes: mockShapes.map((s) => s.toData()),
         };
 
         mockCut = {
@@ -136,7 +135,8 @@ describe('SimulateStage offset cut detection', () => {
             const shapes =
                 cutWithoutOffset.offset?.offsetShapes || mockChain.shapes;
 
-            expect(shapes).toBe(mockShapes);
+            expect(shapes).toBe(mockChain.shapes);
+            expect(shapes).toHaveLength(2);
         });
     });
 
@@ -152,7 +152,7 @@ describe('SimulateStage offset cut detection', () => {
             };
 
             // Mock shape length calculation (simplified)
-            function getShapeLength(shape: ShapeData): number {
+            function getShapeLength(shape: Shape): number {
                 if (shape.type === 'line') {
                     const line = shape.geometry as Line;
                     return Math.sqrt(
@@ -269,7 +269,7 @@ describe('SimulateStage offset cut detection', () => {
                 if (cut.id === 'cut1') {
                     expect(shapes).toBe(mockOffsetShapes);
                 } else {
-                    expect(shapes).toBe(mockShapes);
+                    expect(shapes).toBe(mockChain.shapes);
                 }
             });
         });

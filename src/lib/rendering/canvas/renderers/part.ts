@@ -38,7 +38,7 @@ export class PartRenderer extends BaseRenderer {
 
         // Check each part to see if the point is inside it (shell but outside holes)
         for (const part of state.parts) {
-            if (isPointInsidePart(point, part)) {
+            if (isPointInsidePart(point, part.getChainStructure())) {
                 // For parts, the distance is 0 since it's a fill area hit
                 return {
                     type: HitTestType.PART,

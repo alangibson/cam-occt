@@ -18,6 +18,8 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { CutterCompensation } from '$lib/cam/gcode/enums';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Spot Operation End-to-End Integration', () => {
     const mockChain: ChainData = {
@@ -89,8 +91,8 @@ describe('Spot Operation End-to-End Integration', () => {
 
         // 3. Convert Cut to CutPath (toolpath)
         const cutPath = await cutToToolPath(
-            cut.toData(),
-            mockChain.shapes,
+            cut,
+            mockChain.shapes.map((s) => new Shape(s)),
             [mockTool],
             CutterCompensation.NONE
         );
@@ -100,7 +102,7 @@ describe('Spot Operation End-to-End Integration', () => {
         expect(cutPath.parameters?.spotDuration).toBe(150);
 
         // 4. Generate G-code from CutPath
-        const gcode = generateGCode([cutPath], mockDrawing, {
+        const gcode = generateGCode([cutPath], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -156,8 +158,8 @@ describe('Spot Operation End-to-End Integration', () => {
 
         // 3. Convert Cut to CutPath
         const cutPath = await cutToToolPath(
-            cut.toData(),
-            mockChain.shapes,
+            cut,
+            mockChain.shapes.map((s) => new Shape(s)),
             [mockTool],
             CutterCompensation.NONE
         );
@@ -166,7 +168,7 @@ describe('Spot Operation End-to-End Integration', () => {
         expect(cutPath.parameters?.action).toBe(OperationAction.CUT);
 
         // 4. Generate G-code from CutPath
-        const gcode = generateGCode([cutPath], mockDrawing, {
+        const gcode = generateGCode([cutPath], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -213,14 +215,14 @@ describe('Spot Operation End-to-End Integration', () => {
 
         // Convert to toolpath
         const toolpath = await cutToToolPath(
-            cut.toData(),
-            mockChain.shapes,
+            cut,
+            mockChain.shapes.map((s) => new Shape(s)),
             [mockTool],
             CutterCompensation.NONE
         );
 
         // Generate G-code
-        const gcode = generateGCode([toolpath], mockDrawing, {
+        const gcode = generateGCode([toolpath], new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -309,27 +311,31 @@ describe('Spot Operation End-to-End Integration', () => {
 
         // Convert to toolpaths
         const toolpath1 = await cutToToolPath(
-            result1.cuts[0].toData(),
-            chain1.shapes,
+            result1.cuts[0],
+            chain1.shapes.map((s) => new Shape(s)),
             [mockTool],
             CutterCompensation.NONE
         );
 
         const toolpath2 = await cutToToolPath(
-            result2.cuts[0].toData(),
-            chain2.shapes,
+            result2.cuts[0],
+            chain2.shapes.map((s) => new Shape(s)),
             [mockTool],
             CutterCompensation.NONE
         );
 
         // Generate G-code with both toolpaths (this adds rapids between them)
-        const gcode = generateGCode([toolpath1, toolpath2], mockDrawing, {
-            units: Unit.MM,
-            safeZ: 10,
-            rapidFeedRate: 5000,
-            includeComments: true,
-            cutterCompensation: CutterCompensation.NONE,
-        });
+        const gcode = generateGCode(
+            [toolpath1, toolpath2],
+            new Drawing(mockDrawing),
+            {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            }
+        );
 
         // Split into lines for analysis
         const lines = gcode.split('\n').filter((line) => line.trim());
@@ -414,12 +420,12 @@ describe('Spot Operation End-to-End Integration', () => {
         const result1 = await generateSpotsForChainsWithOperation(operation, 0);
         const result2 = await generateSpotsForChainsWithOperation(operation, 1);
 
-        const cuts = [result1.cuts[0].toData(), result2.cuts[0].toData()];
+        const cuts = [result1.cuts[0], result2.cuts[0]];
 
         // Create chain shapes map
         const chainShapes = new Map([
-            ['layer1-chain-1', chain1.shapes],
-            ['layer1-chain-2', chain2.shapes],
+            ['layer1-chain-1', chain1.shapes.map((s) => new Shape(s))],
+            ['layer1-chain-2', chain2.shapes.map((s) => new Shape(s))],
         ]);
 
         // Use cutsToToolPaths to convert cuts (this adds rapids!)
@@ -440,7 +446,7 @@ describe('Spot Operation End-to-End Integration', () => {
         expect(toolpaths[2].isRapid).toBe(false); // Spot 2
 
         // Generate G-code
-        const gcode = generateGCode(toolpaths, mockDrawing, {
+        const gcode = generateGCode(toolpaths, new Drawing(mockDrawing), {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,

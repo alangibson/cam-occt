@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateDrawingSize } from './drawing-size';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/enums';
 
@@ -16,7 +17,7 @@ describe('calculateDrawingSize', () => {
             fileName: '',
         };
 
-        expect(calculateDrawingSize(drawing)).toBeNull();
+        expect(calculateDrawingSize(new Drawing(drawing))).toBeNull();
     });
 
     it('calculates bounds from shapes', () => {
@@ -32,7 +33,7 @@ describe('calculateDrawingSize', () => {
             fileName: '',
         };
 
-        const result = calculateDrawingSize(drawing);
+        const result = calculateDrawingSize(new Drawing(drawing));
         expect(result).toEqual({
             width: 100,
             height: 50,
@@ -54,7 +55,7 @@ describe('calculateDrawingSize', () => {
             fileName: '',
         };
 
-        const result = calculateDrawingSize(drawing);
+        const result = calculateDrawingSize(new Drawing(drawing));
         expect(result).toEqual({
             width: 10,
             height: 10,

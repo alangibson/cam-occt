@@ -4,8 +4,8 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
@@ -13,6 +13,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
+import { Chain } from '$lib/cam/chain/classes';
 
 describe('Lead Tangency Tests', () => {
     // Helper to get cut normal for a chain
@@ -21,7 +22,11 @@ describe('Lead Tangency Tests', () => {
         cutDirection: CutDirection,
         part?: PartData
     ): Point2D {
-        const result = calculateCutNormal(chain, cutDirection, part);
+        const result = calculateCutNormal(
+            new Chain(chain),
+            cutDirection,
+            part ? new Part(part) : undefined
+        );
         return result.normal;
     }
 
@@ -334,7 +339,7 @@ describe('Lead Tangency Tests', () => {
             const shellNormal = calculateCutNormal(
                 shellChain,
                 CutDirection.CLOCKWISE,
-                shellPart
+                new Part(shellPart)
             );
             const shellResult = calculateLeads(
                 shellChain,
@@ -349,7 +354,7 @@ describe('Lead Tangency Tests', () => {
             const holeNormal = calculateCutNormal(
                 holeChain,
                 CutDirection.COUNTERCLOCKWISE,
-                holeInShellPart
+                new Part(holeInShellPart)
             );
             const holeResult = calculateLeads(
                 holeChain,

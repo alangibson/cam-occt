@@ -7,6 +7,7 @@
 
 import type { PartData, PartVoid, PartSlot } from './interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { PartType } from './enums';
 
@@ -35,6 +36,17 @@ export class Part {
 
     get voids(): PartVoid[] {
         return this.#data.voids;
+    }
+
+    /**
+     * Helper method for functions that need Part with Chain instances
+     * Returns a structural type compatible with isPointInsidePart
+     */
+    getChainStructure(): { shell: Chain; voids: { chain: Chain }[] } {
+        return {
+            shell: new Chain(this.#data.shell),
+            voids: this.#data.voids.map((v) => ({ chain: new Chain(v.chain) })),
+        };
     }
 
     get slots(): PartSlot[] {
