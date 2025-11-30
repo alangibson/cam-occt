@@ -13,7 +13,7 @@
     } from '$lib/config/settings/enums';
     import { Unit } from '$lib/config/units/units';
     import type { DrawingData } from '$lib/cam/drawing/interfaces';
-    import { applyAutoPreprocessing } from '$lib/preprocessing/auto-preprocess';
+    import { applyAutoPreprocessing } from '$lib/cam/preprocess/auto-preprocess';
 
     // Get current settings
     let settings = $derived($settingsStore.settings);

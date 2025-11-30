@@ -12,3 +12,8 @@ export const POLYGON_POINTS_MIN = 3;
  * This is the primary tolerance used for chain closure detection.
  */
 export const CHAIN_CLOSURE_TOLERANCE = 0.01;
+
+/**
+ * Area ratio threshold for geometric containment fallback (5%)
+ */
+export const AREA_RATIO_THRESHOLD: number = 0.05;

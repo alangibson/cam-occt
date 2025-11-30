@@ -16,8 +16,8 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { ChainNormalizationParameters } from '$lib/preprocessing/algorithm-parameters';
-import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
+import type { ChainNormalizationParameters } from '$lib/cam/preprocess/algorithm-parameters';
+import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
 import {
     getShapeEndPoint,
     getShapeStartPoint,

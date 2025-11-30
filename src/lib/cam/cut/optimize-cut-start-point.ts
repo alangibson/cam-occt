@@ -8,7 +8,7 @@
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 import { OptimizeStarts } from './enums';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-import type { StartPointOptimizationParameters } from '$lib/preprocessing/algorithm-parameters';
+import type { StartPointOptimizationParameters } from '$lib/cam/preprocess/algorithm-parameters';
 import { Chain } from '$lib/cam/chain/classes';
 
 /**

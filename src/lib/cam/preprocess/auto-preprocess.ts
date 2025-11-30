@@ -9,12 +9,12 @@ import { settingsStore } from '$lib/stores/settings/store';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import { PreprocessingStep } from '$lib/config/settings/enums';
-import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
-import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
+import { joinColinearLines } from '$lib/cam/preprocess/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
+import type { AlgorithmParameters } from '$lib/cam/preprocess/algorithm-parameters';
 import { Shape } from '$lib/cam/shape/classes';
 
 /**

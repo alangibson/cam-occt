@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle/constants';
 import { parseDXF } from './functions';
-import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import { polylineToVertices } from '$lib/geometry/polyline/functions';
 import { readFileSync } from 'fs';
 import path from 'path';

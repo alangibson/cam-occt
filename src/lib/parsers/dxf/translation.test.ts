@@ -5,7 +5,7 @@ import {
     polylineToVertices,
 } from '$lib/geometry/polyline/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import { getShapePoints } from '$lib/cam/shape/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';

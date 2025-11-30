@@ -1,6 +1,6 @@
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
-import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
+import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
 import { Chain } from '$lib/cam/chain/classes';
 import { Shape } from '$lib/cam/shape/classes';
 import type { LayerData } from './interfaces';

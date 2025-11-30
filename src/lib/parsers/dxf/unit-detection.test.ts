@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import { getShapePoints } from '$lib/cam/shape/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';

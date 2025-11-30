@@ -4,7 +4,7 @@ import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import type { JoinColinearLinesParameters } from '$lib/preprocessing/algorithm-parameters';
+import type { JoinColinearLinesParameters } from '$lib/cam/preprocess/algorithm-parameters';
 
 /**
  * Primary function to join collinear lines in chains with configurable parameters

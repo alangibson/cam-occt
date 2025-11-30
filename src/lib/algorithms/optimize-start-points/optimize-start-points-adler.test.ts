@@ -3,7 +3,7 @@ import { GeometryType } from '$lib/geometry/enums';
 import { describe, expect, it } from 'vitest';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { optimizeStartPoints } from './optimize-start-points';
 

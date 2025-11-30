@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
-import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { readFileSync } from 'fs';

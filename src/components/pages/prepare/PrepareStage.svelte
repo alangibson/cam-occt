@@ -1,9 +1,7 @@
 <script lang="ts">
     import { detectShapeChains } from '$lib/cam/chain/chain-detection';
     import { analyzeChainTraversal } from '$lib/cam/chain/chain-normalization';
-    import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
     import { Shape } from '$lib/cam/shape/classes';
-    import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
     import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
     import { chainStore } from '$lib/stores/chains/store';
@@ -18,6 +16,8 @@
     import AccordionPanel from '$components/panels/AccordionPanel.svelte';
     import InspectPanel from '$components/panels/InspectPanel.svelte';
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
+    import { joinColinearLines } from '$lib/cam/preprocess/join-colinear-lines';
+    import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 
     // Props from WorkflowContainer for shared canvas
     let {

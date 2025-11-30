@@ -23,7 +23,11 @@ import {
     getShapeLength,
     sampleShapes,
 } from '$lib/cam/shape/functions';
-import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
+import {
+    AREA_RATIO_THRESHOLD,
+    CHAIN_CLOSURE_TOLERANCE,
+    POLYGON_POINTS_MIN,
+} from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import { isEllipseClosed } from '$lib/geometry/ellipse/functions';
 import { WindingDirection } from './enums';
@@ -34,7 +38,6 @@ import {
     roundToDecimalPlaces,
 } from '$lib/geometry/math/functions';
 import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
-import { AREA_RATIO_THRESHOLD } from '$lib/algorithms/constants';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import { type PartDetectionParameters } from '$lib/cam/part/interfaces';

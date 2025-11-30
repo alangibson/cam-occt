@@ -35,7 +35,7 @@ import { overlayStore } from '$lib/stores/overlay/store';
 import type { OverlayState } from '$lib/stores/overlay/interfaces';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
 import { operationsStore } from '$lib/stores/operations/store';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';

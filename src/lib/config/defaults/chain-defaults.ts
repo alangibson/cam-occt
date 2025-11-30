@@ -12,7 +12,7 @@ import {
     DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM,
     type ChainDetectionParameters,
     type ChainNormalizationParameters,
-} from '$lib/preprocessing/algorithm-parameters';
+} from '$lib/cam/preprocess/algorithm-parameters';
 
 export class ChainDefaults {
     private measurementSystem: MeasurementSystem;

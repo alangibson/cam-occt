@@ -23,7 +23,7 @@ import { settingsStore } from '$lib/stores/settings/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { Unit } from '$lib/config/units/units';
 import type { PersistedState } from './interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
 import {
     MeasurementSystem,
     ImportUnitSetting,
