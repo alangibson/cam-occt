@@ -33,7 +33,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         return new Chain({
             id: 'chain1',
-            shapes: [shape],
+            name: 'chain1', shapes: [shape],
             clockwise: true,
         });
     }
@@ -52,7 +52,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         return new Chain({
             id: 'chain1',
-            shapes: [shape],
+            name: 'chain1', shapes: [shape],
             clockwise: true,
         });
     }
@@ -72,7 +72,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         return new Chain({
             id: 'chain1',
-            shapes: [shape],
+            name: 'chain1', shapes: [shape],
             clockwise,
         });
     }
@@ -85,7 +85,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     } {
         const shell: Chain = new Chain({
             id: 'shell',
-            shapes: [
+            name: 'shell', shapes: [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -130,6 +130,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         const part: PartData = {
             id: 'part1',
+            name: 'part1',
             shell: shell,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
@@ -326,7 +327,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
             // Place the chain start very close to a boundary where only one direction is valid
             const edgeChain: Chain = new Chain({
                 id: 'edge-chain',
-                shapes: [
+                name: 'edge-chain', shapes: [
                     {
                         id: 'edge-line',
                         type: GeometryType.LINE,
@@ -767,7 +768,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
             // Test with a closed chain where start/end points are the same
             const closedChain: Chain = new Chain({
                 id: 'closed',
-                shapes: [
+                name: 'closed', shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,

@@ -4,6 +4,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import { hashPoint2D } from '$lib/geometry/point/functions';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
@@ -11,6 +12,7 @@ import {
     getCircleEndPoint,
     getCirclePointAt,
     getCircleStartPoint,
+    hashCircle,
     reverseCircle,
     tessellateCircle,
 } from '$lib/geometry/circle/functions';
@@ -19,6 +21,7 @@ import {
     getArcEndPoint,
     getArcPointAt,
     getArcStartPoint,
+    hashArc,
     reverseArc,
     tessellateArc,
 } from '$lib/geometry/arc/functions';
@@ -26,6 +29,7 @@ import {
     getLineEndPoint,
     getLinePointAt,
     getLineStartPoint,
+    hashLine,
     reverseLine,
     tessellateLine,
 } from '$lib/geometry/line/functions';
@@ -34,6 +38,7 @@ import {
     getSplineEndPoint,
     getSplinePointAt,
     getSplineStartPoint,
+    hashSpline,
     reverseSpline,
     tessellateSpline,
 } from '$lib/geometry/spline/functions';
@@ -41,6 +46,7 @@ import {
     getEllipseEndPoint,
     getEllipsePointAt,
     getEllipseStartPoint,
+    hashEllipse,
     isEllipseClosed,
     reverseEllipse,
     sampleEllipse,
@@ -50,13 +56,14 @@ import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
 import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
+    calculatePolylineLength,
     getPolylineEndPoint,
     getPolylinePointAt,
     getPolylineStartPoint,
+    hashPolyline,
     polylineToPoints,
     polylineToVertices,
     reversePolyline,
-    calculatePolylineLength,
 } from '$lib/geometry/polyline/functions';
 import { MIDPOINT_T, QUARTER_CIRCLE_QUADRANTS } from '$lib/geometry/constants';
 import {
@@ -1495,5 +1502,38 @@ export function getShapeOrigin(shape: Shape): Point2D | null {
             return ellipse.center;
         default:
             return null;
+    }
+}
+
+/**
+ * Generate a content hash for a Shape by dispatching to geometry-specific hash functions
+ * @param shape - The shape to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashShape(shape: Shape): Promise<string> {
+    switch (shape.type) {
+        case GeometryType.POINT:
+            return hashPoint2D(shape.geometry as Point2D);
+
+        case GeometryType.LINE:
+            return hashLine(shape.geometry as Line);
+
+        case GeometryType.CIRCLE:
+            return hashCircle(shape.geometry as Circle);
+
+        case GeometryType.ARC:
+            return hashArc(shape.geometry as Arc);
+
+        case GeometryType.POLYLINE:
+            return hashPolyline(shape.geometry as Polyline);
+
+        case GeometryType.ELLIPSE:
+            return hashEllipse(shape.geometry as Ellipse);
+
+        case GeometryType.SPLINE:
+            return hashSpline(shape.geometry as Spline);
+
+        default:
+            throw new Error(`Unknown shape type: ${shape.type}`);
     }
 }

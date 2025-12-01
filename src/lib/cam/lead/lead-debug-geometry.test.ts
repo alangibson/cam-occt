@@ -26,7 +26,7 @@ describe('Lead Geometry Debug', () => {
 
         return new Chain({
             id: 'chain1',
-            shapes: [shape],
+            name: 'chain1', shapes: [shape],
         });
     }
 
@@ -84,6 +84,7 @@ describe('Lead Geometry Debug', () => {
 
         const part: PartData = {
             id: 'part1',
+            name: 'part1',
             shell: shellChain,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },

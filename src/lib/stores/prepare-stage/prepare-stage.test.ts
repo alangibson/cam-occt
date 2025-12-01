@@ -159,7 +159,7 @@ describe('Prepare Stage Store', () => {
         const mockChains = [
             {
                 id: 'chain1',
-                shapes: mockShapes,
+                name: 'chain1', shapes: mockShapes,
                 closed: false,
                 type: 'chain',
             },
@@ -228,7 +228,7 @@ describe('Prepare Stage Store', () => {
         const mockChains = [
             {
                 id: 'chain1',
-                shapes: mockShapes,
+                name: 'chain1', shapes: mockShapes,
                 closed: false,
                 type: 'chain',
             },

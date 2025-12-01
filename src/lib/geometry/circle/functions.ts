@@ -5,6 +5,7 @@ import {
     HIGH_TESSELLATION_SEGMENTS,
     SMALL_ANGLE_INCREMENT_DEG,
 } from '$lib/geometry/constants';
+import { hashObject } from '$lib/geometry/hash/functions';
 
 export function getCircleStartPoint(circle: Circle): Point2D {
     return { x: circle.center.x + circle.radius, y: circle.center.y };
@@ -85,4 +86,13 @@ export function tessellateCircle(circle: Circle, numPoints: number): Point2D[] {
         });
     }
     return points;
+}
+
+/**
+ * Generate a content hash for a Circle
+ * @param circle - The circle to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashCircle(circle: Circle): Promise<string> {
+    return hashObject(circle);
 }

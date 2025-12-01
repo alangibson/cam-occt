@@ -77,6 +77,7 @@ export function normalizeChain(
     // Create the normalized chain with updated shapes
     const normalizedChain = new Chain({
         id: chain.id,
+        name: chain.name,
         shapes: normalizedShapes.map((s) => s.toData()),
         clockwise: chain.clockwise,
         originalChainId: chain.originalChainId,
@@ -87,6 +88,7 @@ export function normalizeChain(
 
     return new Chain({
         id: normalizedChain.id,
+        name: normalizedChain.name,
         shapes: normalizedChain.shapes.map((s) => s.toData()),
         clockwise:
             direction === CutDirection.CLOCKWISE

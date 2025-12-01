@@ -1,5 +1,5 @@
 import type { ShapeData, TessellationCache } from './interfaces';
-import { tessellateShape } from './functions';
+import { hashShape, tessellateShape } from './functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Geometry } from '$lib/geometry/types';
 import type { GeometryType } from '$lib/geometry/enums';
@@ -50,5 +50,13 @@ export class Shape implements ShapeData {
 
     toData(): ShapeData {
         return this.#data;
+    }
+
+    /**
+     * Generate a content hash for this shape
+     * @returns A SHA-256 hash as a hex string
+     */
+    async hash(): Promise<string> {
+        return hashShape(this);
     }
 }

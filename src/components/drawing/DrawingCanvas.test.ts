@@ -48,7 +48,7 @@ describe('DrawingCanvas Part Highlighting', () => {
         // Create a mock chain for the shell
         const mockChain: ChainData = {
             id: 'chain-1',
-            shapes: [],
+            name: 'chain-1', shapes: [],
             clockwise: true,
         };
 
@@ -156,7 +156,7 @@ describe('DrawingCanvas Part Highlighting', () => {
         // Create a mock chain for the shell
         const mockChain2: ChainData = {
             id: 'chain-2',
-            shapes: [],
+            name: 'chain-2', shapes: [],
             clockwise: true,
         };
 

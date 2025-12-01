@@ -9,7 +9,7 @@ describe('Chain Store', () => {
     const mockChains: ChainData[] = [
         {
             id: 'chain-1',
-            shapes: [
+            name: 'chain-1', shapes: [
                 {
                     id: 'shape-1',
                     type: GeometryType.LINE,
@@ -24,7 +24,7 @@ describe('Chain Store', () => {
         },
         {
             id: 'chain-2',
-            shapes: [
+            name: 'chain-2', shapes: [
                 {
                     id: 'shape-3',
                     type: GeometryType.CIRCLE,

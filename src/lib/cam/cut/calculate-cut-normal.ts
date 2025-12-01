@@ -121,13 +121,26 @@ export function calculateCutNormal(
         }
     } else if (cutDirection !== CutDirection.NONE) {
         // No part context but have cut direction: apply direction-based rule
-        // This ensures leads flip consistently even without part context
+        // For standalone chains, assume shell-like behavior:
+        // - CW → left normal (outward), CCW → right normal (outward)
+        // BUT: if INSET kerf compensation is used, flip the normal (point inward)
+        const shouldFlip = kerfCompensation === OffsetDirection.INSET;
         selectedDirection =
-            cutDirection === CutDirection.CLOCKWISE ? leftNormal : rightNormal;
+            cutDirection === CutDirection.CLOCKWISE
+                ? shouldFlip
+                    ? rightNormal
+                    : leftNormal
+                : shouldFlip
+                  ? leftNormal
+                  : rightNormal;
         normalSide =
             cutDirection === CutDirection.CLOCKWISE
-                ? NormalSide.LEFT
-                : NormalSide.RIGHT;
+                ? shouldFlip
+                    ? NormalSide.RIGHT
+                    : NormalSide.LEFT
+                : shouldFlip
+                  ? NormalSide.LEFT
+                  : NormalSide.RIGHT;
     } else {
         // No part context and no cut direction: default to left normal
         selectedDirection = leftNormal;

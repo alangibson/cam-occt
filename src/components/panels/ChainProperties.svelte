@@ -6,6 +6,7 @@
     import { isChainClosed } from '$lib/cam/chain/functions';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { CutDirection } from '$lib/cam/cut/enums';
+    import { Chain } from '$lib/cam/chain/classes';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive chain and analysis data
@@ -91,7 +92,7 @@
 
                   props.push({
                       property: 'Name',
-                      value: selectedChain.id,
+                      value: selectedChain.name,
                   });
 
                   if (selectedChainAnalysis) {
@@ -111,6 +112,11 @@
                       )
                           ? 'Closed'
                           : 'Open',
+                  });
+
+                  props.push({
+                      property: 'Cyclic',
+                      value: selectedChain.isCyclic() ? 'Yes' : 'No',
                   });
 
                   const direction = detectCutDirection(
@@ -143,10 +149,11 @@
         if (!selectedChain) return;
 
         try {
-            const json = JSON.stringify(selectedChain, null, 2);
+            const dataToSerialize = selectedChain.toData();
+            const json = JSON.stringify(dataToSerialize, null, 2);
             await navigator.clipboard.writeText(json);
         } catch (err) {
-            console.error('Failed to copy to clipboard:', err);
+            console.error('Failed to copy chain to clipboard:', err);
         }
     }
 </script>

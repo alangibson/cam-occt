@@ -24,7 +24,7 @@ describe('Lead Sweep Direction Analysis', () => {
         // Simple circle at origin
         const chain: ChainData = {
             id: 'test-circle',
-            shapes: [
+            name: 'test-circle', shapes: [
                 {
                     id: 'circle1',
                     type: GeometryType.CIRCLE,

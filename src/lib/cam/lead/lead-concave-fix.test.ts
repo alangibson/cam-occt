@@ -80,6 +80,7 @@ describe('Lead Concave Area Fix', () => {
         // Create a part with this complex shape as shell
         const part: PartData = {
             id: 'part1',
+            name: 'part1',
             shell: chain,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
@@ -177,6 +178,7 @@ describe('Lead Concave Area Fix', () => {
 
         const part: PartData = {
             id: 'part1',
+            name: 'part1',
             shell: chain,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },

@@ -31,6 +31,10 @@ export class Chain implements ChainData {
         return this.#data.id;
     }
 
+    get name(): string {
+        return this.#data.name;
+    }
+
     get shapes(): Shape[] {
         if (!this.#shapesCache) {
             this.#shapesCache = this.#data.shapes.map((s) => new Shape(s));
@@ -49,6 +53,7 @@ export class Chain implements ChainData {
     toData(): ChainData {
         return {
             id: this.id,
+            name: this.name,
             shapes: this.shapes.map((s) => s.toData()),
             clockwise: this.clockwise,
             originalChainId: this.originalChainId,

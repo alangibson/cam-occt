@@ -11,7 +11,7 @@ describe('getChainPointAt', () => {
     it('should throw error for empty chain', () => {
         const emptyChain: ChainData = {
             id: 'empty',
-            shapes: [],
+            name: 'empty', shapes: [],
         };
 
         expect(() => getChainPointAt(new Chain(emptyChain), 0.5)).toThrow(
@@ -31,7 +31,7 @@ describe('getChainPointAt', () => {
 
         const chain: ChainData = {
             id: 'line-chain',
-            shapes: [lineShape],
+            name: 'line-chain', shapes: [lineShape],
         };
 
         const point = getChainPointAt(new Chain(chain), 0);
@@ -51,7 +51,7 @@ describe('getChainPointAt', () => {
 
         const chain: ChainData = {
             id: 'line-chain',
-            shapes: [lineShape],
+            name: 'line-chain', shapes: [lineShape],
         };
 
         const point = getChainPointAt(new Chain(chain), 1);
@@ -71,7 +71,7 @@ describe('getChainPointAt', () => {
 
         const chain: ChainData = {
             id: 'line-chain',
-            shapes: [lineShape],
+            name: 'line-chain', shapes: [lineShape],
         };
 
         const point = getChainPointAt(new Chain(chain), 0.5);
@@ -100,7 +100,7 @@ describe('getChainPointAt', () => {
 
         const chain: ChainData = {
             id: 'two-line-chain',
-            shapes: [line1, line2],
+            name: 'two-line-chain', shapes: [line1, line2],
         };
 
         // Total length = 200 (100 + 100)
@@ -136,7 +136,7 @@ describe('getChainPointAt', () => {
 
         const chain: ChainData = {
             id: 'arc-chain',
-            shapes: [arcShape],
+            name: 'arc-chain', shapes: [arcShape],
         };
 
         // t=0 should be at start (100, 0)
@@ -167,7 +167,7 @@ describe('getChainPointAt', () => {
 
         const chain: ChainData = {
             id: 'line-chain',
-            shapes: [lineShape],
+            name: 'line-chain', shapes: [lineShape],
         };
 
         // t < 0 should return start point
@@ -206,7 +206,7 @@ describe('getChainPointAt', () => {
 
         const chain: ChainData = {
             id: 'mixed-chain',
-            shapes: [line, arc],
+            name: 'mixed-chain', shapes: [line, arc],
         };
 
         // Should handle transition between different shape types

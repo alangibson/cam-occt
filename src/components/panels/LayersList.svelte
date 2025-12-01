@@ -83,7 +83,7 @@
                                           open: false,
                                           data: layer.chains.map((chain) => ({
                                               id: `${layer.name}-${chain.id}`,
-                                              name: chain.id,
+                                              name: chain.name,
                                               type: 'Chain',
                                               chainId: chain.id, // Store actual chain ID for selection
                                               open: false,
@@ -104,7 +104,7 @@
                                           open: false,
                                           data: layer.parts.map((part) => ({
                                               id: `${layer.name}-${part.id}`,
-                                              name: part.id,
+                                              name: part.name,
                                               type: 'Part',
                                               partId: part.id, // Store actual part ID for selection
                                               open: false,

@@ -960,7 +960,7 @@ describe('Optimize Cut Order', () => {
             // Create a chain with the ellipse
             const chain: ChainData = {
                 id: 'chain-1',
-                shapes: [ellipseShape],
+                name: 'chain-1', shapes: [ellipseShape],
             };
 
             // Create a cut for the chain
@@ -1023,7 +1023,7 @@ describe('Optimize Cut Order', () => {
             // Create a chain with the spline
             const chain: ChainData = {
                 id: 'chain-1',
-                shapes: [splineShape],
+                name: 'chain-1', shapes: [splineShape],
             };
 
             // Create a cut for the chain
@@ -1148,7 +1148,7 @@ describe('Optimize Cut Order', () => {
 
                 const chain: ChainData = {
                     id: `chain-${index}`,
-                    shapes: [shape],
+                    name: 'chain-${index}', shapes: [shape],
                 };
 
                 chains.set(chain.id, new Chain(chain));
@@ -1201,7 +1201,7 @@ describe('Optimize Cut Order', () => {
                 leadOutConfig: undefined, // No lead-out
                 cutChain: new Chain({
                     id: 'chain-1-cut',
-                    shapes: [
+                    name: 'chain-1-cut', shapes: [
                         {
                             id: 'shape-chain-1-reversed',
                             type: GeometryType.LINE,
@@ -1250,7 +1250,7 @@ describe('Optimize Cut Order', () => {
                 leadOutConfig: undefined, // No lead-out
                 cutChain: new Chain({
                     id: 'chain-1-cut',
-                    shapes: chain.shapes,
+                    name: 'chain-1-cut', shapes: chain.shapes,
                 }),
             });
 
@@ -1298,7 +1298,7 @@ describe('Optimize Cut Order', () => {
                 leadOutConfig: undefined,
                 cutChain: new Chain({
                     id: 'chain-1-cut',
-                    shapes: [
+                    name: 'chain-1-cut', shapes: [
                         {
                             id: 'shape-chain-1-reversed',
                             type: GeometryType.LINE,
@@ -1318,7 +1318,7 @@ describe('Optimize Cut Order', () => {
                 leadOutConfig: undefined,
                 cutChain: new Chain({
                     id: 'chain-2-cut',
-                    shapes: [
+                    name: 'chain-2-cut', shapes: [
                         {
                             id: 'shape-chain-2-reversed',
                             type: GeometryType.LINE,

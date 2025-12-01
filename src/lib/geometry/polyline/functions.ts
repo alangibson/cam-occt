@@ -4,6 +4,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { generateId } from '$lib/domain/id';
+import { hashObject } from '$lib/geometry/hash/functions';
 import {
     calculateArcPoint,
     convertBulgeToArc,
@@ -495,4 +496,13 @@ export function getPolylineTangent(
         return len > 0 ? { x: dx / len, y: dy / len } : { x: 1, y: 0 };
     }
     return { x: 1, y: 0 };
+}
+
+/**
+ * Generate a content hash for a Polyline
+ * @param polyline - The polyline to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashPolyline(polyline: Polyline): Promise<string> {
+    return hashObject(polyline);
 }

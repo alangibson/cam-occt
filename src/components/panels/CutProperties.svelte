@@ -153,7 +153,11 @@
         if (!selectedCut) return;
 
         try {
-            const json = JSON.stringify(selectedCut, null, 2);
+            const data =
+                typeof selectedCut.toData === 'function'
+                    ? selectedCut.toData()
+                    : selectedCut;
+            const json = JSON.stringify(data, null, 2);
             await navigator.clipboard.writeText(json);
         } catch (err) {
             console.error('Failed to copy to clipboard:', err);

@@ -170,13 +170,13 @@ describe('Parts Store', () => {
             // Create a part with nested structure (holes containing other parts)
             const complexPartData: PartData = {
                 id: 'complex-part',
-                shell: { id: 'shell-chain', shapes: [] },
+                shell: { id: 'shell-chain', name: 'shell-chain', shapes: [] },
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 0, y: 0 }, max: { x: 30, y: 30 } },
                 voids: [
                     {
                         id: 'hole-1',
-                        chain: { id: 'hole-chain', shapes: [] },
+                        chain: { id: 'hole-chain', name: 'hole-chain', shapes: [] },
                         type: PartType.HOLE,
                         boundingBox: {
                             min: { x: 5, y: 5 },

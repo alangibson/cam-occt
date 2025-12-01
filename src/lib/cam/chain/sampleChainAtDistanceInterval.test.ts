@@ -14,7 +14,7 @@ describe('sampleChainAtDistanceInterval', () => {
     it('should return empty array for empty chain', () => {
         const emptyChain: ChainData = {
             id: 'empty-chain',
-            shapes: [],
+            name: 'empty-chain', shapes: [],
         };
 
         const samples = sampleChain(new Chain(emptyChain), 1.0);
@@ -34,7 +34,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            shapes: [lineShape],
+            name: 'test-chain', shapes: [lineShape],
         };
 
         const samples = sampleChain(new Chain(chain), 0);
@@ -54,7 +54,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            shapes: [lineShape],
+            name: 'test-chain', shapes: [lineShape],
         };
 
         const samples = sampleChain(new Chain(chain), 2.5);
@@ -92,7 +92,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            shapes: [lineShape],
+            name: 'test-chain', shapes: [lineShape],
         };
 
         const samples = sampleChain(new Chain(chain), 3.0);
@@ -133,7 +133,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'l-shape',
-            shapes: [line1, line2],
+            name: 'l-shape', shapes: [line1, line2],
         };
 
         const samples = sampleChain(new Chain(chain), 5.0);
@@ -174,7 +174,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            shapes: [lineShape],
+            name: 'test-chain', shapes: [lineShape],
         };
 
         // Sample every 0.001 units (CONTAINMENT_AREA_TOLERANCE)
@@ -203,7 +203,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            shapes: [lineShape],
+            name: 'test-chain', shapes: [lineShape],
         };
 
         const samples = sampleChain(new Chain(chain), 3.0);
@@ -236,7 +236,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'degenerate-chain',
-            shapes: [lineShape],
+            name: 'degenerate-chain', shapes: [lineShape],
         };
 
         const samples = sampleChain(new Chain(chain), 1.0);
@@ -259,7 +259,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            shapes: [lineShape],
+            name: 'test-chain', shapes: [lineShape],
         };
 
         const samples = sampleChain(

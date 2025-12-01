@@ -162,7 +162,7 @@ export async function generateCutsForPartsWithOperation(
     // Create shell cut
     const shellCut = new Cut({
         id: crypto.randomUUID(),
-        name: `${operation.name} - Part ${targetId.split('-')[1]} (Shell)`,
+        name: `${operation.name} - ${part.name} (Shell)`,
         operationId: operation.id,
         chainId: part.shell.id,
         toolId: tool.id,
@@ -355,7 +355,7 @@ export async function generateCutsForPartsWithOperation(
             // Create hole cut
             const holeCut = new Cut({
                 id: crypto.randomUUID(),
-                name: `${operation.name} - Part ${targetId.split('-')[1]} ${prefix}(Hole ${holeIndex + 1})`,
+                name: `${operation.name} - ${part.name} ${prefix}(Hole ${holeIndex + 1})`,
                 operationId: operation.id,
                 chainId: hole.chain.id,
                 toolId: tool?.id || null,
@@ -552,7 +552,7 @@ export async function generateCutsForPartsWithOperation(
             // For slots with PART kerf compensation, disable leads
             const slotCut = new Cut({
                 id: crypto.randomUUID(),
-                name: `${operation.name} - Part ${targetId.split('-')[1]} (Slot ${slotIndex + 1})`,
+                name: `${operation.name} - ${part.name} (Slot ${slotIndex + 1})`,
                 operationId: operation.id,
                 chainId: slot.chain.id,
                 toolId: tool?.id || null,

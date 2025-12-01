@@ -23,7 +23,7 @@ describe('Lead Tangency Debug', () => {
 
         return {
             id: 'chain1',
-            shapes: [shape],
+            name: 'chain1', shapes: [shape],
         };
     }
 

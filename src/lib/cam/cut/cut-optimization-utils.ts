@@ -92,6 +92,7 @@ export function prepareChainsAndLeadConfigs(
         // Also preserve originalChainId for part context lookup
         leadCalculationChain = new Chain({
             id: chain.id + '_offset_temp',
+            name: chain.name + ' (offset)',
             shapes: cut.offset.offsetShapes.map((s) => s.toData()),
             clockwise: chain.clockwise,
             originalChainId: chain.id,
@@ -164,6 +165,7 @@ function getCutChainPoint(
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = new Chain({
             id: chainToUse.id + '_offset_temp',
+            name: chainToUse.name + ' (offset)',
             shapes: cut.offset.offsetShapes,
             clockwise: chainToUse.clockwise,
             originalChainId: chainToUse.originalChainId || chainToUse.id,

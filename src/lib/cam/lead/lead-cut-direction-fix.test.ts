@@ -237,7 +237,7 @@ describe('Lead Cut Direction Fix', () => {
         const squareShape = createPolylineFromVertices(squareVertices, true);
         const squareChain = new Chain({
             id: 'test-square',
-            shapes: [squareShape],
+            name: 'test-square', shapes: [squareShape],
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };

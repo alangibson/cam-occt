@@ -377,26 +377,7 @@
                                                         />
                                                         <span
                                                             class="target-label"
-                                                            >Part {(() => {
-                                                                const idParts =
-                                                                    part.id.split(
-                                                                        '-'
-                                                                    );
-                                                                const layerName =
-                                                                    idParts
-                                                                        .slice(
-                                                                            0,
-                                                                            -2
-                                                                        )
-                                                                        .join(
-                                                                            '-'
-                                                                        );
-                                                                const partNumber =
-                                                                    idParts.slice(
-                                                                        -1
-                                                                    )[0];
-                                                                return `${layerName}-${partNumber}`;
-                                                            })()}</span
+                                                            >{part.name}</span
                                                         >
                                                         <span
                                                             class="target-info"
@@ -469,11 +450,7 @@
                                                         />
                                                         <span
                                                             class="target-label"
-                                                            >Chain {chain.id
-                                                                .split('-')
-                                                                .slice(
-                                                                    -1
-                                                                )[0]}</span
+                                                            >{chain.name}</span
                                                         >
                                                         <span
                                                             class="target-info"

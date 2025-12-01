@@ -18,7 +18,7 @@ describe('Hole Lead Direction Fix', () => {
         // Create a simple rectangular part with a hole
         const _outerShell: ChainData = {
             id: 'outer-shell',
-            shapes: [
+            name: 'outer-shell', shapes: [
                 {
                     id: 'shell-1',
                     type: GeometryType.LINE,
@@ -51,7 +51,7 @@ describe('Hole Lead Direction Fix', () => {
 
         const _holeChain: ChainData = {
             id: 'hole-chain',
-            shapes: [
+            name: 'hole-chain', shapes: [
                 {
                     id: 'hole-1',
                     type: GeometryType.LINE,
@@ -91,7 +91,7 @@ describe('Hole Lead Direction Fix', () => {
         // Create offset hole chain (inset by 2 units)
         const offsetHoleChain: ChainData = {
             id: 'hole-chain-offset',
-            shapes: [
+            name: 'hole-chain-offset', shapes: [
                 {
                     id: 'offset-hole-1',
                     type: GeometryType.LINE,
@@ -178,7 +178,7 @@ describe('Hole Lead Direction Fix', () => {
         // Create the same hole geometry for comparison
         const originalHole: ChainData = {
             id: 'original-hole',
-            shapes: [
+            name: 'original-hole', shapes: [
                 {
                     id: 'orig-hole-1',
                     type: GeometryType.LINE,
@@ -217,7 +217,7 @@ describe('Hole Lead Direction Fix', () => {
 
         const offsetHole: ChainData = {
             id: 'offset-hole',
-            shapes: [
+            name: 'offset-hole', shapes: [
                 {
                     id: 'off-hole-1',
                     type: GeometryType.LINE,

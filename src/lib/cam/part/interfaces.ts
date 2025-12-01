@@ -14,6 +14,7 @@ export type Part = PartClass;
 
 export interface PartData {
     id: string;
+    name: string;
     shell: ChainData;
     type: PartType.SHELL;
     boundingBox: BoundingBoxData;

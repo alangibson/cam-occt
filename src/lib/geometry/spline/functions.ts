@@ -13,6 +13,7 @@ import {
 } from '$lib/geometry/math/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
+import { hashObject } from '$lib/geometry/hash/functions';
 import {
     DEFAULT_CONFIG,
     DEFAULT_SPLINE_DEGREE,
@@ -1027,4 +1028,13 @@ export function sampleSpline(spline: Spline, _sampleCount: number): Point2D[] {
         );
         return spline.controlPoints.slice();
     }
+}
+
+/**
+ * Generate a content hash for a Spline
+ * @param spline - The spline to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashSpline(spline: Spline): Promise<string> {
+    return hashObject(spline);
 }

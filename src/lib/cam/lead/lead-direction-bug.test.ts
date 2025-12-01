@@ -182,7 +182,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             // Create a circle in the center of the rectangle (75, 37.5)
             const circleChain: ChainData = {
                 id: 'circle-hole',
-                shapes: [
+                name: 'circle-hole', shapes: [
                     {
                         id: 'circle1',
                         type: GeometryType.CIRCLE,

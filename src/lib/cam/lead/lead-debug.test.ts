@@ -22,7 +22,7 @@ describe('Lead Direction Debug', () => {
 
         const squareChain = new Chain({
             id: 'test-square',
-            shapes: [createPolylineFromVertices(squareVertices, true)],
+            name: 'test-square', shapes: [createPolylineFromVertices(squareVertices, true)],
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
@@ -31,6 +31,7 @@ describe('Lead Direction Debug', () => {
         // Create a simple part context to make it a shell
         const simplePart: PartData = {
             id: 'test-part',
+            name: 'test-part',
             shell: squareChain,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
@@ -114,7 +115,7 @@ describe('Lead Direction Debug', () => {
 
         const squareChain = new Chain({
             id: 'test-square',
-            shapes: [createPolylineFromVertices(squareVertices, true)],
+            name: 'test-square', shapes: [createPolylineFromVertices(squareVertices, true)],
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
@@ -182,7 +183,7 @@ describe('Lead Direction Debug', () => {
 
         const originalChain = new Chain({
             id: 'test-square',
-            shapes: [
+            name: 'test-square', shapes: [
                 createPolylineFromVertices(squareVertices, true, {
                     id: 'square-1',
                 }),

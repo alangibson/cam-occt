@@ -31,6 +31,7 @@ import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import { PartType } from './enums';
 import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import { Part } from './classes.svelte';
+import { generateId } from '$lib/domain/id';
 
 /**
  * Detects parts from a collection of chains using geometric containment
@@ -155,7 +156,8 @@ export async function detectParts(
 
         // Create part structure
         const partData: PartData = {
-            id: `${layerName}-part-${partCounter}`,
+            id: generateId(),
+            name: `${layerName}-${partCounter}`,
             shell: partChain.toData(),
             type: PartType.SHELL,
             boundingBox: chainBounds.get(partChain.id)!,

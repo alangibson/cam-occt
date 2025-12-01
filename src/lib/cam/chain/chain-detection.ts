@@ -6,6 +6,7 @@ import { detectCutDirection } from '$lib/cam/cut/cut-direction';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import { Chain } from '$lib/cam/chain/classes';
+import { generateId } from '$lib/domain/id';
 
 interface ChainDetectionOptions {
     tolerance: number;
@@ -58,19 +59,23 @@ export function detectShapeChains(
             // Multiple connected shapes form a chain
             chains.push(
                 new Chain({
-                    id: `chain-${chainId++}`,
+                    id: generateId(),
+                    name: `${chainId}`,
                     shapes: shapeIndices.map((index) => shapes[index].toData()),
                 })
             );
+            chainId++;
         } else if (shapeIndices.length === 1) {
             // Single shape - ALL single shapes form chains (both open and closed)
             const singleShape: Shape = shapes[shapeIndices[0]];
             chains.push(
                 new Chain({
-                    id: `chain-${chainId++}`,
+                    id: generateId(),
+                    name: `${chainId}`,
                     shapes: [singleShape.toData()],
                 })
             );
+            chainId++;
         }
     }
 

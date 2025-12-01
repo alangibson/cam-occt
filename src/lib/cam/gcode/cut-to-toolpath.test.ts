@@ -146,7 +146,7 @@ describe('cutToToolPath', () => {
             const cut = createMockCut({
                 cutChain: new Chain({
                     id: 'test-chain-cut',
-                    shapes: [
+                    name: 'test-chain-cut', shapes: [
                         {
                             id: 'offset1',
                             type: GeometryType.LINE,
@@ -427,7 +427,7 @@ describe('cutToToolPath', () => {
             const cut = createMockCut({
                 cutChain: new Chain({
                     id: 'test-chain-cut',
-                    shapes: [
+                    name: 'test-chain-cut', shapes: [
                         {
                             id: 'offset1',
                             type: GeometryType.LINE,
@@ -503,7 +503,7 @@ describe('cutToToolPath', () => {
             const cut = createMockCut({
                 cutChain: new Chain({
                     id: 'test-chain-cut',
-                    shapes: [
+                    name: 'test-chain-cut', shapes: [
                         {
                             id: 'offset1',
                             type: GeometryType.LINE,
@@ -655,7 +655,7 @@ describe('cutToToolPath', () => {
             const cut = createMockCut({
                 cutChain: new Chain({
                     id: 'test-chain-cut',
-                    shapes: [
+                    name: 'test-chain-cut', shapes: [
                         {
                             id: 'offset1',
                             type: GeometryType.LINE,
@@ -730,7 +730,7 @@ describe('cutToToolPath', () => {
             const cut = createMockCut({
                 cutChain: new Chain({
                     id: 'test-chain-cut',
-                    shapes: [
+                    name: 'test-chain-cut', shapes: [
                         {
                             id: 'offset1',
                             type: GeometryType.LINE,

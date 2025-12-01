@@ -229,6 +229,9 @@ export function optimizeChainStartPoint(
                     if (splitShapes) {
                         const optimizedChain = new Chain({
                             id: chain.id,
+                            name: chain.name,
+                            originalChainId: chain.originalChainId,
+                            clockwise: chain.clockwise,
                             shapes: [
                                 splitShapes[1].toData(),
                                 splitShapes[0].toData(),
@@ -296,6 +299,9 @@ export function optimizeChainStartPoint(
     // Create the optimized chain
     const optimizedChain = new Chain({
         id: chain.id,
+        name: chain.name,
+        originalChainId: chain.originalChainId,
+        clockwise: chain.clockwise,
         shapes: newShapes.map((s) => s.toData()),
     });
 

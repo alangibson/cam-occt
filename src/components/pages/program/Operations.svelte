@@ -152,14 +152,14 @@
             targetType = 'parts';
             targetIds = [highlightedPartId];
         }
-        // Priority 2: For parts - if parts are selected, use those; otherwise use all parts
+        // Priority 2: For parts - if parts are selected, use those; for first operation only, use all parts
         else if (parts.length > 0) {
             const selectedPartIds = $partStore.selectedPartIds;
             targetType = 'parts';
             if (selectedPartIds.size > 0) {
                 targetIds = Array.from(selectedPartIds);
-            } else {
-                // Auto-apply to all parts when no parts are selected
+            } else if (operations.length === 0) {
+                // Auto-apply to all parts only for the first operation
                 targetIds = parts.map((p) => p.id);
             }
         }
@@ -437,19 +437,14 @@
                 operation.targetIds.includes(p.id)
             );
             return selectedParts
-                .map((p) => {
-                    const idParts = p.id.split('-');
-                    const layerName = idParts.slice(0, -2).join('-');
-                    const partNumber = idParts.slice(-1)[0];
-                    return `Part ${layerName}-${partNumber}`;
-                })
+                .map((p) => p.name)
                 .join(', ');
         } else {
             const selectedChains = chains.filter((c) =>
                 operation.targetIds.includes(c.id)
             );
             return selectedChains
-                .map((c) => `Chain ${c.id.split('-').slice(-1)[0]}`)
+                .map((c) => c.name)
                 .join(', ');
         }
     }

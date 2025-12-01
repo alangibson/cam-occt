@@ -35,7 +35,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
 
         return {
             id: 'chain1',
-            shapes: [shape],
+            name: 'chain1', shapes: [shape],
             clockwise,
         };
     }

@@ -37,7 +37,7 @@
 
               props.push({
                   property: 'Name',
-                  value: selectedPart.id,
+                  value: selectedPart.name,
               });
 
               props.push({
@@ -77,7 +77,11 @@
         if (!selectedPart) return;
 
         try {
-            const json = JSON.stringify(selectedPart, null, 2);
+            const data =
+                typeof selectedPart.toData === 'function'
+                    ? selectedPart.toData()
+                    : selectedPart;
+            const json = JSON.stringify(data, null, 2);
             await navigator.clipboard.writeText(json);
         } catch (err) {
             console.error('Failed to copy to clipboard:', err);

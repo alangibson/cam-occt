@@ -8,6 +8,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import { hashObject } from '$lib/geometry/hash/functions';
 import type { Ellipse, EllipseTessellationConfig } from './interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import { MAX_TESSELLATION_POINTS, MIN_TESSELLATION_POINTS } from './constants';
@@ -821,4 +822,13 @@ export function tessellateEllipse(ellipse: Ellipse): Point2D[] {
     }
 
     return points;
+}
+
+/**
+ * Generate a content hash for an Ellipse
+ * @param ellipse - The ellipse to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashEllipse(ellipse: Ellipse): Promise<string> {
+    return hashObject(ellipse);
 }

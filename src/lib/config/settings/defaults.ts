@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS: ApplicationSettings = {
     ],
     enabledPreprocessingSteps: [
         PreprocessingStep.DecomposePolylines,
+        PreprocessingStep.DeduplicateShapes,
         PreprocessingStep.TranslateToPositive,
     ],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,

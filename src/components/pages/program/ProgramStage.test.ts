@@ -311,7 +311,7 @@ describe('ProgramStage', () => {
                 drawingStore: {
                     subscribe: vi.fn((callback) => {
                         callback({
-                            drawing: { id: 'test-drawing', shapes: [] },
+                            drawing: { id: 'test-drawing', name: 'test-drawing', shapes: [] },
                             fileName: 'test-file.dxf',
                         });
                         return vi.fn();
@@ -331,7 +331,7 @@ describe('ProgramStage', () => {
                             chains: [
                                 {
                                     id: 'chain-1',
-                                    shapes: [
+                                    name: 'chain-1', shapes: [
                                         {
                                             id: 'shape-1',
                                             type: 'line',

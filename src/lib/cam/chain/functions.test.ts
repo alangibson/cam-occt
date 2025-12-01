@@ -17,6 +17,7 @@ import type { ChainData } from './interfaces';
 function createTestChain(id: string, shapes: ShapeData[]): ChainData {
     return {
         id,
+        name: id,
         shapes,
     };
 }
@@ -318,7 +319,7 @@ describe('getChainEndPoint', () => {
         overrides: Partial<ChainData> = {}
     ): ChainData => ({
         id: 'test-chain',
-        shapes: [
+        name: 'test-chain', shapes: [
             {
                 id: 'line1',
                 type: GeometryType.LINE,

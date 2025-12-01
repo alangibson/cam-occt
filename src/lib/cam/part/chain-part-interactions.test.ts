@@ -42,6 +42,7 @@ describe('findPartContainingChain', () => {
         const holes = holeChainIds.map((holeId) => createMockHole(holeId));
         return {
             id: `part-${shellChainId}`,
+            name: 'part-${shellChainId}',
             shell: createMockChain(shellChainId),
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },

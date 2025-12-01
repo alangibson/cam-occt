@@ -16,6 +16,7 @@ import {
     MAX_TOLERANCE_RATIO,
 } from './constants';
 import { normalizeAngle } from '$lib/geometry/math/functions';
+import { hashObject } from '$lib/geometry/hash/functions';
 
 /**
  * Calculate a point on a circle/arc given center, radius and angle
@@ -602,4 +603,13 @@ export function tessellateArc(
     }
 
     return points;
+}
+
+/**
+ * Generate a content hash for an Arc
+ * @param arc - The arc to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashArc(arc: Arc): Promise<string> {
+    return hashObject(arc);
 }

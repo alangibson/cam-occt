@@ -10,6 +10,7 @@ import type { BoundingBoxData } from './interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
+import { hashObject } from '$lib/geometry/hash/functions';
 import {
     VALIDATION_SAMPLE_COUNT,
     SPLINE_TESSELLATION_TOLERANCE,
@@ -445,4 +446,15 @@ export function getShapeBoundingBox(shape: ShapeData): BoundingBoxData {
 export function getShapePointsForBounds(shape: ShapeData): Point2D[] {
     const bounds = getBoundingBoxForShape(shape);
     return [bounds.min, bounds.max];
+}
+
+/**
+ * Generate a content hash for a BoundingBox
+ * @param boundingBox - The bounding box to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashBoundingBox(
+    boundingBox: BoundingBoxData
+): Promise<string> {
+    return hashObject(boundingBox);
 }

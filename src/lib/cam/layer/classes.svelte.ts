@@ -29,11 +29,11 @@ export class Layer implements LayerData {
 
         this.#chains.push(
             ...detectedChains.map((chain) => {
-                // Prefix chain ID with layer name to ensure global uniqueness
+                // Prefix chain name with layer name for human readability
                 const chainData = chain.toData();
                 const prefixedChain = {
                     ...chainData,
-                    id: `${layerName}-${chain.id}`,
+                    name: `${layerName}-${chain.name}`,
                 };
                 const normalizedChain = normalizeChain(
                     new Chain(prefixedChain),

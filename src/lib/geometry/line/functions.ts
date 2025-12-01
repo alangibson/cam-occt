@@ -6,6 +6,7 @@ import { snapParameter } from '$lib/geometry/math/functions';
 import type { IntersectionResult } from '$lib/cam/offset/types';
 import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';
 import type { SegmentPosition } from './types';
+import { hashObject } from '$lib/geometry/hash/functions';
 
 export function getLineStartPoint(line: Line): Point2D {
     return line.start;
@@ -329,4 +330,13 @@ export function getLineTangent(line: Line): Point2D {
  */
 export function tessellateLine(line: Line): Point2D[] {
     return [line.start, line.end];
+}
+
+/**
+ * Generate a content hash for a Line
+ * @param line - The line to hash
+ * @returns A SHA-256 hash as a hex string
+ */
+export async function hashLine(line: Line): Promise<string> {
+    return hashObject(line);
 }

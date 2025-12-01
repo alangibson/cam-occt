@@ -21,7 +21,7 @@ describe('Lead Fit Feature', () => {
     // Create a simple test chain (square)
     const testChain: ChainData = {
         id: 'test-chain-1',
-        shapes: [
+        name: 'test-chain-1', shapes: [
             {
                 id: 'line-1',
                 type: GeometryType.LINE,
@@ -60,7 +60,8 @@ describe('Lead Fit Feature', () => {
     // Create a test part with the chain as shell (to potentially cause lead interference)
     const testPart: PartData = {
         id: 'test-part-1',
-        shell: testChain,
+        name: 'test-part-1',
+            shell: testChain,
         type: PartType.SHELL,
         boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
         layerName: '0',

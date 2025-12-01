@@ -35,6 +35,7 @@ export enum SelectionMode {
  */
 export enum PreprocessingStep {
     DecomposePolylines = 'decomposePolylines',
+    DeduplicateShapes = 'deduplicateShapes',
     JoinColinearLines = 'joinColinearLines',
     TranslateToPositive = 'translateToPositive',
     OptimizeStarts = 'optimizeStarts',

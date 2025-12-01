@@ -48,18 +48,15 @@ export async function generateSpotsForChainsWithOperation(
     // Create a chain containing only the point
     const spotChain = new Chain({
         id: crypto.randomUUID(),
+        name: `${chain.name} (spot)`,
         shapes: [pointShape],
         clockwise: null, // Points have no direction
     });
 
-    // Extract chain number from targetId format: layername-chain-number
-    const chainIdParts = targetId.split('-');
-    const chainNumber = chainIdParts[chainIdParts.length - 1];
-
     // Create the spot cut object with minimal fields
     const spotCut = new Cut({
         id: crypto.randomUUID(),
-        name: `${operation.name} - Chain ${chainNumber} (Spot)`,
+        name: `${operation.name} - ${chain.name} (Spot)`,
         operationId: operation.id,
         chainId: targetId,
         toolId: tool.id,

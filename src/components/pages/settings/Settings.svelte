@@ -20,6 +20,7 @@
 
     const allPreprocessingSteps = [
         PreprocessingStep.DecomposePolylines,
+        PreprocessingStep.DeduplicateShapes,
         PreprocessingStep.JoinColinearLines,
         PreprocessingStep.TranslateToPositive,
         PreprocessingStep.OptimizeStarts,
@@ -27,6 +28,7 @@
 
     const preprocessingStepDisplayNames: Record<PreprocessingStep, string> = {
         [PreprocessingStep.DecomposePolylines]: 'Decompose Polylines',
+        [PreprocessingStep.DeduplicateShapes]: 'Deduplicate Shapes',
         [PreprocessingStep.JoinColinearLines]: 'Join Co-linear Lines',
         [PreprocessingStep.TranslateToPositive]: 'Translate to Positive',
         [PreprocessingStep.OptimizeStarts]: 'Optimize Starts',

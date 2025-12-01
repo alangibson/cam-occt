@@ -163,6 +163,7 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain = new Chain({
             id: chainToUse.id + '_offset_temp',
+            name: chainToUse.name + ' (offset)',
             shapes: cut.offset.offsetShapes.map((s) => s.toData()),
             clockwise: chainToUse.clockwise,
             originalChainId: chainToUse.originalChainId || chainToUse.id,

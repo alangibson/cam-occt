@@ -52,7 +52,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const chainData: ChainData = {
             id: 'circle-offset-test',
-            shapes: [circleShape],
+            name: 'circle-offset-test', shapes: [circleShape],
         };
         const chain = new Chain(chainData);
 
@@ -157,7 +157,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const chainData: ChainData = {
             id: 'rounded-rectangle',
-            shapes: [
+            name: 'rounded-rectangle', shapes: [
                 bottomLineShape,
                 rightArcShape,
                 topLineShape,
@@ -235,7 +235,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const chainData: ChainData = {
             id: 'precision-circle',
-            shapes: [circleShape],
+            name: 'precision-circle', shapes: [circleShape],
         };
         const chain = new Chain(chainData);
 
@@ -367,7 +367,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const circleChainData: ChainData = {
             id: 'circle-shape',
-            shapes: [circle],
+            name: 'circle-shape', shapes: [circle],
         };
         const circleChain = new Chain(circleChainData);
 

@@ -19,6 +19,8 @@ import { isPointInsidePart } from '$lib/cam/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/enums';
 import { PartType } from '$lib/cam/part/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
+import { createCutChain } from '$lib/cam/pipeline/chains/functions';
+import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 
 describe('Cut Normal Direction on Parts', () => {
     /**
@@ -36,9 +38,9 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-9',
-                shapes: [
+                name: 'chain-9', shapes: [
                     {
-                        id: 'shape_1760015737420_2049-split-2',
+                        id: '1760015737420_2049-split-2',
                         type: GeometryType.LINE,
                         geometry: {
                             start: { x: 39.022212, y: 20.9129535 },
@@ -47,7 +49,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1802',
+                        id: '1760015733516_1802',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -65,7 +67,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1803',
+                        id: '1760015733516_1803',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -83,7 +85,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1804',
+                        id: '1760015733516_1804',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -101,7 +103,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1805',
+                        id: '1760015733516_1805',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -119,7 +121,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015737420_2050',
+                        id: '1760015737420_2050',
                         type: GeometryType.LINE,
                         geometry: {
                             start: { x: 41.875129, y: 22.48462 },
@@ -128,7 +130,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1808',
+                        id: '1760015733516_1808',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -146,7 +148,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1809',
+                        id: '1760015733516_1809',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -164,7 +166,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1783',
+                        id: '1760015733516_1783',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -182,7 +184,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1784',
+                        id: '1760015733516_1784',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -200,7 +202,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015737420_2049-split-1',
+                        id: '1760015737420_2049-split-1',
                         type: GeometryType.LINE,
                         geometry: {
                             start: { x: 39.022212, y: 19.341287 },
@@ -216,9 +218,9 @@ describe('Cut Normal Direction on Parts', () => {
                     id: 'hole-7-1',
                     chain: {
                         id: 'chain-11',
-                        shapes: [
+                        name: 'chain-11', shapes: [
                             {
-                                id: 'shape_1760015737420_2051-split-2',
+                                id: '1760015737420_2051-split-2',
                                 type: GeometryType.LINE,
                                 geometry: {
                                     start: { x: 40.935546, y: 20.9129535 },
@@ -227,7 +229,7 @@ describe('Cut Normal Direction on Parts', () => {
                                 layer: '0',
                             },
                             {
-                                id: 'shape_1760015733516_1813',
+                                id: '1760015733516_1813',
                                 type: GeometryType.SPLINE,
                                 geometry: {
                                     controlPoints: [
@@ -245,7 +247,7 @@ describe('Cut Normal Direction on Parts', () => {
                                 layer: '0',
                             },
                             {
-                                id: 'shape_1760015733516_1814',
+                                id: '1760015733516_1814',
                                 type: GeometryType.SPLINE,
                                 geometry: {
                                     controlPoints: [
@@ -263,7 +265,7 @@ describe('Cut Normal Direction on Parts', () => {
                                 layer: '0',
                             },
                             {
-                                id: 'shape_1760015737420_2052',
+                                id: '1760015737420_2052',
                                 type: GeometryType.LINE,
                                 geometry: {
                                     start: { x: 39.961796, y: 22.544412 },
@@ -272,7 +274,7 @@ describe('Cut Normal Direction on Parts', () => {
                                 layer: '0',
                             },
                             {
-                                id: 'shape_1760015733516_1817',
+                                id: '1760015733516_1817',
                                 type: GeometryType.SPLINE,
                                 geometry: {
                                     controlPoints: [
@@ -290,7 +292,7 @@ describe('Cut Normal Direction on Parts', () => {
                                 layer: '0',
                             },
                             {
-                                id: 'shape_1760015733516_1812',
+                                id: '1760015733516_1812',
                                 type: GeometryType.SPLINE,
                                 geometry: {
                                     controlPoints: [
@@ -308,7 +310,7 @@ describe('Cut Normal Direction on Parts', () => {
                                 layer: '0',
                             },
                             {
-                                id: 'shape_1760015737420_2051-split-1',
+                                id: '1760015737420_2051-split-1',
                                 type: GeometryType.LINE,
                                 geometry: {
                                     start: { x: 40.935546, y: 19.281495 },
@@ -440,9 +442,9 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-9',
-                shapes: [
+                name: 'chain-9', shapes: [
                     {
-                        id: 'shape_1760015737420_2049-split-2',
+                        id: '1760015737420_2049-split-2',
                         type: GeometryType.LINE,
                         geometry: {
                             start: { x: 39.022212, y: 20.9129535 },
@@ -451,7 +453,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1802',
+                        id: '1760015733516_1802',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -469,7 +471,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1803',
+                        id: '1760015733516_1803',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -487,7 +489,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1804',
+                        id: '1760015733516_1804',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -505,7 +507,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1805',
+                        id: '1760015733516_1805',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -523,7 +525,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015737420_2050',
+                        id: '1760015737420_2050',
                         type: GeometryType.LINE,
                         geometry: {
                             start: { x: 41.875129, y: 22.48462 },
@@ -532,7 +534,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1808',
+                        id: '1760015733516_1808',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -550,7 +552,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1809',
+                        id: '1760015733516_1809',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -568,7 +570,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1783',
+                        id: '1760015733516_1783',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -586,7 +588,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015733516_1784',
+                        id: '1760015733516_1784',
                         type: GeometryType.SPLINE,
                         geometry: {
                             controlPoints: [
@@ -604,7 +606,7 @@ describe('Cut Normal Direction on Parts', () => {
                         layer: '0',
                     },
                     {
-                        id: 'shape_1760015737420_2049-split-1',
+                        id: '1760015737420_2049-split-1',
                         type: GeometryType.LINE,
                         geometry: {
                             start: { x: 39.022212, y: 19.341287 },
@@ -623,7 +625,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Create shell cutChain WITHOUT clockwise property (as createCutChain does)
         const shellCutChain: ChainData = {
             id: 'chain-9-cut',
-            shapes: [...part.shell.shapes], // Copy shapes
+            name: 'chain-9-cut', shapes: [...part.shell.shapes], // Copy shapes
             // NOTE: No clockwise property!
         };
 
@@ -681,7 +683,7 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-test',
-                shapes: [
+                name: 'chain-test', shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
@@ -833,7 +835,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Create cutChain WITH originalChainId (correct case)
         const cutChainFixed: ChainData = {
             id: 'chain-original-cut',
-            shapes: [...part.shell.shapes],
+            name: 'chain-original-cut', shapes: [...part.shell.shapes],
             originalChainId: part.shell.id, // Set originalChainId!
         };
 
@@ -866,7 +868,7 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-test',
-                shapes: [
+                name: 'chain-test', shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
@@ -955,7 +957,7 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-shell',
-                shapes: [
+                name: 'chain-shell', shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
@@ -1000,7 +1002,7 @@ describe('Cut Normal Direction on Parts', () => {
                     id: 'hole-1',
                     chain: {
                         id: 'chain-hole',
-                        shapes: [
+                        name: 'chain-hole', shapes: [
                             {
                                 id: 'hole-line1',
                                 type: GeometryType.LINE,
@@ -1081,5 +1083,831 @@ describe('Cut Normal Direction on Parts', () => {
         expect(normalNoKerf.normal.y).toBeCloseTo(
             -normalWithOuterKerf.normal.y
         );
+    });
+
+    /**
+     * Test that cut normals remain correct after start point optimization
+     * This is the main bug fix: optimization was losing originalChainId
+     */
+    describe('Cut Normals After Start Point Optimization', () => {
+        it('should preserve originalChainId after optimization', () => {
+            // Create a simple square chain
+            const originalChain = new Chain({
+                id: 'chain-original',
+                name: 'Original Chain',
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 0 },
+                            end: { x: 100, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 100 },
+                            end: { x: 0, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
+            });
+
+            // Optimize the chain
+            const result = optimizeChainStartPoint(originalChain, {
+                tolerance: 0.001,
+                splitPosition: 'midpoint',
+            });
+
+            // Verify optimization occurred
+            expect(result.modified).toBe(true);
+            expect(result.optimizedChain).toBeTruthy();
+
+            // Verify originalChainId is preserved
+            expect(result.optimizedChain!.originalChainId).toBe(
+                originalChain.originalChainId
+            );
+            expect(result.optimizedChain!.clockwise).toBe(
+                originalChain.clockwise
+            );
+        });
+
+        it('should have correct shell normal after optimization', () => {
+            // Simple rectangular part
+            const part: PartData = {
+                id: 'part-test',
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+                shell: {
+                    id: 'chain-shell',
+                    name: 'Shell Chain',
+                    shapes: [
+                        {
+                            id: 'line1',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 0 },
+                                end: { x: 100, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line2',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 100, y: 0 },
+                                end: { x: 100, y: 100 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line3',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 100, y: 100 },
+                                end: { x: 0, y: 100 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line4',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 100 },
+                                end: { x: 0, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                    ],
+                    clockwise: true,
+                },
+                voids: [],
+                slots: [],
+                layerName: '0',
+            };
+
+            // Create cut chain (this sets originalChainId)
+            const shellChain = new Chain(part.shell);
+            const cutChainResult = createCutChain(
+                shellChain,
+                CutDirection.CLOCKWISE,
+                undefined
+            );
+            const cutChain = cutChainResult.cutChain;
+
+            // Verify originalChainId is set
+            expect(cutChain.originalChainId).toBe(part.shell.id);
+
+            // Calculate normal BEFORE optimization
+            const normalBefore = calculateCutNormal(
+                cutChain,
+                CutDirection.CLOCKWISE,
+                new Part(part)
+            );
+
+            // Optimize the cut chain
+            const optimizeResult = optimizeChainStartPoint(cutChain, {
+                tolerance: 0.001,
+                splitPosition: 'midpoint',
+            });
+
+            expect(optimizeResult.modified).toBe(true);
+            const optimizedChain = optimizeResult.optimizedChain!;
+
+            // Verify originalChainId is preserved after optimization
+            expect(optimizedChain.originalChainId).toBe(part.shell.id);
+
+            // Calculate normal AFTER optimization
+            const normalAfter = calculateCutNormal(
+                optimizedChain,
+                CutDirection.CLOCKWISE,
+                new Part(part)
+            );
+
+            // Both normals should point outward (same direction)
+            // The start point may have changed, so we can't compare the exact normal vector
+            // But we can verify both are correctly identified as shell (LEFT side)
+            expect(normalBefore.normalSide).toBe(NormalSide.LEFT);
+            expect(normalAfter.normalSide).toBe(NormalSide.LEFT);
+        });
+
+        it('should have correct hole normal after optimization', () => {
+            // Part with a hole
+            const part: PartData = {
+                id: 'part-test',
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
+                shell: {
+                    id: 'chain-shell',
+                    name: 'Shell',
+                    shapes: [
+                        {
+                            id: 'line1',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 0 },
+                                end: { x: 200, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line2',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 200, y: 0 },
+                                end: { x: 200, y: 200 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line3',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 200, y: 200 },
+                                end: { x: 0, y: 200 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line4',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 200 },
+                                end: { x: 0, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                    ],
+                    clockwise: true,
+                },
+                voids: [
+                    {
+                        id: 'hole-1',
+                        chain: {
+                            id: 'chain-hole',
+                            name: 'Hole',
+                            shapes: [
+                                {
+                                    id: 'hole-line1',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 50, y: 50 },
+                                        end: { x: 150, y: 50 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line2',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 150, y: 50 },
+                                        end: { x: 150, y: 150 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line3',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 150, y: 150 },
+                                        end: { x: 50, y: 150 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line4',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 50, y: 150 },
+                                        end: { x: 50, y: 50 },
+                                    },
+                                    layer: '0',
+                                },
+                            ],
+                            clockwise: false,
+                        },
+                        type: PartType.HOLE,
+                        boundingBox: {
+                            min: { x: 50, y: 50 },
+                            max: { x: 150, y: 150 },
+                        },
+                    },
+                ],
+                slots: [],
+                layerName: '0',
+            };
+
+            // Create cut chain for hole
+            const holeChain = new Chain(part.voids[0].chain);
+            const cutChainResult = createCutChain(
+                holeChain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined
+            );
+            const cutChain = cutChainResult.cutChain;
+
+            // Verify originalChainId is set
+            expect(cutChain.originalChainId).toBe(part.voids[0].chain.id);
+
+            // Calculate normal BEFORE optimization
+            const normalBefore = calculateCutNormal(
+                cutChain,
+                CutDirection.COUNTERCLOCKWISE,
+                new Part(part)
+            );
+
+            // Optimize the cut chain
+            const optimizeResult = optimizeChainStartPoint(cutChain, {
+                tolerance: 0.001,
+                splitPosition: 'midpoint',
+            });
+
+            expect(optimizeResult.modified).toBe(true);
+            const optimizedChain = optimizeResult.optimizedChain!;
+
+            // Verify originalChainId is preserved
+            expect(optimizedChain.originalChainId).toBe(
+                part.voids[0].chain.id
+            );
+
+            // Calculate normal AFTER optimization
+            const normalAfter = calculateCutNormal(
+                optimizedChain,
+                CutDirection.COUNTERCLOCKWISE,
+                new Part(part)
+            );
+
+            // Both normals should be on the LEFT side (for hole + CCW)
+            expect(normalBefore.normalSide).toBe(NormalSide.LEFT);
+            expect(normalAfter.normalSide).toBe(NormalSide.LEFT);
+        });
+
+        it('should correctly flip normal with INNER kerf after optimization', () => {
+            // Simple rectangular shell
+            const part: PartData = {
+                id: 'part-test',
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+                shell: {
+                    id: 'chain-shell',
+                    name: 'Shell',
+                    shapes: [
+                        {
+                            id: 'line1',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 0 },
+                                end: { x: 100, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line2',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 100, y: 0 },
+                                end: { x: 100, y: 100 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line3',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 100, y: 100 },
+                                end: { x: 0, y: 100 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line4',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 100 },
+                                end: { x: 0, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                    ],
+                    clockwise: true,
+                },
+                voids: [],
+                slots: [],
+                layerName: '0',
+            };
+
+            // Create cut chain
+            const shellChain = new Chain(part.shell);
+            const cutChainResult = createCutChain(
+                shellChain,
+                CutDirection.CLOCKWISE,
+                undefined
+            );
+            const cutChain = cutChainResult.cutChain;
+
+            // Optimize the chain
+            const optimizeResult = optimizeChainStartPoint(cutChain, {
+                tolerance: 0.001,
+                splitPosition: 'midpoint',
+            });
+            const optimizedChain = optimizeResult.optimizedChain!;
+
+            // Test without kerf compensation (should be LEFT for shell + CW)
+            const normalNoKerf = calculateCutNormal(
+                optimizedChain,
+                CutDirection.CLOCKWISE,
+                new Part(part)
+            );
+            expect(normalNoKerf.normalSide).toBe(NormalSide.LEFT);
+
+            // Test with INNER kerf compensation (should flip to RIGHT)
+            const normalWithInnerKerf = calculateCutNormal(
+                optimizedChain,
+                CutDirection.CLOCKWISE,
+                new Part(part),
+                OffsetDirection.INSET
+            );
+            expect(normalWithInnerKerf.normalSide).toBe(NormalSide.RIGHT);
+
+            // Verify they are opposite
+            expect(normalNoKerf.normalSide).not.toBe(
+                normalWithInnerKerf.normalSide
+            );
+        });
+
+        it('should correctly flip normal with OUTER kerf on hole after optimization', () => {
+            // Part with hole
+            const part: PartData = {
+                id: 'part-test',
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
+                shell: {
+                    id: 'chain-shell',
+                    name: 'Shell',
+                    shapes: [
+                        {
+                            id: 'line1',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 0 },
+                                end: { x: 200, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line2',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 200, y: 0 },
+                                end: { x: 200, y: 200 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line3',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 200, y: 200 },
+                                end: { x: 0, y: 200 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line4',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 200 },
+                                end: { x: 0, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                    ],
+                    clockwise: true,
+                },
+                voids: [
+                    {
+                        id: 'hole-1',
+                        chain: {
+                            id: 'chain-hole',
+                            name: 'Hole',
+                            shapes: [
+                                {
+                                    id: 'hole-line1',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 50, y: 50 },
+                                        end: { x: 150, y: 50 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line2',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 150, y: 50 },
+                                        end: { x: 150, y: 150 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line3',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 150, y: 150 },
+                                        end: { x: 50, y: 150 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line4',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 50, y: 150 },
+                                        end: { x: 50, y: 50 },
+                                    },
+                                    layer: '0',
+                                },
+                            ],
+                            clockwise: false,
+                        },
+                        type: PartType.HOLE,
+                        boundingBox: {
+                            min: { x: 50, y: 50 },
+                            max: { x: 150, y: 150 },
+                        },
+                    },
+                ],
+                slots: [],
+                layerName: '0',
+            };
+
+            // Create cut chain for hole
+            const holeChain = new Chain(part.voids[0].chain);
+            const cutChainResult = createCutChain(
+                holeChain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined
+            );
+            const cutChain = cutChainResult.cutChain;
+
+            // Optimize the chain
+            const optimizeResult = optimizeChainStartPoint(cutChain, {
+                tolerance: 0.001,
+                splitPosition: 'midpoint',
+            });
+            const optimizedChain = optimizeResult.optimizedChain!;
+
+            // Test without kerf compensation (should be LEFT for hole + CCW)
+            const normalNoKerf = calculateCutNormal(
+                optimizedChain,
+                CutDirection.COUNTERCLOCKWISE,
+                new Part(part)
+            );
+            expect(normalNoKerf.normalSide).toBe(NormalSide.LEFT);
+
+            // Test with OUTER kerf compensation (should flip to RIGHT)
+            const normalWithOuterKerf = calculateCutNormal(
+                optimizedChain,
+                CutDirection.COUNTERCLOCKWISE,
+                new Part(part),
+                OffsetDirection.OUTSET
+            );
+            expect(normalWithOuterKerf.normalSide).toBe(NormalSide.RIGHT);
+
+            // Verify they are opposite
+            expect(normalNoKerf.normalSide).not.toBe(
+                normalWithOuterKerf.normalSide
+            );
+        });
+    });
+
+    /**
+     * Test that standalone chains (without part context) respect kerf compensation
+     */
+    describe('Standalone Chain Normals with Kerf Compensation', () => {
+        it('should flip normal with INSET kerf on standalone chain (no part context)', () => {
+            // Simple rectangular chain (no part context)
+            const chain: ChainData = {
+                id: 'chain-standalone',
+                name: 'Standalone Chain',
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 0 },
+                            end: { x: 100, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 100 },
+                            end: { x: 0, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
+            };
+
+            // Test without kerf compensation (should be LEFT for CW)
+            const normalNoKerf = calculateCutNormal(
+                new Chain(chain),
+                CutDirection.CLOCKWISE,
+                undefined // No part context
+            );
+            expect(normalNoKerf.normalSide).toBe(NormalSide.LEFT);
+
+            // Test with INSET kerf compensation (should flip to RIGHT)
+            const normalWithInsetKerf = calculateCutNormal(
+                new Chain(chain),
+                CutDirection.CLOCKWISE,
+                undefined, // No part context
+                OffsetDirection.INSET
+            );
+            expect(normalWithInsetKerf.normalSide).toBe(NormalSide.RIGHT);
+
+            // Verify they are opposite
+            expect(normalNoKerf.normalSide).not.toBe(
+                normalWithInsetKerf.normalSide
+            );
+        });
+
+        it('should flip normal with INSET kerf on CCW standalone chain', () => {
+            // Simple rectangular chain (no part context)
+            const chain: ChainData = {
+                id: 'chain-standalone',
+                name: 'Standalone Chain',
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 0 },
+                            end: { x: 100, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 100 },
+                            end: { x: 0, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
+            };
+
+            // Test without kerf compensation (should be RIGHT for CCW)
+            const normalNoKerf = calculateCutNormal(
+                new Chain(chain),
+                CutDirection.COUNTERCLOCKWISE,
+                undefined // No part context
+            );
+            expect(normalNoKerf.normalSide).toBe(NormalSide.RIGHT);
+
+            // Test with INSET kerf compensation (should flip to LEFT)
+            const normalWithInsetKerf = calculateCutNormal(
+                new Chain(chain),
+                CutDirection.COUNTERCLOCKWISE,
+                undefined, // No part context
+                OffsetDirection.INSET
+            );
+            expect(normalWithInsetKerf.normalSide).toBe(NormalSide.LEFT);
+
+            // Verify they are opposite
+            expect(normalNoKerf.normalSide).not.toBe(
+                normalWithInsetKerf.normalSide
+            );
+        });
+
+        it('should NOT flip normal with OUTSET kerf on standalone chain', () => {
+            // Simple rectangular chain (no part context)
+            const chain: ChainData = {
+                id: 'chain-standalone',
+                name: 'Standalone Chain',
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 0 },
+                            end: { x: 100, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 100 },
+                            end: { x: 0, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
+            };
+
+            // Test without kerf compensation
+            const normalNoKerf = calculateCutNormal(
+                new Chain(chain),
+                CutDirection.CLOCKWISE,
+                undefined // No part context
+            );
+
+            // Test with OUTSET kerf compensation (should NOT flip)
+            const normalWithOutsetKerf = calculateCutNormal(
+                new Chain(chain),
+                CutDirection.CLOCKWISE,
+                undefined, // No part context
+                OffsetDirection.OUTSET
+            );
+
+            // Both should be LEFT (no flip for OUTSET)
+            expect(normalNoKerf.normalSide).toBe(NormalSide.LEFT);
+            expect(normalWithOutsetKerf.normalSide).toBe(NormalSide.LEFT);
+            expect(normalNoKerf.normalSide).toBe(
+                normalWithOutsetKerf.normalSide
+            );
+        });
+
+        it('should flip normal with INSET kerf after optimization (no part context)', () => {
+            // Standalone chain
+            const chain: ChainData = {
+                id: 'chain-standalone',
+                name: 'Standalone Chain',
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 0 },
+                            end: { x: 100, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 100, y: 100 },
+                            end: { x: 0, y: 100 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
+            };
+
+            // Create cut chain
+            const chainObj = new Chain(chain);
+            const cutChainResult = createCutChain(
+                chainObj,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined
+            );
+            const cutChain = cutChainResult.cutChain;
+
+            // Optimize the chain
+            const optimizeResult = optimizeChainStartPoint(cutChain, {
+                tolerance: 0.001,
+                splitPosition: 'midpoint',
+            });
+            const optimizedChain = optimizeResult.optimizedChain!;
+
+            // Test without kerf (should be RIGHT for CCW)
+            const normalNoKerf = calculateCutNormal(
+                optimizedChain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined // No part context
+            );
+            expect(normalNoKerf.normalSide).toBe(NormalSide.RIGHT);
+
+            // Test with INSET kerf (should flip to LEFT)
+            const normalWithInsetKerf = calculateCutNormal(
+                optimizedChain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined, // No part context
+                OffsetDirection.INSET
+            );
+            expect(normalWithInsetKerf.normalSide).toBe(NormalSide.LEFT);
+
+            // Verify they are opposite
+            expect(normalNoKerf.normalSide).not.toBe(
+                normalWithInsetKerf.normalSide
+            );
+        });
     });
 });

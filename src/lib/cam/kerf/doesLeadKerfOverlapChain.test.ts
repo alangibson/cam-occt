@@ -13,7 +13,7 @@ describe('doesLeadKerfOverlapChain', () => {
     it('should return false when leadKerfOuterChain is undefined', () => {
         const originalChain: ChainData = {
             id: 'original',
-            shapes: [],
+            name: 'original', shapes: [],
         };
 
         const result = doesLeadKerfOverlapChain(undefined, originalChain, 1.0);
@@ -43,7 +43,7 @@ describe('doesLeadKerfOverlapChain', () => {
 
         const originalChain: ChainData = {
             id: 'original',
-            shapes: [],
+            name: 'original', shapes: [],
         };
 
         const result = doesLeadKerfOverlapChain(outerChain, originalChain, 1.0);
@@ -76,7 +76,7 @@ describe('doesLeadKerfOverlapChain', () => {
         // Original chain well above the kerf (at y=10)
         const originalChain: ChainData = {
             id: 'original',
-            shapes: [
+            name: 'original', shapes: [
                 {
                     id: 'original-line',
                     type: GeometryType.LINE,
@@ -147,7 +147,7 @@ describe('doesLeadKerfOverlapChain', () => {
         // Original chain passes through the middle of the kerf (at y=0)
         const originalChain: ChainData = {
             id: 'original',
-            shapes: [
+            name: 'original', shapes: [
                 {
                     id: 'original-line',
                     type: GeometryType.LINE,
@@ -217,7 +217,7 @@ describe('doesLeadKerfOverlapChain', () => {
         // Original chain crosses through the kerf
         const originalChain: ChainData = {
             id: 'original',
-            shapes: [
+            name: 'original', shapes: [
                 {
                     id: 'original-line',
                     type: GeometryType.LINE,
@@ -287,7 +287,7 @@ describe('doesLeadKerfOverlapChain', () => {
         // Original chain that passes through the kerf
         const originalChain: ChainData = {
             id: 'original',
-            shapes: [
+            name: 'original', shapes: [
                 {
                     id: 'seg1',
                     type: GeometryType.LINE,
@@ -342,7 +342,7 @@ describe('doesLeadKerfOverlapChain', () => {
         // Due to sampling tolerance, this may or may not detect overlap
         const originalChain: ChainData = {
             id: 'original',
-            shapes: [
+            name: 'original', shapes: [
                 {
                     id: 'original-line',
                     type: GeometryType.LINE,

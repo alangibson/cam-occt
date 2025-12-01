@@ -32,7 +32,7 @@ global.DragEvent = class DragEvent extends Event {
 function _createMockPartShell(id: string): PartData {
     const mockChain: ChainData = {
         id: `chain-${id}`,
-        shapes: [],
+        name: 'chain-${id}', shapes: [],
     };
     return {
         id: `shell-${id}`,
@@ -117,7 +117,7 @@ describe('Operations Component - Function Coverage', () => {
             chainStore.setChains([
                 {
                     id: 'chain-1',
-                    shapes: [
+                    name: 'chain-1', shapes: [
                         {
                             type: GeometryType.LINE,
                             id: 'line-1',
@@ -607,7 +607,7 @@ describe('Operations Component - Function Coverage', () => {
 
             // Add chains to store
             // @ts-expect-error - setChains no longer exists, test needs refactoring
-            chainStore.setChains([{ id: 'chain-1', shapes: [] }]);
+            chainStore.setChains([{ id: 'chain-1', name: 'chain-1', shapes: [] }]);
 
             operationsStore.addOperation({
                 name: 'Test Op',

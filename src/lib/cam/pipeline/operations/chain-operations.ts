@@ -140,12 +140,9 @@ export async function generateCutsForChainsWithOperation(
     }
 
     // Create the cut object
-    // Extract chain number from targetId format: layername-chain-number
-    const chainIdParts = targetId.split('-');
-    const chainNumber = chainIdParts[chainIdParts.length - 1];
     const cutToReturn = new Cut({
         id: crypto.randomUUID(),
-        name: `${operation.name} - Chain ${chainNumber}`,
+        name: `${operation.name} - ${chain.name}`,
         operationId: operation.id,
         chainId: targetId,
         toolId: tool.id,

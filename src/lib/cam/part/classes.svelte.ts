@@ -22,6 +22,10 @@ export class Part {
         return this.#data.id;
     }
 
+    get name(): string {
+        return this.#data.name;
+    }
+
     get shell(): ChainData {
         return this.#data.shell;
     }
@@ -61,6 +65,9 @@ export class Part {
      * Get the underlying PartData for serialization or legacy code
      */
     toData(): PartData {
-        return this.#data;
+        return {
+            ...this.#data,
+            name: this.name,
+        };
     }
 }

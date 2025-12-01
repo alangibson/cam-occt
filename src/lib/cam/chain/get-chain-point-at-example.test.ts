@@ -35,7 +35,7 @@ describe('getChainPointAt - Example Usage', () => {
 
         const chainData: ChainData = {
             id: 'L-shape',
-            shapes: [horizontalLine, verticalLine],
+            name: 'L-shape', shapes: [horizontalLine, verticalLine],
         };
         const chain = new Chain(chainData);
 
@@ -84,7 +84,7 @@ describe('getChainPointAt - Example Usage', () => {
 
         const chainData: ChainData = {
             id: 'simple-line',
-            shapes: [line],
+            name: 'simple-line', shapes: [line],
         };
         const chain = new Chain(chainData);
 
@@ -135,7 +135,7 @@ describe('getChainPointAt - Example Usage', () => {
 
         const chainData: ChainData = {
             id: 'rectangle',
-            shapes: [bottom, right, top, left],
+            name: 'rectangle', shapes: [bottom, right, top, left],
         };
         const chain = new Chain(chainData);
 

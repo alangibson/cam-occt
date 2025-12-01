@@ -19,7 +19,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
     ): ChainData {
         return {
             id: 'test-circle',
-            shapes: [
+            name: 'test-circle', shapes: [
                 {
                     id: 'circle-1',
                     type: GeometryType.CIRCLE,
@@ -58,7 +58,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
 
         return {
             id: 'test-rectangle',
-            shapes: [
+            name: 'test-rectangle', shapes: [
                 createPolylineFromVertices(vertices, true, { id: 'rect-1' }),
             ],
         };

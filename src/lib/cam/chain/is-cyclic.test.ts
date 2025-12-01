@@ -9,7 +9,7 @@ describe('Chain.isCyclic', () => {
         it('should return true for a single circle shape', () => {
             const chain: ChainData = {
                 id: 'test-circle',
-                shapes: [
+                name: 'test-circle', shapes: [
                     {
                         id: 'circle-1',
                         type: GeometryType.CIRCLE,
@@ -33,7 +33,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-arcs',
-                shapes: [
+                name: 'test-arcs', shapes: [
                     {
                         id: 'arc-1',
                         type: GeometryType.ARC,
@@ -69,7 +69,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-arcs-4',
-                shapes: [
+                name: 'test-arcs-4', shapes: [
                     {
                         id: 'arc-1',
                         type: GeometryType.ARC,
@@ -124,7 +124,7 @@ describe('Chain.isCyclic', () => {
         it('should return false for arcs with different centers', () => {
             const chain: ChainData = {
                 id: 'test-different-centers',
-                shapes: [
+                name: 'test-different-centers', shapes: [
                     {
                         id: 'arc-1',
                         type: GeometryType.ARC,
@@ -159,7 +159,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-different-radii',
-                shapes: [
+                name: 'test-different-radii', shapes: [
                     {
                         id: 'arc-1',
                         type: GeometryType.ARC,
@@ -216,7 +216,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-triangle',
-                shapes: [
+                name: 'test-triangle', shapes: [
                     {
                         id: 'line-1',
                         type: GeometryType.LINE,
@@ -269,7 +269,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-square',
-                shapes: [
+                name: 'test-square', shapes: [
                     {
                         id: 'line-1',
                         type: GeometryType.LINE,
@@ -314,7 +314,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-hexagon',
-                shapes: vertices.map((v, i) => ({
+                name: 'test-hexagon', shapes: vertices.map((v, i) => ({
                     id: `line-${i}`,
                     type: GeometryType.LINE,
                     geometry: {
@@ -345,7 +345,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-octagon',
-                shapes: vertices.map((v, i) => ({
+                name: 'test-octagon', shapes: vertices.map((v, i) => ({
                     id: `line-${i}`,
                     type: GeometryType.LINE,
                     geometry: {
@@ -363,7 +363,7 @@ describe('Chain.isCyclic', () => {
             // A quadrilateral where not all vertices lie on a circle
             const chain: ChainData = {
                 id: 'test-non-cyclic',
-                shapes: [
+                name: 'test-non-cyclic', shapes: [
                     {
                         id: 'line-1',
                         type: GeometryType.LINE,
@@ -408,7 +408,7 @@ describe('Chain.isCyclic', () => {
         it('should return false for an empty chain', () => {
             const chain: ChainData = {
                 id: 'test-empty',
-                shapes: [],
+                name: 'test-empty', shapes: [],
             };
 
             const chainObj = new Chain(chain);
@@ -418,7 +418,7 @@ describe('Chain.isCyclic', () => {
         it('should return false for a chain with a single line', () => {
             const chain: ChainData = {
                 id: 'test-single-line',
-                shapes: [
+                name: 'test-single-line', shapes: [
                     {
                         id: 'line-1',
                         type: GeometryType.LINE,
@@ -437,7 +437,7 @@ describe('Chain.isCyclic', () => {
         it('should return false for a chain with two lines (not enough points)', () => {
             const chain: ChainData = {
                 id: 'test-two-lines',
-                shapes: [
+                name: 'test-two-lines', shapes: [
                     {
                         id: 'line-1',
                         type: GeometryType.LINE,
@@ -483,7 +483,7 @@ describe('Chain.isCyclic', () => {
 
             const chain: ChainData = {
                 id: 'test-mixed',
-                shapes: [
+                name: 'test-mixed', shapes: [
                     {
                         id: 'line-1',
                         type: GeometryType.LINE,

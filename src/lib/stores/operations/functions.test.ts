@@ -505,7 +505,7 @@ describe('Operations Functions', () => {
             vi.mocked(reverseChain).mockReturnValue(
                 new Chain({
                     id: 'chain-1',
-                    shapes: [mockChainData.shapes[0]],
+                    name: 'chain-1', shapes: [mockChainData.shapes[0]],
                 })
             );
 
@@ -523,7 +523,7 @@ describe('Operations Functions', () => {
             vi.mocked(reverseChain).mockReturnValue(
                 new Chain({
                     id: 'chain-1',
-                    shapes: [new Shape(mockChain.shapes[0])],
+                    name: 'chain-1', shapes: [new Shape(mockChain.shapes[0])],
                 })
             );
 
@@ -1205,7 +1205,7 @@ describe('Operations Functions', () => {
             expect(calculateLeads).toHaveBeenCalledWith(
                 expect.objectContaining({
                     id: 'chain-1_offset_temp',
-                    shapes: cutWithOffset.offset.offsetShapes,
+                    name: 'chain-1_offset_temp', shapes: cutWithOffset.offset.offsetShapes,
                 }),
                 expect.objectContaining({
                     type: LeadType.ARC,

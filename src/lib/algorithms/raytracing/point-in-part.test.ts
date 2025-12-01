@@ -9,7 +9,7 @@ describe('Part Selection - Point-in-Part Detection', () => {
         // Create a simple rectangular part with a void
         const shell = {
             id: 'shell-1',
-            shapes: [
+            name: 'shell-1', shapes: [
                 {
                     id: 'line-1',
                     type: GeometryType.LINE as const,
@@ -49,7 +49,7 @@ describe('Part Selection - Point-in-Part Detection', () => {
             {
                 chain: {
                     id: 'void-1',
-                    shapes: [
+                    name: 'void-1', shapes: [
                         {
                             id: 'circle-1',
                             type: GeometryType.CIRCLE as const,

@@ -399,9 +399,9 @@ describe('cutToKerf', () => {
         // This is a spline chain from actual DXF with a lead-in that's positioned correctly
         const originalChain: ChainData = {
             id: 'chain-14',
-            shapes: [
+            name: 'chain-14', shapes: [
                 {
-                    id: 'shape_1760989421272_37',
+                    id: '1760989421272_37',
                     type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [

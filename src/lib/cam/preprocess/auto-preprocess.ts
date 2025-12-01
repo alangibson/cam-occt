@@ -10,6 +10,7 @@ import { drawingStore } from '$lib/stores/drawing/store';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import { PreprocessingStep } from '$lib/config/settings/enums';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
+import { deduplicateShapes } from '$lib/cam/preprocess/dedupe-shapes/functions';
 import { joinColinearLines } from '$lib/cam/preprocess/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
@@ -68,6 +69,12 @@ async function applyPreprocessingStep(
             console.log('Applying: Decompose Polylines');
             const decomposedShapes = decomposePolylines(drawing.shapes);
             drawingStore.replaceAllShapes(decomposedShapes);
+            break;
+
+        case PreprocessingStep.DeduplicateShapes:
+            console.log('Applying: Deduplicate Shapes');
+            const deduplicatedShapes = await deduplicateShapes(drawing.shapes);
+            drawingStore.replaceAllShapes(deduplicatedShapes);
             break;
 
         case PreprocessingStep.JoinColinearLines:

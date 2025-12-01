@@ -103,7 +103,7 @@ describe('State Persistence', () => {
             completedStages: [WorkflowStage.IMPORT, WorkflowStage.EDIT],
 
             // Chains state
-            chains: [{ id: 'chain1', shapes: [] }],
+            chains: [{ id: 'chain1', name: 'chain1', shapes: [] }],
             tolerance: 0.1,
             selectedChainIds: ['chain1'],
             selectedPartIds: [],
@@ -113,7 +113,7 @@ describe('State Persistence', () => {
                 {
                     id: 'part1',
                     type: PartType.SHELL,
-                    shell: { id: 'chain1', shapes: [] },
+                    shell: { id: 'chain1', name: 'chain1', shapes: [] },
                     boundingBox: {
                         min: { x: 0, y: 0 },
                         max: { x: 10, y: 10 },

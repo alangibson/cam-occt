@@ -12,6 +12,6 @@ describe('generateId', () => {
     it('should generate IDs with the correct format', () => {
         const id = generateId();
 
-        expect(id).toMatch(/^shape_\d+_\d+$/);
+        expect(id).toMatch(/^\d+_\d+$/);
     });
 });

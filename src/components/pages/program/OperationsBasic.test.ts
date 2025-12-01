@@ -53,8 +53,8 @@ describe('Operations Component Basic Function Coverage', () => {
         ];
 
         const mockChains = [
-            { id: 'chain-1', shapes: [] },
-            { id: 'chain-2', shapes: [] },
+            { id: 'chain-1', name: 'chain-1', shapes: [] },
+            { id: 'chain-2', name: 'chain-2', shapes: [] },
         ];
 
         // Test empty targets
