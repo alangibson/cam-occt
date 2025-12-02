@@ -156,7 +156,8 @@ describe('Simulation Toolhead Movement', () => {
 
             const chain: ChainData = {
                 id: 'test-chain',
-                name: 'test-chain', shapes: [line1, line2, line3, line4],
+                name: 'test-chain',
+                shapes: [line1, line2, line3, line4],
             };
 
             // Sample positions along the clockwise path
@@ -238,7 +239,8 @@ describe('Simulation Toolhead Movement', () => {
 
             const chain: ChainData = {
                 id: 'test-chain',
-                name: 'test-chain', shapes: [line1, line2, line3, line4],
+                name: 'test-chain',
+                shapes: [line1, line2, line3, line4],
             };
 
             // Sample positions along the counterclockwise path
@@ -302,7 +304,8 @@ describe('Simulation Toolhead Movement', () => {
 
             const chain: ChainData = {
                 id: 'test-chain',
-                name: 'test-chain', shapes: [line1, line2],
+                name: 'test-chain',
+                shapes: [line1, line2],
             };
 
             // Get mid-point positions for both directions
@@ -348,7 +351,8 @@ describe('Simulation Toolhead Movement', () => {
 
             const chain: ChainData = {
                 id: 'test-chain',
-                name: 'test-chain', shapes: [line],
+                name: 'test-chain',
+                shapes: [line],
             };
 
             // Test clockwise movement - should go from start to end naturally

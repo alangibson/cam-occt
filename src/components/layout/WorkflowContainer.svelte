@@ -1,8 +1,7 @@
 <script lang="ts">
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { chainStore } from '$lib/stores/chains/store';
-    import { partStore } from '$lib/stores/parts/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import {
         handleChainClick as sharedHandleChainClick,
         handleChainMouseEnter,
@@ -19,8 +18,9 @@
 
     // Get current stage and related state
     $: currentStage = $workflowStore.currentStage;
-    $: selectedChainIds = $chainStore.selectedChainIds;
-    $: selectedPartIds = $partStore.selectedPartIds;
+    $: selection = $selectionStore;
+    $: selectedChainIds = selection.chains.selected;
+    $: selectedPartIds = selection.parts.selected;
 
     // Determine canvas properties based on current stage
     $: canvasStage = (() => {

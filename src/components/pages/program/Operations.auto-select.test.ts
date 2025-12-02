@@ -4,7 +4,7 @@ import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
 import { operationsStore } from '$lib/stores/operations/store';
 import { partStore } from '$lib/stores/parts/store';
-import { chainStore } from '$lib/stores/chains/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
@@ -20,7 +20,7 @@ describe('Operations Auto-Selection Feature', () => {
         // Clear all stores
         operationsStore.reset();
         partStore.clearParts();
-        chainStore.clearChainSelection();
+        selectionStore.reset();
         toolStore.reset();
 
         // Add a test tool
@@ -44,14 +44,14 @@ describe('Operations Auto-Selection Feature', () => {
 
     it('should auto-select highlighted part when adding new operation', async () => {
         // Highlight a part
-        partStore.highlightPart('part-1');
+        selectionStore.highlightPart('part-1');
 
         // Render the component
         const { container: _container } = render(Operations);
 
         // Since there's no "Add Operation" button visible, simulate the operation creation
         // by directly calling the operations store method that would be triggered
-        const partHighlighted = get(partStore).highlightedPartId;
+        const partHighlighted = get(selectionStore).parts.highlighted;
         operationsStore.addOperation({
             name: 'Test Operation',
             action: OperationAction.CUT,
@@ -88,7 +88,7 @@ describe('Operations Auto-Selection Feature', () => {
 
     it('should auto-select selected chain when adding new operation', async () => {
         // Select a chain
-        chainStore.selectChain('chain-2');
+        selectionStore.selectChain('chain-2');
 
         // Render the component
         const { container: _container } = render(Operations);
@@ -100,7 +100,7 @@ describe('Operations Auto-Selection Feature', () => {
             toolId: '1',
             targetType: 'chains',
             targetIds: (() => {
-                const selectedIds = get(chainStore).selectedChainIds;
+                const selectedIds = get(selectionStore).chains.selected;
                 return Array.from(selectedIds);
             })(),
             enabled: true,
@@ -133,15 +133,15 @@ describe('Operations Auto-Selection Feature', () => {
 
     it('should prioritize part over chain when both are selected', async () => {
         // Select both a part and a chain
-        partStore.highlightPart('part-3');
-        chainStore.selectChain('chain-4');
+        selectionStore.highlightPart('part-3');
+        selectionStore.selectChain('chain-4');
 
         // Render the component
         const { container: _container } = render(Operations);
 
         // Simulate operation creation with both part and chain selected (part should have priority)
-        const partHighlighted = get(partStore).highlightedPartId;
-        const chainSelectedIds = get(chainStore).selectedChainIds;
+        const partHighlighted = get(selectionStore).parts.highlighted;
+        const chainSelectedIds = get(selectionStore).chains.selected;
 
         operationsStore.addOperation({
             name: 'Test Operation',
@@ -507,12 +507,12 @@ describe('Operations Auto-Selection Feature', () => {
         expect(get(operationsStore).length).toBe(1);
         expect(get(operationsStore)[0].targetIds).toEqual(partIds);
 
-        // Create second operation with nothing selected (should ALSO auto-select all parts)
+        // Create second operation with nothing selected (should NOT auto-select - only first operation does)
         component.component.addNewOperation({ enabled: false });
         expect(get(operationsStore).length).toBe(2);
 
         const secondOperation = get(operationsStore)[1];
         expect(secondOperation.targetType).toBe('parts');
-        expect(secondOperation.targetIds).toEqual(partIds); // Should also contain all parts
+        expect(secondOperation.targetIds).toEqual([]); // Should be empty - only first operation auto-selects
     });
 });

@@ -65,6 +65,7 @@ describe('Material Avoidance Logic Debug', () => {
 
         return {
             id: 'clockwise-rectangle',
+            name: 'clockwise-rectangle',
             shapes,
             clockwise: true,
         };

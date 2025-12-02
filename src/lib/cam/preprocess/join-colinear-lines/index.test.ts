@@ -316,7 +316,8 @@ describe('join-colinear-lines', () => {
 
             const chain: ChainData = {
                 id: 'test-chain',
-                name: 'test-chain', shapes: [line1, line2],
+                name: 'test-chain',
+                shapes: [line1, line2],
             };
 
             const result = joinColinearLinesInChains([chain], 0.1);
@@ -334,7 +335,8 @@ describe('join-colinear-lines', () => {
         it('should handle multiple chains independently', () => {
             const chain1: ChainData = {
                 id: 'chain-1',
-                name: 'chain-1', shapes: [
+                name: 'chain-1',
+                shapes: [
                     {
                         id: generateId(),
                         type: GeometryType.LINE,
@@ -356,7 +358,8 @@ describe('join-colinear-lines', () => {
 
             const chain2: ChainData = {
                 id: 'chain-2',
-                name: 'chain-2', shapes: [
+                name: 'chain-2',
+                shapes: [
                     {
                         id: generateId(),
                         type: GeometryType.LINE,
@@ -421,7 +424,8 @@ describe('join-colinear-lines', () => {
 
             const chain: ChainData = {
                 id: 'test-chain',
-                name: 'test-chain', shapes: [polylineShape],
+                name: 'test-chain',
+                shapes: [polylineShape],
             };
 
             const result = joinColinearLinesInChains([chain], 0.1);
@@ -446,7 +450,8 @@ describe('join-colinear-lines', () => {
         it('should preserve chain with no collinear lines', () => {
             const chain: ChainData = {
                 id: 'test-chain',
-                name: 'test-chain', shapes: [
+                name: 'test-chain',
+                shapes: [
                     {
                         id: generateId(),
                         type: GeometryType.CIRCLE,

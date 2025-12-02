@@ -23,6 +23,11 @@ export interface Renderer {
     readonly layer: LayerId;
 
     /**
+     * Coordinate transformer for screen/world coordinate conversions
+     */
+    coordinator: CoordinateTransformer;
+
+    /**
      * Render the content to the given context
      */
     render(ctx: CanvasRenderingContext2D, state: RenderState): void;

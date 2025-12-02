@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { partStore } from '$lib/stores/parts/store';
-import { chainStore } from '$lib/stores/chains/store';
+import { selectionStore } from '$lib/stores/selection/store';
 
 // Mock the Operations component functions directly
 describe('Operations Component Hover Functions', () => {
@@ -13,31 +12,31 @@ describe('Operations Component Hover Functions', () => {
         hoveredPartId = partId;
         if (partId) {
             // This should call the highlightPart function
-            partStore.highlightPart(partId);
+            selectionStore.highlightPart(partId);
         } else {
             // This should call clearHighlight
-            partStore.clearHighlight();
+            selectionStore.clearPartHighlight();
         }
     }
 
     function handleCutHover(cutId: string | null) {
         hoveredCutId = cutId;
         // This should call selectChain
-        chainStore.selectChain(cutId);
+        selectionStore.selectChain(cutId);
     }
 
     beforeEach(() => {
         hoveredPartId = null;
         hoveredCutId = null;
-        partStore.clearHighlight();
-        chainStore.selectChain(null);
+        selectionStore.clearPartHighlight();
+        selectionStore.selectChain(null);
     });
 
     it('should update part store when hovering over part', () => {
         const testPartId = 'part-test-123';
 
         // Verify initial state
-        expect(get(partStore).highlightedPartId).toBe(null);
+        expect(get(selectionStore).parts.highlighted).toBe(null);
 
         // Simulate hovering over a part
         handlePartHover(testPartId);
@@ -46,7 +45,7 @@ describe('Operations Component Hover Functions', () => {
         expect(hoveredPartId).toBe(testPartId);
 
         // Verify store is updated
-        expect(get(partStore).highlightedPartId).toBe(testPartId);
+        expect(get(selectionStore).parts.highlighted).toBe(testPartId);
     });
 
     it('should clear part highlighting when hovering away', () => {
@@ -54,7 +53,7 @@ describe('Operations Component Hover Functions', () => {
 
         // First hover over part
         handlePartHover(testPartId);
-        expect(get(partStore).highlightedPartId).toBe(testPartId);
+        expect(get(selectionStore).parts.highlighted).toBe(testPartId);
 
         // Then hover away (null)
         handlePartHover(null);
@@ -63,14 +62,14 @@ describe('Operations Component Hover Functions', () => {
         expect(hoveredPartId).toBe(null);
 
         // Verify store is cleared
-        expect(get(partStore).highlightedPartId).toBe(null);
+        expect(get(selectionStore).parts.highlighted).toBe(null);
     });
 
     it('should update chain store when hovering over cut', () => {
         const testChainId = 'chain-test-456';
 
         // Verify initial state
-        expect(get(chainStore).selectedChainIds.size).toBe(0);
+        expect(get(selectionStore).chains.selected.size).toBe(0);
 
         // Simulate hovering over a cut
         handleCutHover(testChainId);
@@ -79,8 +78,8 @@ describe('Operations Component Hover Functions', () => {
         expect(hoveredCutId).toBe(testChainId);
 
         // Verify store is updated
-        expect(get(chainStore).selectedChainIds.has(testChainId)).toBe(true);
-        expect(get(chainStore).selectedChainIds.size).toBe(1);
+        expect(get(selectionStore).chains.selected.has(testChainId)).toBe(true);
+        expect(get(selectionStore).chains.selected.size).toBe(1);
     });
 
     it('should change chain selection when hovering over different cuts', () => {
@@ -89,16 +88,20 @@ describe('Operations Component Hover Functions', () => {
 
         // Hover over first cut
         handleCutHover(firstChainId);
-        expect(get(chainStore).selectedChainIds.has(firstChainId)).toBe(true);
-        expect(get(chainStore).selectedChainIds.size).toBe(1);
+        expect(get(selectionStore).chains.selected.has(firstChainId)).toBe(
+            true
+        );
+        expect(get(selectionStore).chains.selected.size).toBe(1);
 
         // Hover over second cut
         handleCutHover(secondChainId);
 
         // Verify selection changed
         expect(hoveredCutId).toBe(secondChainId);
-        expect(get(chainStore).selectedChainIds.has(secondChainId)).toBe(true);
-        expect(get(chainStore).selectedChainIds.size).toBe(1);
+        expect(get(selectionStore).chains.selected.has(secondChainId)).toBe(
+            true
+        );
+        expect(get(selectionStore).chains.selected.size).toBe(1);
     });
 
     it('should clear chain selection when hovering away from cuts', () => {
@@ -106,8 +109,8 @@ describe('Operations Component Hover Functions', () => {
 
         // First hover over cut
         handleCutHover(testChainId);
-        expect(get(chainStore).selectedChainIds.has(testChainId)).toBe(true);
-        expect(get(chainStore).selectedChainIds.size).toBe(1);
+        expect(get(selectionStore).chains.selected.has(testChainId)).toBe(true);
+        expect(get(selectionStore).chains.selected.size).toBe(1);
 
         // Then hover away (null)
         handleCutHover(null);
@@ -116,7 +119,7 @@ describe('Operations Component Hover Functions', () => {
         expect(hoveredCutId).toBe(null);
 
         // Verify store is cleared
-        expect(get(chainStore).selectedChainIds.size).toBe(0);
+        expect(get(selectionStore).chains.selected.size).toBe(0);
     });
 
     it('should handle simultaneous part and cut hovering', () => {
@@ -125,22 +128,22 @@ describe('Operations Component Hover Functions', () => {
 
         // Hover over part
         handlePartHover(testPartId);
-        expect(get(partStore).highlightedPartId).toBe(testPartId);
+        expect(get(selectionStore).parts.highlighted).toBe(testPartId);
 
         // Hover over cut (should not affect part highlighting)
         handleCutHover(testChainId);
-        expect(get(chainStore).selectedChainIds.has(testChainId)).toBe(true);
-        expect(get(chainStore).selectedChainIds.size).toBe(1);
-        expect(get(partStore).highlightedPartId).toBe(testPartId); // Should still be highlighted
+        expect(get(selectionStore).chains.selected.has(testChainId)).toBe(true);
+        expect(get(selectionStore).chains.selected.size).toBe(1);
+        expect(get(selectionStore).parts.highlighted).toBe(testPartId); // Should still be highlighted
 
         // Clear part hover
         handlePartHover(null);
-        expect(get(partStore).highlightedPartId).toBe(null);
-        expect(get(chainStore).selectedChainIds.has(testChainId)).toBe(true);
-        expect(get(chainStore).selectedChainIds.size).toBe(1); // Chain should still be selected
+        expect(get(selectionStore).parts.highlighted).toBe(null);
+        expect(get(selectionStore).chains.selected.has(testChainId)).toBe(true);
+        expect(get(selectionStore).chains.selected.size).toBe(1); // Chain should still be selected
 
         // Clear cut hover
         handleCutHover(null);
-        expect(get(chainStore).selectedChainIds.size).toBe(0);
+        expect(get(selectionStore).chains.selected.size).toBe(0);
     });
 });

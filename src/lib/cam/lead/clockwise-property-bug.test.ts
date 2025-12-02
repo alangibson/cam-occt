@@ -35,7 +35,8 @@ describe('Clockwise Property Bug in Offset Chains', () => {
 
         return {
             id: 'chain1',
-            name: 'chain1', shapes: [shape],
+            name: 'chain1',
+            shapes: [shape],
             clockwise,
         };
     }
@@ -44,6 +45,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
     function createOffsetChain(originalChain: ChainData): ChainData {
         return {
             id: originalChain.id + '_offset_temp',
+            name: originalChain.name + '_offset_temp',
             shapes: originalChain.shapes.map((shape) => ({
                 ...shape,
                 id: shape.id + '-offset',
@@ -128,6 +130,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             // Create offset chain that preserves the clockwise property
             const offsetChainFixed: ChainData = {
                 id: originalChain.id + '_offset_temp',
+                name: originalChain.name + '_offset_temp',
                 shapes: originalChain.shapes.map((shape) => ({
                     ...shape,
                     id: shape.id + '-offset',

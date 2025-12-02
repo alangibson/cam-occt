@@ -70,13 +70,15 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         // Create chains for both splines (for lead calculation)
         const chain1: ChainData = {
             id: 'test-chain-1',
-            name: 'test-chain-1', shapes: [splineShape1],
+            name: 'test-chain-1',
+            shapes: [splineShape1],
             clockwise: null, // null indicates open chain
         };
 
         const chain2: ChainData = {
             id: 'test-chain-2',
-            name: 'test-chain-2', shapes: [splineShape2],
+            name: 'test-chain-2',
+            shapes: [splineShape2],
             clockwise: null, // null indicates open chain
         };
 

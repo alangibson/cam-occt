@@ -86,6 +86,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
         return new Chain({
             id: 'rect-chain',
+            name: 'rect-chain',
             shapes,
             clockwise: true,
         });
@@ -136,6 +137,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
         return new Chain({
             id: 'pill-chain',
+            name: 'pill-chain',
             shapes,
             clockwise: true,
         });
@@ -156,6 +158,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
         return new Chain({
             id: 'circle-chain',
+            name: 'circle-chain',
             shapes,
             clockwise,
         });
@@ -182,7 +185,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             // Create a circle in the center of the rectangle (75, 37.5)
             const circleChain: ChainData = {
                 id: 'circle-hole',
-                name: 'circle-hole', shapes: [
+                name: 'circle-hole',
+                shapes: [
                     {
                         id: 'circle1',
                         type: GeometryType.CIRCLE,
@@ -998,6 +1002,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
         return new Chain({
             id: 'spline-circle-chain',
+            name: 'spline-circle-chain',
             shapes,
             clockwise: true,
         });

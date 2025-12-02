@@ -36,6 +36,7 @@ function createChain(
 ): ChainData {
     return {
         id,
+        name: id,
         shapes,
     };
 }

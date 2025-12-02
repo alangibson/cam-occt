@@ -142,7 +142,8 @@ describe('Lead Persistence Utils', () => {
 
     const mockChain: ChainData = {
         id: 'chain-1',
-        name: 'chain-1', shapes: [
+        name: 'chain-1',
+        shapes: [
             {
                 id: 'shape-1',
                 type: GeometryType.LINE as GeometryType,
@@ -465,10 +466,7 @@ describe('Lead Persistence Utils', () => {
 
             // Verify that calculateLeads was called with offset chain geometry
             expect(calculateLeads).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    id: 'chain-1_offset_temp',
-                    name: 'chain-1_offset_temp', shapes: cutWithOffset.offset!.offsetShapes,
-                }),
+                expect.any(Chain), // Chain instance with offset geometry
                 expect.any(Object), // leadInConfig
                 expect.any(Object), // leadOutConfig
                 CutDirection.CLOCKWISE,

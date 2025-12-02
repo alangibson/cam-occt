@@ -24,6 +24,7 @@ import { Shape } from '$lib/cam/shape/classes';
 describe('Spot Operation End-to-End Integration', () => {
     const mockChain: ChainData = {
         id: 'chain-1',
+        name: 'chain-1',
         clockwise: true,
         shapes: [
             {
@@ -258,6 +259,7 @@ describe('Spot Operation End-to-End Integration', () => {
         // Create two separate chains for two spot operations
         const chain1: ChainData = {
             id: 'chain-1',
+            name: 'chain-1',
             clockwise: true,
             shapes: [
                 {
@@ -271,6 +273,7 @@ describe('Spot Operation End-to-End Integration', () => {
 
         const chain2: ChainData = {
             id: 'chain-2',
+            name: 'chain-2',
             clockwise: true,
             shapes: [
                 {
@@ -372,6 +375,7 @@ describe('Spot Operation End-to-End Integration', () => {
         // Create two separate chains
         const chain1: ChainData = {
             id: 'layer1-chain-1',
+            name: 'layer1-chain-1',
             clockwise: true,
             shapes: [
                 {
@@ -385,6 +389,7 @@ describe('Spot Operation End-to-End Integration', () => {
 
         const chain2: ChainData = {
             id: 'layer1-chain-2',
+            name: 'layer1-chain-2',
             clockwise: true,
             shapes: [
                 {

@@ -1,11 +1,13 @@
 <script lang="ts">
     import { kerfStore } from '$lib/stores/kerfs/store';
     import { planStore } from '$lib/stores/plan/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive kerf data
     $: kerfs = $kerfStore.kerfs;
-    $: selectedKerfId = $kerfStore.selectedKerfId;
+    $: selection = $selectionStore;
+    $: selectedKerfId = selection.kerfs.selected;
     $: selectedKerf = selectedKerfId
         ? kerfs.find((kerf) => kerf.id === selectedKerfId)
         : null;

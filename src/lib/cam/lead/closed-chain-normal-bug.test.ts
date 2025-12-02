@@ -64,6 +64,7 @@ describe('Closed Chain Normal Direction Bug', () => {
 
         return {
             id: 'rectangle-chain',
+            name: 'rectangle-chain',
             shapes,
             clockwise,
         };
@@ -73,6 +74,7 @@ describe('Closed Chain Normal Direction Bug', () => {
     function createOffsetChain(originalChain: ChainData): ChainData {
         return {
             id: originalChain.id + '_offset_temp',
+            name: originalChain.name + '_offset_temp',
             shapes: originalChain.shapes.map((shape) => ({
                 ...shape,
                 id: shape.id + '-offset',
@@ -175,6 +177,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             // Create offset chain that preserves the clockwise property
             const offsetChainFixed: ChainData = {
                 id: originalChain.id + '_offset_temp',
+                name: originalChain.name + '_offset_temp',
                 shapes: originalChain.shapes.map((shape) => ({
                     ...shape,
                     id: shape.id + '-offset',

@@ -15,13 +15,7 @@ import { join } from 'path';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 
-const problematicChains = [
-    'chain-34',
-    'chain-65',
-    'chain-70',
-    'chain-85',
-    'chain-90',
-];
+const problematicChains = ['34', '65', '70', '85', '90'];
 
 interface ContainerInfo {
     chainId: string;
@@ -68,11 +62,12 @@ describe('ATT00079.dxf Part Detection Verification', () => {
 
         const analysisResults: ChainAnalysis[] = [];
 
-        for (const chainId of problematicChains) {
-            const chain = chains.find((c) => c.id === chainId);
+        for (const chainName of problematicChains) {
+            const chain = chains.find((c) => c.name === chainName);
             if (!chain) {
                 continue;
             }
+            const chainId = chain.id;
 
             const analysis = {
                 chainId,

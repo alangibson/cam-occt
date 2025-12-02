@@ -43,6 +43,7 @@ vi.mock('$lib/cam/pipeline/kerfs/kerf-generation', () => ({
 describe('createCutsFromOperation', () => {
     const mockChain: ChainData = {
         id: 'chain-1',
+        name: 'chain-1',
         clockwise: true,
         shapes: [
             {
@@ -190,6 +191,7 @@ describe('createCutsFromOperation', () => {
 
         const mockChain2: ChainData = {
             id: 'chain-2',
+            name: 'chain-2',
             clockwise: false,
             shapes: [
                 {
@@ -237,6 +239,7 @@ describe('createCutsFromOperation', () => {
     it('should aggregate warnings from multiple targets', async () => {
         const mockChain2: ChainData = {
             id: 'chain-2',
+            name: 'chain-2',
             clockwise: false,
             shapes: [
                 {

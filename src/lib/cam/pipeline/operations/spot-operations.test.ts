@@ -24,6 +24,7 @@ function createOperation(
 describe('generateSpotsForChainsWithOperation', () => {
     const mockChain: ChainData = {
         id: 'chain-1',
+        name: 'chain-1',
         clockwise: true,
         shapes: [
             {
@@ -129,6 +130,7 @@ describe('generateSpotsForChainsWithOperation', () => {
     it('should handle multiple chains', async () => {
         const mockChain2: ChainData = {
             id: 'chain-2',
+            name: 'chain-2',
             clockwise: false,
             shapes: [
                 {

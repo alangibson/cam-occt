@@ -62,7 +62,8 @@ describe('SimulateStage offset cut detection', () => {
 
         mockChain = {
             id: 'chain1',
-            name: 'chain1', shapes: mockShapes.map((s) => s.toData()),
+            name: 'chain1',
+            shapes: mockShapes.map((s) => s.toData()),
         };
 
         mockCut = {

@@ -4,8 +4,8 @@
     import { Shape } from '$lib/cam/shape/classes';
     import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-    import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { partStore } from '$lib/stores/parts/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
@@ -104,7 +104,7 @@
             prepareStageStore.setChainNormalizationResults(newResults);
         } else {
             prepareStageStore.clearChainNormalizationResults();
-            chainStore.selectChain(null);
+            selectionStore.selectChain(null);
         }
     });
 

@@ -28,7 +28,8 @@ describe('calculateLeads', () => {
 
         return new Chain({
             id: 'chain1',
-            name: 'chain1', shapes: [shape],
+            name: 'chain1',
+            shapes: [shape],
         });
     }
 
@@ -47,6 +48,7 @@ describe('calculateLeads', () => {
 
         return new Chain({
             id,
+            name: id,
             shapes: [shape],
         });
     }
@@ -221,7 +223,7 @@ describe('calculateLeads', () => {
             const part: PartData = {
                 id: 'part1',
                 name: 'part1',
-            shell: shellChain,
+                shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
                 layerName: '0',
@@ -283,7 +285,7 @@ describe('calculateLeads', () => {
             const part: PartData = {
                 id: 'part1',
                 name: 'part1',
-            shell: shellChain,
+                shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
                 layerName: '0',
@@ -331,7 +333,8 @@ describe('calculateLeads', () => {
         it('should handle empty chain', () => {
             const chain: Chain = new Chain({
                 id: 'chain1',
-                name: 'chain1', shapes: [],
+                name: 'chain1',
+                shapes: [],
             });
 
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };

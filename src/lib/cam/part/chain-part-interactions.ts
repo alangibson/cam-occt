@@ -1,5 +1,4 @@
-import { chainStore } from '$lib/stores/chains/store';
-import { partStore } from '$lib/stores/parts/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import type { Part, PartVoid } from './interfaces';
 
 /**
@@ -40,12 +39,12 @@ export function handleChainClick(
 
 // Chain hover functions
 export function handleChainMouseEnter(chainId: string) {
-    chainStore.highlightChain(chainId);
+    selectionStore.highlightChain(chainId);
 }
 
 export function handleChainMouseLeave() {
     // Clear chain highlight on mouse leave since chains have separate selection state
-    chainStore.clearChainHighlight();
+    selectionStore.clearChainHighlight();
 }
 
 // Part selection functions
@@ -62,9 +61,9 @@ export function handlePartClick(
 
 // Part hover functions
 export function handlePartMouseEnter(partId: string) {
-    partStore.hoverPart(partId);
+    selectionStore.hoverPart(partId);
 }
 
 export function handlePartMouseLeave() {
-    partStore.clearPartHover();
+    selectionStore.clearPartHover();
 }

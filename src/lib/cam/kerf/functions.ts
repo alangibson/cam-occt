@@ -328,6 +328,7 @@ export async function cutToKerf(
         const originalShapes = cut.offset?.originalShapes || cutChain.shapes;
         const originalChain: ChainData = {
             id: cutChain.id,
+            name: cutChain.name || cutChain.id,
             shapes: originalShapes,
         };
 
@@ -467,6 +468,7 @@ export function doesLeadKerfOverlapChain(
     // Just use it directly as the polygon for ray tracing
     const leadKerfPolygon = new Chain({
         id: leadKerfOuterChain.id,
+        name: leadKerfOuterChain.name || leadKerfOuterChain.id,
         shapes: leadKerfOuterChain.shapes,
     });
 

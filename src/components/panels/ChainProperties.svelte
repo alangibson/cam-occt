@@ -1,17 +1,17 @@
 <script lang="ts">
-    import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { planStore } from '$lib/stores/plan/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { isChainClosed } from '$lib/cam/chain/functions';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { CutDirection } from '$lib/cam/cut/enums';
-    import { Chain } from '$lib/cam/chain/classes';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive chain and analysis data
     const drawing = $derived($drawingStore.drawing);
     const cuts = $derived($planStore.plan.cuts);
+    const selection = $derived($selectionStore);
 
     // Get chains from both drawing layers and cut chains
     const detectedChains = $derived(
@@ -34,11 +34,11 @@
             return uniqueChains;
         })()
     );
-    const selectedChainIds = $derived($chainStore.selectedChainIds);
+    const selectedChainIds = $derived(selection.chains.selected);
     const selectedChainId = $derived(
         selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null
     );
-    const highlightedChainId = $derived($chainStore.highlightedChainId);
+    const highlightedChainId = $derived(selection.chains.highlighted);
     const activeChainId = $derived(selectedChainId || highlightedChainId);
     const selectedChain = $derived(
         activeChainId

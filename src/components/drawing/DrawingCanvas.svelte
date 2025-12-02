@@ -2,7 +2,6 @@
     import { onMount, onDestroy } from 'svelte';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { chainStore } from '$lib/stores/chains/store';
-    import { partStore } from '$lib/stores/parts/store';
     import { planStore } from '$lib/stores/plan/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
@@ -11,21 +10,11 @@
     import { rapidStore } from '$lib/stores/rapids/store';
     import { kerfStore } from '$lib/stores/kerfs/store';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
-    import {
-        leadStore,
-        selectLead,
-        toggleLeadSelection,
-        clearLeadHighlight,
-        highlightLead,
-    } from '$lib/stores/leads/store';
+    import { leadStore } from '$lib/stores/leads/store';
     import { settingsStore } from '$lib/stores/settings/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { generateChainEndpoints } from '$lib/stores/chains/functions';
     import { generateShapePoints } from '$lib/stores/shape/functions';
-    import {
-        toggleRapidSelection,
-        clearRapidSelection,
-        clearRapidHighlight,
-    } from '$lib/stores/rapids/functions';
     import {
         getShapeChainId,
         getChainShapeIds,
@@ -61,9 +50,10 @@
     let previousDragPos: { x: number; y: number } | null = null;
 
     const drawing = $derived($drawingStore.drawing);
-    const selectedShapes = $derived($drawingStore.selectedShapes);
-    const hoveredShape = $derived($drawingStore.hoveredShape);
-    const selectedOffsetShape = $derived($drawingStore.selectedOffsetShape);
+    const selection = $derived($selectionStore);
+    const selectedShapes = $derived(selection.shapes.selected);
+    const hoveredShape = $derived(selection.shapes.hovered);
+    const selectedOffsetShape = $derived(selection.shapes.selectedOffset);
     const zoomScale = $derived($drawingStore.scale);
     const panOffset = $derived($drawingStore.offset);
     const displayUnit = $derived($drawingStore.displayUnit);
@@ -73,16 +63,16 @@
             ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
             : []
     );
-    const selectedChainIds = $derived($chainStore.selectedChainIds);
-    const highlightedChainId = $derived($chainStore.highlightedChainId);
+    const selectedChainIds = $derived(selection.chains.selected);
+    const highlightedChainId = $derived(selection.chains.highlighted);
     const parts = $derived(
         drawing
             ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
             : []
     );
-    const highlightedPartId = $derived($partStore.highlightedPartId);
-    const hoveredPartId = $derived($partStore.hoveredPartId);
-    const selectedPartIds = $derived($partStore.selectedPartIds);
+    const highlightedPartId = $derived(selection.parts.highlighted);
+    const hoveredPartId = $derived(selection.parts.hovered);
+    const selectedPartIds = $derived(selection.parts.selected);
     const cuts = $derived($planStore.plan.cuts);
     const cutsState = $derived($cutStore);
     const operations = $derived($operationsStore);
@@ -107,8 +97,8 @@
               ]
             : []
     );
-    const selectedCutIds = $derived(cutsState?.selectedCutIds);
-    const highlightedCutId = $derived(cutsState?.highlightedCutId);
+    const selectedCutIds = $derived(selection.cuts.selected);
+    const highlightedCutId = $derived(selection.cuts.highlighted);
     const tessellationState = $derived($tessellationStore);
     const overlayState = $derived($overlayStore);
     const currentOverlay = $derived(overlayState.overlays[currentStage]);
@@ -118,8 +108,8 @@
     );
     const showRapids = $derived($rapidStore.showRapids);
     const showRapidDirections = $derived($rapidStore.showRapidDirections);
-    const selectedRapidIds = $derived($rapidStore.selectedRapidIds);
-    const highlightedRapidId = $derived($rapidStore.highlightedRapidId);
+    const selectedRapidIds = $derived(selection.rapids.selected);
+    const highlightedRapidId = $derived(selection.rapids.highlighted);
     const shapeVisualization = $derived($shapeVisualizationStore);
     const showShapePaths = $derived(shapeVisualization.showShapePaths);
     const showShapeStartPoints = $derived(
@@ -160,14 +150,14 @@
     const showCutEndPoints = $derived(cutsState.showCutEndPoints);
     const showCutTangentLines = $derived(cutsState.showCutTangentLines);
     const leadState = $derived($leadStore);
-    const selectedLeadIds = $derived(leadState.selectedLeadIds);
-    const highlightedLeadId = $derived(leadState.highlightedLeadId);
+    const selectedLeadIds = $derived(selection.leads.selected);
+    const highlightedLeadId = $derived(selection.leads.highlighted);
     const leadNormals = $derived(leadState.showLeadNormals);
     const leadPaths = $derived(leadState.showLeadPaths);
     const leadKerfs = $derived(leadState.showLeadKerfs);
     const kerfs = $derived($kerfStore.kerfs);
-    const selectedKerfId = $derived($kerfStore.selectedKerfId);
-    const highlightedKerfId = $derived($kerfStore.highlightedKerfId);
+    const selectedKerfId = $derived(selection.kerfs.selected);
+    const highlightedKerfId = $derived(selection.kerfs.highlighted);
     const showKerfPaths = $derived($kerfStore.showKerfPaths);
     const selectionMode = $derived($settingsStore.settings.selectionMode);
 
@@ -302,13 +292,6 @@
         }
     }
 
-    // Update coordinate transformer when parameters change
-    $effect(() => {
-        if (coordinator) {
-            coordinator.updateTransform(zoomScale, panOffset, unitScale);
-        }
-    });
-
     // Track offset calculation state changes
     const offsetCalculationHash = $derived(
         cuts && cuts.length > 0
@@ -345,14 +328,12 @@
             panOffset !== undefined &&
             displayUnit !== undefined
         ) {
-            renderingPipeline.updateState({
-                transform: {
-                    zoomScale: zoomScale,
-                    panOffset: panOffset,
-                    unitScale: unitScale,
-                    coordinator: coordinator,
-                },
-            });
+            // Use pipeline's single updateTransform method to ensure coordinator stays in sync
+            renderingPipeline.updateTransform(
+                zoomScale,
+                panOffset,
+                unitScale
+            );
         }
     });
 
@@ -547,7 +528,7 @@
                             interactionMode === 'cuts' ||
                             interactionMode === 'chains'
                         ) {
-                            toggleRapidSelection(hitResult.id);
+                            selectionStore.toggleRapidSelection(hitResult.id);
                             return; // Don't process other selections
                         }
                         break;
@@ -575,25 +556,25 @@
                             if (e.ctrlKey || e.metaKey) {
                                 // Multi-select mode: toggle chain selection
                                 if (chainAlreadySelected) {
-                                    chainStore.deselectChain(chainId);
+                                    selectionStore.deselectChain(chainId);
                                     // Deselect shapes in this chain
                                     chainShapeIds.forEach((id: string) => {
-                                        drawingStore.deselectShape(id);
+                                        selectionStore.deselectShape(id);
                                     });
                                 } else {
-                                    chainStore.selectChain(chainId, true);
+                                    selectionStore.selectChain(chainId, true);
                                     // Select shapes in this chain
                                     chainShapeIds.forEach((id: string) => {
-                                        drawingStore.selectShape(id, true);
+                                        selectionStore.selectShape(id, true);
                                     });
                                 }
                             } else {
                                 // Single select mode: clear others and select this one
-                                drawingStore.clearSelection();
-                                chainStore.selectChain(chainId, false);
+                                selectionStore.clearShapeSelection();
+                                selectionStore.selectChain(chainId, false);
                                 // Select all shapes in the chain
                                 chainShapeIds.forEach((id: string) => {
-                                    drawingStore.selectShape(id, true);
+                                    selectionStore.selectShape(id, true);
                                 });
                             }
 
@@ -613,15 +594,15 @@
                             if (e.ctrlKey || e.metaKey) {
                                 // Multi-select mode: toggle part selection
                                 if (partAlreadySelected) {
-                                    partStore.deselectPart(partId);
+                                    selectionStore.deselectPart(partId);
                                 } else {
-                                    partStore.selectPart(partId, true);
+                                    selectionStore.selectPart(partId, true);
                                 }
                             } else {
                                 // Single select mode: clear others and select this one
                                 if (!partAlreadySelected) {
-                                    drawingStore.clearSelection();
-                                    partStore.selectPart(partId, false);
+                                    selectionStore.clearShapeSelection();
+                                    selectionStore.selectPart(partId, false);
                                 }
                             }
 
@@ -640,13 +621,13 @@
 
                             if (e.ctrlKey || e.metaKey) {
                                 // Multi-select mode: toggle cut selection
-                                cutStore.toggleCutSelection(cutId);
+                                selectionStore.toggleCutSelection(cutId);
                             } else {
                                 // Single select mode
                                 if (cutAlreadySelected) {
-                                    cutStore.selectCut(null); // Deselect if already selected
+                                    selectionStore.selectCut(null); // Deselect if already selected
                                 } else {
-                                    cutStore.selectCut(cutId, false); // Clear others and select this one
+                                    selectionStore.selectCut(cutId, false); // Clear others and select this one
                                 }
                             }
                             return;
@@ -666,13 +647,13 @@
 
                             if (e.ctrlKey || e.metaKey) {
                                 // Multi-select mode: toggle lead selection
-                                toggleLeadSelection(leadId);
+                                selectionStore.toggleLeadSelection(leadId);
                             } else {
                                 // Single select mode
                                 if (leadAlreadySelected) {
-                                    selectLead(null); // Deselect if already selected
+                                    selectionStore.selectLead(null); // Deselect if already selected
                                 } else {
-                                    selectLead(leadId, false); // Clear others and select this one
+                                    selectionStore.selectLead(leadId, false); // Clear others and select this one
                                 }
                             }
                             return;
@@ -684,16 +665,16 @@
                         if (interactionMode === 'kerfs') {
                             const kerfId = hitResult.id;
                             // Clear other selections
-                            cutStore.selectCut(null);
-                            selectLead(null);
-                            chainStore.selectChain(null);
-                            partStore.selectPart(null);
-                            drawingStore.clearSelection();
+                            selectionStore.selectCut(null);
+                            selectionStore.selectLead(null);
+                            selectionStore.selectChain(null);
+                            selectionStore.selectPart(null);
+                            selectionStore.clearShapeSelection();
                             // Toggle kerf selection
                             if (selectedKerfId === kerfId) {
-                                kerfStore.selectKerf(null); // Deselect if already selected
+                                selectionStore.selectKerf(null); // Deselect if already selected
                             } else {
-                                kerfStore.selectKerf(kerfId);
+                                selectionStore.selectKerf(kerfId);
                             }
                             return;
                         }
@@ -705,7 +686,7 @@
                     interactionMode === 'chains' &&
                     currentStage === 'program'
                 ) {
-                    drawingStore.clearOffsetShapeSelection();
+                    selectionStore.clearOffsetShapeSelection();
                 }
                 shape = null;
             }
@@ -714,9 +695,9 @@
                 if (interactionMode === 'shapes') {
                     // Edit mode - allow individual shape selection
                     if (!e.ctrlKey && !selectedShapes.has(shape.id)) {
-                        drawingStore.clearSelection();
+                        selectionStore.clearShapeSelection();
                     }
-                    drawingStore.selectShape(shape, e.ctrlKey);
+                    selectionStore.selectShape(shape, e.ctrlKey);
                 } else if (interactionMode === 'chains') {
                     // Program mode - allow chain and part selection
                     const chainId = getShapeChainId(shape.id, chains, cuts);
@@ -737,25 +718,25 @@
                             if (e.ctrlKey || e.metaKey) {
                                 // Multi-select mode: toggle chain selection
                                 if (chainAlreadySelected) {
-                                    chainStore.deselectChain(chainId);
+                                    selectionStore.deselectChain(chainId);
                                     // Deselect shapes in this chain
                                     chainShapeIds.forEach((id) => {
-                                        drawingStore.deselectShape(id);
+                                        selectionStore.deselectShape(id);
                                     });
                                 } else {
-                                    chainStore.selectChain(chainId, true);
+                                    selectionStore.selectChain(chainId, true);
                                     // Select shapes in this chain
                                     chainShapeIds.forEach((id) => {
-                                        drawingStore.selectShape(id, true);
+                                        selectionStore.selectShape(id, true);
                                     });
                                 }
                             } else {
                                 // Single select mode: clear others and select this one
-                                drawingStore.clearSelection();
-                                chainStore.selectChain(chainId, false);
+                                selectionStore.clearShapeSelection();
+                                selectionStore.selectChain(chainId, false);
                                 // Select all shapes in the chain
                                 chainShapeIds.forEach((id) => {
-                                    drawingStore.selectShape(id, true);
+                                    selectionStore.selectShape(id, true);
                                 });
                             }
 
@@ -780,13 +761,18 @@
 
                             if (e.ctrlKey || e.metaKey) {
                                 // Multi-select mode: toggle cut selection
-                                cutStore.toggleCutSelection(cutForChain.id);
+                                selectionStore.toggleCutSelection(
+                                    cutForChain.id
+                                );
                             } else {
                                 // Single select mode
                                 if (cutAlreadySelected) {
-                                    cutStore.selectCut(null); // Deselect if already selected
+                                    selectionStore.selectCut(null); // Deselect if already selected
                                 } else {
-                                    cutStore.selectCut(cutForChain.id, false); // Clear others and select this one
+                                    selectionStore.selectCut(
+                                        cutForChain.id,
+                                        false
+                                    ); // Clear others and select this one
                                 }
                             }
                         }
@@ -802,16 +788,16 @@
 
                 if (!e.ctrlKey) {
                     // Clear all selections when clicking in empty space
-                    drawingStore.clearSelection();
-                    chainStore.clearChainSelection();
-                    partStore.clearHighlight();
-                    partStore.selectPart(null);
-                    cutStore.selectCut(null);
-                    cutStore.clearHighlight();
-                    clearRapidSelection();
-                    clearRapidHighlight();
-                    selectLead(null);
-                    clearLeadHighlight();
+                    selectionStore.clearShapeSelection();
+                    selectionStore.clearChainSelection();
+                    selectionStore.clearPartHighlight();
+                    selectionStore.selectPart(null);
+                    selectionStore.selectCut(null);
+                    selectionStore.clearCutHighlight();
+                    selectionStore.clearRapidSelection();
+                    selectionStore.clearRapidHighlight();
+                    selectionStore.selectLead(null);
+                    selectionStore.clearLeadHighlight();
                 }
             }
         }
@@ -953,36 +939,36 @@
                     }
                 }
 
-                drawingStore.setHoveredShape(hoveredShapeId);
+                selectionStore.setHoveredShape(hoveredShapeId);
 
                 // Update chain highlight
                 if (hoveredChainId !== highlightedChainId) {
-                    chainStore.highlightChain(hoveredChainId);
+                    selectionStore.highlightChain(hoveredChainId);
                 }
 
                 // Update part hover/highlight
-                if (hoveredPartId !== $partStore.hoveredPartId) {
-                    partStore.hoverPart(hoveredPartId);
+                if (hoveredPartId !== selection.parts.hovered) {
+                    selectionStore.hoverPart(hoveredPartId);
                 }
 
                 // Update cut highlight
                 if (hoveredCutId !== highlightedCutId) {
-                    cutStore.highlightCut(hoveredCutId);
+                    selectionStore.highlightCut(hoveredCutId);
                 }
 
                 // Update rapid highlight
                 if (hoveredRapidId !== highlightedRapidId) {
-                    rapidStore.highlightRapid(hoveredRapidId);
+                    selectionStore.highlightRapid(hoveredRapidId);
                 }
 
                 // Update lead highlight
                 if (hoveredLeadId !== highlightedLeadId) {
-                    highlightLead(hoveredLeadId);
+                    selectionStore.highlightLead(hoveredLeadId);
                 }
 
                 // Update kerf highlight
                 if (hoveredKerfId !== highlightedKerfId) {
-                    kerfStore.setHighlightedKerf(hoveredKerfId);
+                    selectionStore.highlightKerf(hoveredKerfId);
                 }
 
                 hoverTimeout = null;
@@ -1008,11 +994,12 @@
         const newPercent = Math.max(5, currentPercent + increment); // Minimum 5% zoom
         const newZoomScale = newPercent / 100;
 
-        // Ensure coordinator has current transform before calculating
-        coordinator.updateTransform(zoomScale, panOffset, unitScale);
+        // Get fresh coordinator from pipeline (it's updated by $effect)
+        const currentCoordinator = renderingPipeline.getCoordinator();
+        if (!currentCoordinator) return;
 
         // Zoom towards mouse position using coordinate transformer
-        const newPanOffset = coordinator.calculateZoomOffset(
+        const newPanOffset = currentCoordinator.calculateZoomOffset(
             zoomPoint,
             zoomScale,
             newZoomScale
@@ -1023,7 +1010,7 @@
 
     function handleKeyDown(e: KeyboardEvent) {
         if (e.key === 'Delete' && selectedShapes.size > 0) {
-            drawingStore.deleteSelected();
+            drawingStore.deleteSelected(Array.from(selectedShapes));
         }
     }
 

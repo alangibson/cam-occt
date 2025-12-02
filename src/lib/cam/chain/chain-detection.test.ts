@@ -94,7 +94,7 @@ describe('Chain Detection Algorithm', () => {
             const chains = detectShapeChains(shapes, { tolerance: 0.05 });
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(3);
-            expect(chains[0].id).toMatch(/chain-\d+/);
+            expect(chains[0].id).toMatch(/\d+_\d+/);
         });
 
         it('should detect multiple separate chains', () => {

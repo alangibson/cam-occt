@@ -326,6 +326,7 @@ describe('generateShapePoints', () => {
 describe('generateChainEndpoints', () => {
     const createTestChain = (id: string, shapes: ShapeData[]): ChainData => ({
         id,
+        name: id,
         shapes,
     });
 

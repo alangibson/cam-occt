@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { partStore } from '$lib/stores/parts/store';
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { CutDirection } from '$lib/cam/cut/enums';
@@ -13,11 +13,12 @@
               (layer) => layer.parts
           )
         : [];
-    $: selectedPartIds = $partStore.selectedPartIds;
+    $: selection = $selectionStore;
+    $: selectedPartIds = selection.parts.selected;
     $: selectedPartId =
         selectedPartIds.size === 1 ? Array.from(selectedPartIds)[0] : null;
-    $: highlightedPartId = $partStore.highlightedPartId;
-    $: hoveredPartId = $partStore.hoveredPartId;
+    $: highlightedPartId = selection.parts.highlighted;
+    $: hoveredPartId = selection.parts.hovered;
     $: activePartId = selectedPartId || highlightedPartId || hoveredPartId;
     $: selectedPart = activePartId
         ? detectedParts.find((part) => part.id === activePartId)

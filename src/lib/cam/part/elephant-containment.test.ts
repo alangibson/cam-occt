@@ -31,23 +31,23 @@ describe('Elephant DXF - Chain Containment Issue', () => {
         console.log('Chains detected:', chains.length);
 
         // Find the specific chains mentioned in the issue
-        const chain1 = chains.find((c) => c.id === 'chain-1');
-        const chain18 = chains.find((c) => c.id === 'chain-18');
+        const chain1 = chains.find((c) => c.name === '1');
+        const chain18 = chains.find((c) => c.name === '18');
 
         if (!chain1) {
             console.log(
-                'Available chain IDs:',
-                chains.map((c) => c.id)
+                'Available chain names:',
+                chains.map((c) => c.name)
             );
-            throw new Error('chain-1 not found');
+            throw new Error('chain with name "1" not found');
         }
 
         if (!chain18) {
             console.log(
-                'Available chain IDs:',
-                chains.map((c) => c.id)
+                'Available chain names:',
+                chains.map((c) => c.name)
             );
-            throw new Error('chain-18 not found');
+            throw new Error('chain with name "18" not found');
         }
 
         console.log('chain-1:', {
@@ -80,7 +80,7 @@ describe('Elephant DXF - Chain Containment Issue', () => {
 
         // Find which part contains chain-1 as its shell
         const partWithChain1 = result.parts.find(
-            (p) => p.shell.id === 'chain-1'
+            (p) => p.shell.id === chain1.id
         );
 
         if (!partWithChain1) {
@@ -106,7 +106,7 @@ describe('Elephant DXF - Chain Containment Issue', () => {
 
         // Check if chain-18 is detected as a slot in this part
         const chain18IsSlot = partWithChain1.slots.some(
-            (s) => s.chain.id === 'chain-18'
+            (s) => s.chain.id === chain18.id
         );
 
         console.log('chain-18 detected as slot?', chain18IsSlot);

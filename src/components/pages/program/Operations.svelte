@@ -4,8 +4,8 @@
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { partStore } from '$lib/stores/parts/store';
     import { planStore } from '$lib/stores/plan/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { onMount } from 'svelte';
     import type { OperationData } from '$lib/cam/operation/interface';
     import { Operation } from '$lib/cam/operation/classes.svelte';
@@ -147,14 +147,14 @@
         let targetIds: string[] = [];
 
         // Priority 1: Check if a single part is highlighted
-        const highlightedPartId = $partStore.highlightedPartId;
+        const highlightedPartId = $selectionStore.parts.highlighted;
         if (highlightedPartId) {
             targetType = 'parts';
             targetIds = [highlightedPartId];
         }
         // Priority 2: For parts - if parts are selected, use those; for first operation only, use all parts
         else if (parts.length > 0) {
-            const selectedPartIds = $partStore.selectedPartIds;
+            const selectedPartIds = $selectionStore.parts.selected;
             targetType = 'parts';
             if (selectedPartIds.size > 0) {
                 targetIds = Array.from(selectedPartIds);
@@ -165,7 +165,7 @@
         }
         // Priority 3: If no parts, check chains (keep existing chain behavior)
         else {
-            const selectedChainIds = $chainStore.selectedChainIds;
+            const selectedChainIds = $selectionStore.chains.selected;
             if (selectedChainIds.size > 0) {
                 targetType = 'chains';
                 targetIds = Array.from(selectedChainIds);
@@ -436,16 +436,12 @@
             const selectedParts = parts.filter((p) =>
                 operation.targetIds.includes(p.id)
             );
-            return selectedParts
-                .map((p) => p.name)
-                .join(', ');
+            return selectedParts.map((p) => p.name).join(', ');
         } else {
             const selectedChains = chains.filter((c) =>
                 operation.targetIds.includes(c.id)
             );
-            return selectedChains
-                .map((c) => c.name)
-                .join(', ');
+            return selectedChains.map((c) => c.name).join(', ');
         }
     }
 
@@ -453,16 +449,16 @@
         hoveredPartId = partId;
         // Here you could also trigger highlighting in the drawing canvas
         if (partId) {
-            partStore.highlightPart(partId);
+            selectionStore.highlightPart(partId);
         } else {
-            partStore.clearHighlight();
+            selectionStore.clearPartHighlight();
         }
     }
 
     function handleChainHover(chainId: string | null) {
         hoveredChainId = chainId;
         // Sync with chain selection in drawing canvas
-        chainStore.selectChain(chainId);
+        selectionStore.selectChain(chainId);
     }
 
     function isTargetAssignedToOther(

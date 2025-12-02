@@ -27,7 +27,8 @@ describe('optimizeStartPoints - closed polylines', () => {
 
         const chain: ChainData = {
             id: 'chain-1',
-            name: 'chain-1', shapes: [closedPolyline],
+            name: 'chain-1',
+            shapes: [closedPolyline],
         };
 
         // First, verify that isChainClosed correctly identifies this as closed
@@ -67,7 +68,8 @@ describe('optimizeStartPoints - closed polylines', () => {
 
             chains.push({
                 id: `adler-chain-${i}`,
-                name: 'adler-chain-${i}', shapes: [closedPolyline],
+                name: 'adler-chain-${i}',
+                shapes: [closedPolyline],
             });
         }
 
@@ -102,7 +104,8 @@ describe('optimizeStartPoints - closed polylines', () => {
 
         const chain: ChainData = {
             id: 'open-chain',
-            name: 'open-chain', shapes: [openPolyline],
+            name: 'open-chain',
+            shapes: [openPolyline],
         };
 
         // Verify it's not recognized as closed
@@ -133,7 +136,8 @@ describe('optimizeStartPoints - closed polylines', () => {
 
         const chain: ChainData = {
             id: 'geo-closed-chain',
-            name: 'geo-closed-chain', shapes: [geometricallyClosedPolyline],
+            name: 'geo-closed-chain',
+            shapes: [geometricallyClosedPolyline],
         };
 
         // Should fall back to geometric check and recognize as closed

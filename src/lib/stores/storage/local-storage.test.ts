@@ -90,8 +90,6 @@ describe('State Persistence', () => {
                 units: Unit.MM,
                 fileName: '',
             },
-            selectedShapes: ['shape1', 'shape2'],
-            hoveredShape: 'shape3',
             scale: 1.5,
             offset: { x: 100, y: 200 },
             fileName: 'test.dxf',
@@ -105,13 +103,12 @@ describe('State Persistence', () => {
             // Chains state
             chains: [{ id: 'chain1', name: 'chain1', shapes: [] }],
             tolerance: 0.1,
-            selectedChainIds: ['chain1'],
-            selectedPartIds: [],
 
             // Parts state
             parts: [
                 {
                     id: 'part1',
+                    name: 'Test Part',
                     type: PartType.SHELL,
                     shell: { id: 'chain1', name: 'chain1', shapes: [] },
                     boundingBox: {
@@ -124,12 +121,9 @@ describe('State Persistence', () => {
                 },
             ],
             partWarnings: [],
-            highlightedPartId: null,
 
             // Rapids state
             showRapids: true,
-            selectedRapidIds: [],
-            highlightedRapidId: null,
 
             // UI state
             showToolTable: false,
@@ -273,14 +267,46 @@ describe('State Persistence', () => {
 
             // Timestamp
             savedAt: '2023-01-01T00:00:00.000Z',
-            selectedCutIds: [],
-            highlightedCutId: null,
             showCutNormals: false,
             showCutDirections: false,
             showCutPaths: false,
             showCutStartPoints: false,
             showCutEndPoints: false,
             showCutTangentLines: false,
+
+            // Unified selection state
+            selection: {
+                shapes: {
+                    selected: ['shape1', 'shape2'],
+                    hovered: 'shape3',
+                    selectedOffset: null,
+                },
+                chains: {
+                    selected: ['chain1'],
+                    highlighted: null,
+                },
+                parts: {
+                    selected: [],
+                    highlighted: null,
+                    hovered: null,
+                },
+                cuts: {
+                    selected: [],
+                    highlighted: null,
+                },
+                rapids: {
+                    selected: [],
+                    highlighted: null,
+                },
+                leads: {
+                    selected: [],
+                    highlighted: null,
+                },
+                kerfs: {
+                    selected: null,
+                    highlighted: null,
+                },
+            },
         };
 
         // Save state
@@ -292,7 +318,7 @@ describe('State Persistence', () => {
         // Verify loaded state matches saved state
         expect(loadedState).toBeTruthy();
         expect(loadedState?.drawing).toEqual(testState.drawing);
-        expect(loadedState?.selectedShapes).toEqual(testState.selectedShapes);
+        expect(loadedState?.selection).toEqual(testState.selection);
         expect(loadedState?.scale).toBe(testState.scale);
         expect(loadedState?.fileName).toBe(testState.fileName);
         expect(loadedState?.prepareStageState?.leftColumnWidth).toBe(350);
@@ -315,8 +341,6 @@ describe('State Persistence', () => {
     it('should clear state correctly', () => {
         const testState: PersistedState = {
             drawing: null,
-            selectedShapes: [],
-            hoveredShape: null,
             scale: 1,
             offset: { x: 0, y: 0 },
             fileName: null,
@@ -326,14 +350,9 @@ describe('State Persistence', () => {
             completedStages: [],
             chains: [],
             tolerance: 0.1,
-            selectedChainIds: [],
-            selectedPartIds: [],
             parts: [],
             partWarnings: [],
-            highlightedPartId: null,
             showRapids: false,
-            selectedRapidIds: [],
-            highlightedRapidId: null,
             showToolTable: false,
             tessellationActive: false,
             tessellationPoints: [],
@@ -373,14 +392,44 @@ describe('State Persistence', () => {
             tools: [],
             applicationSettings: defaultApplicationSettings,
             savedAt: '2023-01-01T00:00:00.000Z',
-            selectedCutIds: [],
-            highlightedCutId: null,
             showCutNormals: false,
             showCutDirections: false,
             showCutPaths: false,
             showCutStartPoints: false,
             showCutEndPoints: false,
             showCutTangentLines: false,
+            selection: {
+                shapes: {
+                    selected: [],
+                    hovered: null,
+                    selectedOffset: null,
+                },
+                chains: {
+                    selected: [],
+                    highlighted: null,
+                },
+                parts: {
+                    selected: [],
+                    highlighted: null,
+                    hovered: null,
+                },
+                cuts: {
+                    selected: [],
+                    highlighted: null,
+                },
+                rapids: {
+                    selected: [],
+                    highlighted: null,
+                },
+                leads: {
+                    selected: [],
+                    highlighted: null,
+                },
+                kerfs: {
+                    selected: null,
+                    highlighted: null,
+                },
+            },
         };
 
         saveState(testState);

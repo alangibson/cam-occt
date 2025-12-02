@@ -1,16 +1,17 @@
 <script lang="ts">
     import { planStore } from '$lib/stores/plan/store';
-    import { cutStore } from '$lib/stores/cuts/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { CutDirection } from '$lib/cam/cut/enums';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive cut data
     $: cuts = $planStore.plan.cuts;
-    $: selectedCutIds = $cutStore.selectedCutIds;
+    $: selection = $selectionStore;
+    $: selectedCutIds = selection.cuts.selected;
     $: selectedCutId =
         selectedCutIds.size === 1 ? Array.from(selectedCutIds)[0] : null;
-    $: highlightedCutId = $cutStore.highlightedCutId;
+    $: highlightedCutId = selection.cuts.highlighted;
     $: activeCutId = selectedCutId || highlightedCutId;
     $: selectedCut = activeCutId
         ? cuts.find((cut) => cut.id === activeCutId)

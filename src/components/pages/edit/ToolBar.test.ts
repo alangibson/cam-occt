@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
@@ -51,8 +52,8 @@ describe('ToolBar Component', () => {
         };
 
         drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-        drawingStore.selectShape('1');
-        drawingStore.selectShape('2', true);
+        selectionStore.selectShape('1');
+        selectionStore.selectShape('2', true);
 
         const { getByText } = render(ToolBar);
         expect(getByText('Delete (2)')).toBeDefined();
@@ -60,7 +61,7 @@ describe('ToolBar Component', () => {
 
     it('should disable buttons when no shapes are selected', () => {
         // Clear any existing selection
-        drawingStore.clearSelection();
+        selectionStore.clearShapeSelection();
 
         const { getByText } = render(ToolBar);
 
@@ -88,7 +89,7 @@ describe('ToolBar Component', () => {
         };
 
         drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-        drawingStore.selectShape('1');
+        selectionStore.selectShape('1');
 
         const { getByText } = render(ToolBar);
 

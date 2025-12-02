@@ -60,6 +60,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
 
             chains.push({
                 id: `chain-${i}`,
+                name: `Chain ${i}`,
                 shapes,
             });
         }
@@ -67,7 +68,8 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         // Add a chain with a line segment (which should be preferred for splitting)
         const mixedChain: ChainData = {
             id: 'chain-mixed',
-            name: 'chain-mixed', shapes: [
+            name: 'chain-mixed',
+            shapes: [
                 {
                     id: 'line-1',
                     type: GeometryType.LINE,
@@ -137,7 +139,8 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         // Create a chain with only polylines and splines
         const complexChain: ChainData = {
             id: 'complex-chain',
-            name: 'complex-chain', shapes: [
+            name: 'complex-chain',
+            shapes: [
                 {
                     id: 'polyline-1',
                     type: GeometryType.POLYLINE,
@@ -195,7 +198,8 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         // that have been converted to polylines
         const adlerStyleChain: ChainData = {
             id: 'adler-chain',
-            name: 'adler-chain', shapes: [
+            name: 'adler-chain',
+            shapes: [
                 {
                     id: 'converted-polyline-1',
                     type: GeometryType.POLYLINE,

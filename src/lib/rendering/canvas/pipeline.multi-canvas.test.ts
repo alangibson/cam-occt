@@ -115,10 +115,14 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
         });
 
         it('should render to specific layer canvas based on renderer configuration', () => {
+            // Get coordinator from pipeline
+            const coordinator = pipeline.getCoordinator();
+
             // Create mock renderer for shapes layer
             const mockShapeRenderer = {
                 id: 'shape-renderer',
                 layer: LayerId.SHAPES,
+                coordinator: coordinator!,
                 render: vi.fn(),
                 hitWorld: vi.fn(),
                 hitScreen: vi.fn(),
@@ -142,10 +146,14 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
         });
 
         it('should only clear and render dirty layers', () => {
+            // Get coordinator from pipeline
+            const coordinator = pipeline.getCoordinator();
+
             // Create renderers for multiple layers
             const shapeRenderer = {
                 id: 'shape-renderer',
                 layer: LayerId.SHAPES,
+                coordinator: coordinator!,
                 render: vi.fn(),
                 hitWorld: vi.fn(),
                 hitScreen: vi.fn(),
@@ -154,6 +162,7 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
             const cutRenderer = {
                 id: 'cut-renderer',
                 layer: LayerId.CUTS,
+                coordinator: coordinator!,
                 render: vi.fn(),
                 hitWorld: vi.fn(),
                 hitScreen: vi.fn(),
@@ -219,9 +228,13 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
         });
 
         it('should trigger full re-render after resize', () => {
+            // Get coordinator from pipeline
+            const coordinator = pipeline.getCoordinator();
+
             const mockRenderer = {
                 id: 'test-renderer',
                 layer: LayerId.SHAPES,
+                coordinator: coordinator!,
                 render: vi.fn(),
                 hitWorld: vi.fn(),
                 hitScreen: vi.fn(),
@@ -266,10 +279,14 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
         it('should handle hit detection across multiple layers', () => {
             const testPoint = { x: 100, y: 100 };
 
+            // Get coordinator from pipeline
+            const coordinator = pipeline.getCoordinator();
+
             // Create renderers with hit test implementations
             const highPriorityRenderer = {
                 id: 'high-priority',
                 layer: LayerId.SELECTION,
+                coordinator: coordinator!,
                 render: vi.fn(),
                 hitWorld: vi.fn().mockReturnValue({
                     type: 'selection' as const,
@@ -288,6 +305,7 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
             const lowPriorityRenderer = {
                 id: 'low-priority',
                 layer: LayerId.SHAPES,
+                coordinator: coordinator!,
                 render: vi.fn(),
                 hitWorld: vi.fn().mockReturnValue({
                     type: 'shape' as const,

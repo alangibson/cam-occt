@@ -32,7 +32,8 @@ describe.skip('SimulateStage Cut Direction', () => {
         // Create a chain with the circle
         const chain: ChainData = {
             id: 'chain-1',
-            name: 'chain-1', shapes: [circleShape],
+            name: 'chain-1',
+            shapes: [circleShape],
         };
 
         // Add chain to store
@@ -115,7 +116,8 @@ describe.skip('SimulateStage Cut Direction', () => {
         // Create a chain with the ellipse
         const chain: ChainData = {
             id: 'chain-2',
-            name: 'chain-2', shapes: [ellipseShape],
+            name: 'chain-2',
+            shapes: [ellipseShape],
         };
 
         // Add chain to store
@@ -177,7 +179,8 @@ describe.skip('SimulateStage Cut Direction', () => {
         // Create an open chain
         const chain: ChainData = {
             id: 'chain-3',
-            name: 'chain-3', shapes: [lineShape],
+            name: 'chain-3',
+            shapes: [lineShape],
         };
 
         // Add chain to store

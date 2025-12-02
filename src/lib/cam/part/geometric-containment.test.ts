@@ -16,6 +16,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 function createTestChain(id: string, shapes: ShapeData[]): Chain {
     return new Chain({
         id,
+        name: id,
         shapes,
     });
 }

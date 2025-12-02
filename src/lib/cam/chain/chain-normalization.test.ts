@@ -41,6 +41,7 @@ describe('Chain Normalization', () => {
     function createChain(id: string, shapes: ShapeData[]): ChainData {
         return {
             id,
+            name: id,
             shapes,
         };
     }

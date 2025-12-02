@@ -46,6 +46,7 @@ describe('optimizeStartPoints', () => {
 
         const chain: ChainData = {
             id: 'chain1',
+            name: 'chain1',
             shapes,
         };
 
@@ -106,6 +107,7 @@ describe('optimizeStartPoints', () => {
 
         const chain: ChainData = {
             id: 'chain1',
+            name: 'Chain 1',
             shapes,
         };
 
@@ -171,6 +173,7 @@ describe('optimizeStartPoints', () => {
 
         const chain: ChainData = {
             id: 'chain1',
+            name: 'Chain 1',
             shapes,
         };
 
@@ -217,6 +220,7 @@ describe('optimizeStartPoints', () => {
 
         const chain: ChainData = {
             id: 'chain1',
+            name: 'Chain 1',
             shapes,
         };
 
@@ -248,6 +252,7 @@ describe('optimizeStartPoints', () => {
 
         const chain: ChainData = {
             id: 'chain1',
+            name: 'Chain 1',
             shapes,
         };
 
@@ -265,7 +270,8 @@ describe('optimizeStartPoints', () => {
         // Create two chains, one closed and one open
         const chain1: ChainData = {
             id: 'chain1',
-            name: 'chain1', shapes: [
+            name: 'chain1',
+            shapes: [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -287,7 +293,8 @@ describe('optimizeStartPoints', () => {
 
         const chain2: ChainData = {
             id: 'chain2',
-            name: 'chain2', shapes: [
+            name: 'chain2',
+            shapes: [
                 {
                     id: 'line3',
                     type: GeometryType.LINE,

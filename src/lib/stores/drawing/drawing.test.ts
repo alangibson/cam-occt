@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './store';
+import { selectionStore } from '$lib/stores/selection/store';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
@@ -145,8 +146,6 @@ describe('drawingStore', () => {
             expect(state.displayUnit).toBe(Unit.MM);
             expect(state.scale).toBe(1);
             expect(state.offset).toEqual({ x: 0, y: 0 });
-            expect(state.selectedShapes.size).toBe(0);
-            expect(state.hoveredShape).toBeNull();
         });
 
         it('should reset downstream stages', async () => {
@@ -190,34 +189,35 @@ describe('drawingStore', () => {
                 new Drawing(createTestDrawing()),
                 'test.dxf'
             );
+            selectionStore.reset();
         });
 
         it('should select single shape', () => {
-            drawingStore.selectShape('line-1');
+            selectionStore.selectShape('line-1');
 
-            const state = get(drawingStore);
-            expect(state.selectedShapes.has('line-1')).toBe(true);
-            expect(state.selectedShapes.size).toBe(1);
+            const state = get(selectionStore);
+            expect(state.shapes.selected.has('line-1')).toBe(true);
+            expect(state.shapes.selected.size).toBe(1);
         });
 
         it('should replace selection when multi is false', () => {
-            drawingStore.selectShape('line-1');
-            drawingStore.selectShape('circle-1'); // Should replace, not add
+            selectionStore.selectShape('line-1');
+            selectionStore.selectShape('circle-1'); // Should replace, not add
 
-            const state = get(drawingStore);
-            expect(state.selectedShapes.has('line-1')).toBe(false);
-            expect(state.selectedShapes.has('circle-1')).toBe(true);
-            expect(state.selectedShapes.size).toBe(1);
+            const state = get(selectionStore);
+            expect(state.shapes.selected.has('line-1')).toBe(false);
+            expect(state.shapes.selected.has('circle-1')).toBe(true);
+            expect(state.shapes.selected.size).toBe(1);
         });
 
         it('should add to selection when multi is true', () => {
-            drawingStore.selectShape('line-1');
-            drawingStore.selectShape('circle-1', true); // Should add
+            selectionStore.selectShape('line-1');
+            selectionStore.selectShape('circle-1', true); // Should add
 
-            const state = get(drawingStore);
-            expect(state.selectedShapes.has('line-1')).toBe(true);
-            expect(state.selectedShapes.has('circle-1')).toBe(true);
-            expect(state.selectedShapes.size).toBe(2);
+            const state = get(selectionStore);
+            expect(state.shapes.selected.has('line-1')).toBe(true);
+            expect(state.shapes.selected.has('circle-1')).toBe(true);
+            expect(state.shapes.selected.size).toBe(2);
         });
     });
 
@@ -227,24 +227,25 @@ describe('drawingStore', () => {
                 new Drawing(createTestDrawing()),
                 'test.dxf'
             );
-            drawingStore.selectShape('line-1');
-            drawingStore.selectShape('circle-1', true);
+            selectionStore.reset();
+            selectionStore.selectShape('line-1');
+            selectionStore.selectShape('circle-1', true);
         });
 
         it('should remove shape from selection', () => {
-            drawingStore.deselectShape('line-1');
+            selectionStore.deselectShape('line-1');
 
-            const state = get(drawingStore);
-            expect(state.selectedShapes.has('line-1')).toBe(false);
-            expect(state.selectedShapes.has('circle-1')).toBe(true);
-            expect(state.selectedShapes.size).toBe(1);
+            const state = get(selectionStore);
+            expect(state.shapes.selected.has('line-1')).toBe(false);
+            expect(state.shapes.selected.has('circle-1')).toBe(true);
+            expect(state.shapes.selected.size).toBe(1);
         });
 
         it('should handle deselecting non-selected shape', () => {
-            drawingStore.deselectShape('non-existent');
+            selectionStore.deselectShape('non-existent');
 
-            const state = get(drawingStore);
-            expect(state.selectedShapes.size).toBe(2); // Should remain unchanged
+            const state = get(selectionStore);
+            expect(state.shapes.selected.size).toBe(2); // Should remain unchanged
         });
     });
 
@@ -254,15 +255,16 @@ describe('drawingStore', () => {
                 new Drawing(createTestDrawing()),
                 'test.dxf'
             );
-            drawingStore.selectShape('line-1');
-            drawingStore.selectShape('circle-1', true);
+            selectionStore.reset();
+            selectionStore.selectShape('line-1');
+            selectionStore.selectShape('circle-1', true);
         });
 
         it('should clear all selections', () => {
-            drawingStore.clearSelection();
+            selectionStore.clearShapeSelection();
 
-            const state = get(drawingStore);
-            expect(state.selectedShapes.size).toBe(0);
+            const state = get(selectionStore);
+            expect(state.shapes.selected.size).toBe(0);
         });
     });
 
@@ -272,20 +274,20 @@ describe('drawingStore', () => {
                 new Drawing(createTestDrawing()),
                 'test.dxf'
             );
-            drawingStore.selectShape('line-1');
+            selectionStore.reset();
+            selectionStore.selectShape('line-1');
         });
 
         it('should delete selected shapes', async () => {
-            await drawingStore.deleteSelected();
+            await drawingStore.deleteSelected(['line-1']);
 
             const state = get(drawingStore);
             expect(state.drawing?.shapes).toHaveLength(1);
             expect(state.drawing?.shapes[0].id).toBe('circle-1');
-            expect(state.selectedShapes.size).toBe(0);
         });
 
         it('should reset downstream stages when shapes deleted', async () => {
-            await drawingStore.deleteSelected();
+            await drawingStore.deleteSelected(['line-1']);
 
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
@@ -306,12 +308,10 @@ describe('drawingStore', () => {
                 '',
                 1,
                 { x: 0, y: 0 },
-                Unit.MM,
-                new Set(),
-                null
+                Unit.MM
             );
 
-            await drawingStore.deleteSelected();
+            await drawingStore.deleteSelected([]);
 
             const state = get(drawingStore);
             expect(state.drawing).toBeNull();
@@ -353,9 +353,7 @@ describe('drawingStore', () => {
                 '',
                 1,
                 { x: 0, y: 0 },
-                Unit.MM,
-                new Set(),
-                null
+                Unit.MM
             );
 
             await drawingStore.moveShapes(['line-1'], { x: 1, y: 1 });
@@ -491,18 +489,18 @@ describe('drawingStore', () => {
 
     describe('setHoveredShape', () => {
         it('should set hovered shape', () => {
-            drawingStore.setHoveredShape('line-1');
+            selectionStore.setHoveredShape('line-1');
 
-            const state = get(drawingStore);
-            expect(state.hoveredShape).toBe('line-1');
+            const state = get(selectionStore);
+            expect(state.shapes.hovered).toBe('line-1');
         });
 
         it('should clear hovered shape', () => {
-            drawingStore.setHoveredShape('line-1');
-            drawingStore.setHoveredShape(null);
+            selectionStore.setHoveredShape('line-1');
+            selectionStore.setHoveredShape(null);
 
-            const state = get(drawingStore);
-            expect(state.hoveredShape).toBeNull();
+            const state = get(selectionStore);
+            expect(state.shapes.hovered).toBeNull();
         });
     });
 
@@ -529,7 +527,8 @@ describe('drawingStore', () => {
                 new Drawing(createTestDrawing()),
                 'test.dxf'
             );
-            drawingStore.selectShape('line-1');
+            selectionStore.reset();
+            selectionStore.selectShape('line-1');
         });
 
         it('should replace all shapes', async () => {
@@ -548,7 +547,6 @@ describe('drawingStore', () => {
 
             const state = get(drawingStore);
             expect(state.drawing?.shapes).toEqual(newShapes);
-            expect(state.selectedShapes.size).toBe(0); // Selection should be cleared
         });
 
         it('should reset downstream stages from prepare', async () => {
@@ -570,9 +568,7 @@ describe('drawingStore', () => {
                 '',
                 1,
                 { x: 0, y: 0 },
-                Unit.MM,
-                new Set(),
-                null
+                Unit.MM
             );
 
             await drawingStore.replaceAllShapes([]);
@@ -586,7 +582,6 @@ describe('drawingStore', () => {
         it('should restore complete drawing state without resetting downstream stages', async () => {
             const drawingData = createTestDrawing();
             const drawing = new Drawing(drawingData);
-            const selectedShapes = new Set(['line-1']);
             const scale = 2;
             const offset = { x: 100, y: 50 };
 
@@ -595,9 +590,7 @@ describe('drawingStore', () => {
                 'restored.dxf',
                 scale,
                 offset,
-                Unit.INCH,
-                selectedShapes,
-                'circle-1'
+                Unit.INCH
             );
 
             const state = get(drawingStore);
@@ -606,8 +599,6 @@ describe('drawingStore', () => {
             expect(state.scale).toBe(scale);
             expect(state.offset).toEqual(offset);
             expect(state.displayUnit).toBe(Unit.INCH);
-            expect(state.selectedShapes).toEqual(selectedShapes);
-            expect(state.hoveredShape).toBe('circle-1');
             expect(state.isDragging).toBe(false);
             expect(state.dragStart).toBeNull();
 

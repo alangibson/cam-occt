@@ -123,6 +123,7 @@ export async function createCutsFromOperation(
             const originalShapes = cut.offset?.originalShapes || chain.shapes;
             const originalChainForKerf = new Chain({
                 id: chain.id,
+                name: chain.name || chain.id,
                 shapes: originalShapes,
             });
 

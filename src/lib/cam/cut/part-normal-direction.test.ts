@@ -31,6 +31,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Part data from actual bug report
         const part: PartData = {
             id: 'part-7',
+            name: 'part-7',
             type: PartType.SHELL,
             boundingBox: {
                 min: { x: 39.022212, y: 17.837954 },
@@ -38,7 +39,8 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-9',
-                name: 'chain-9', shapes: [
+                name: 'chain-9',
+                shapes: [
                     {
                         id: '1760015737420_2049-split-2',
                         type: GeometryType.LINE,
@@ -218,7 +220,8 @@ describe('Cut Normal Direction on Parts', () => {
                     id: 'hole-7-1',
                     chain: {
                         id: 'chain-11',
-                        name: 'chain-11', shapes: [
+                        name: 'chain-11',
+                        shapes: [
                             {
                                 id: '1760015737420_2051-split-2',
                                 type: GeometryType.LINE,
@@ -435,6 +438,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Part data (same as above)
         const part: PartData = {
             id: 'part-7',
+            name: 'part-7',
             type: PartType.SHELL,
             boundingBox: {
                 min: { x: 39.022212, y: 17.837954 },
@@ -442,7 +446,8 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-9',
-                name: 'chain-9', shapes: [
+                name: 'chain-9',
+                shapes: [
                     {
                         id: '1760015737420_2049-split-2',
                         type: GeometryType.LINE,
@@ -625,7 +630,8 @@ describe('Cut Normal Direction on Parts', () => {
         // Create shell cutChain WITHOUT clockwise property (as createCutChain does)
         const shellCutChain: ChainData = {
             id: 'chain-9-cut',
-            name: 'chain-9-cut', shapes: [...part.shell.shapes], // Copy shapes
+            name: 'chain-9-cut',
+            shapes: [...part.shell.shapes], // Copy shapes
             // NOTE: No clockwise property!
         };
 
@@ -676,6 +682,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Simplified part for focused testing
         const part: PartData = {
             id: 'part-test',
+            name: 'part-test',
             type: PartType.SHELL,
             boundingBox: {
                 min: { x: 0, y: 0 },
@@ -683,7 +690,8 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-test',
-                name: 'chain-test', shapes: [
+                name: 'chain-test',
+                shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
@@ -764,10 +772,12 @@ describe('Cut Normal Direction on Parts', () => {
         // Simple rectangular part
         const part: PartData = {
             id: 'part-bug',
+            name: 'part-bug',
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             shell: {
                 id: 'chain-original', // Original chain ID
+                name: 'chain-original',
                 shapes: [
                     {
                         id: 'line1',
@@ -817,6 +827,7 @@ describe('Cut Normal Direction on Parts', () => {
         // This will NOT be identified as a shell (bug case)
         const cutChainBroken: ChainData = {
             id: 'chain-original-cut', // Different ID!
+            name: 'chain-original-cut',
             shapes: [...part.shell.shapes],
             // No originalChainId set!
         };
@@ -835,7 +846,8 @@ describe('Cut Normal Direction on Parts', () => {
         // Create cutChain WITH originalChainId (correct case)
         const cutChainFixed: ChainData = {
             id: 'chain-original-cut',
-            name: 'chain-original-cut', shapes: [...part.shell.shapes],
+            name: 'chain-original-cut',
+            shapes: [...part.shell.shapes],
             originalChainId: part.shell.id, // Set originalChainId!
         };
 
@@ -861,6 +873,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Simple rectangular shell
         const part: PartData = {
             id: 'part-test',
+            name: 'part-test',
             type: PartType.SHELL,
             boundingBox: {
                 min: { x: 0, y: 0 },
@@ -868,7 +881,8 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-test',
-                name: 'chain-test', shapes: [
+                name: 'chain-test',
+                shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
@@ -950,6 +964,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Simple rectangular part with hole
         const part: PartData = {
             id: 'part-test',
+            name: 'part-test',
             type: PartType.SHELL,
             boundingBox: {
                 min: { x: 0, y: 0 },
@@ -957,7 +972,8 @@ describe('Cut Normal Direction on Parts', () => {
             },
             shell: {
                 id: 'chain-shell',
-                name: 'chain-shell', shapes: [
+                name: 'chain-shell',
+                shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
@@ -1002,7 +1018,8 @@ describe('Cut Normal Direction on Parts', () => {
                     id: 'hole-1',
                     chain: {
                         id: 'chain-hole',
-                        name: 'chain-hole', shapes: [
+                        name: 'chain-hole',
+                        shapes: [
                             {
                                 id: 'hole-line1',
                                 type: GeometryType.LINE,
@@ -1099,7 +1116,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 100, y: 0 },
+                        },
                         layer: '0',
                     },
                     {
@@ -1123,7 +1143,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line4',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 100 },
+                            end: { x: 0, y: 0 },
+                        },
                         layer: '0',
                     },
                 ],
@@ -1153,6 +1176,7 @@ describe('Cut Normal Direction on Parts', () => {
             // Simple rectangular part
             const part: PartData = {
                 id: 'part-test',
+                name: 'part-test',
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 shell: {
@@ -1252,6 +1276,7 @@ describe('Cut Normal Direction on Parts', () => {
             // Part with a hole
             const part: PartData = {
                 id: 'part-test',
+                name: 'part-test',
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
                 shell: {
@@ -1383,9 +1408,7 @@ describe('Cut Normal Direction on Parts', () => {
             const optimizedChain = optimizeResult.optimizedChain!;
 
             // Verify originalChainId is preserved
-            expect(optimizedChain.originalChainId).toBe(
-                part.voids[0].chain.id
-            );
+            expect(optimizedChain.originalChainId).toBe(part.voids[0].chain.id);
 
             // Calculate normal AFTER optimization
             const normalAfter = calculateCutNormal(
@@ -1403,6 +1426,7 @@ describe('Cut Normal Direction on Parts', () => {
             // Simple rectangular shell
             const part: PartData = {
                 id: 'part-test',
+                name: 'part-test',
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 shell: {
@@ -1496,6 +1520,7 @@ describe('Cut Normal Direction on Parts', () => {
             // Part with hole
             const part: PartData = {
                 id: 'part-test',
+                name: 'part-test',
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
                 shell: {
@@ -1651,7 +1676,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 100, y: 0 },
+                        },
                         layer: '0',
                     },
                     {
@@ -1675,7 +1703,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line4',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 100 },
+                            end: { x: 0, y: 0 },
+                        },
                         layer: '0',
                     },
                 ],
@@ -1714,7 +1745,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 100, y: 0 },
+                        },
                         layer: '0',
                     },
                     {
@@ -1738,7 +1772,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line4',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 100 },
+                            end: { x: 0, y: 0 },
+                        },
                         layer: '0',
                     },
                 ],
@@ -1777,7 +1814,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 100, y: 0 },
+                        },
                         layer: '0',
                     },
                     {
@@ -1801,7 +1841,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line4',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 100 },
+                            end: { x: 0, y: 0 },
+                        },
                         layer: '0',
                     },
                 ],
@@ -1840,7 +1883,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line1',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 100, y: 0 },
+                        },
                         layer: '0',
                     },
                     {
@@ -1864,7 +1910,10 @@ describe('Cut Normal Direction on Parts', () => {
                     {
                         id: 'line4',
                         type: GeometryType.LINE,
-                        geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
+                        geometry: {
+                            start: { x: 0, y: 100 },
+                            end: { x: 0, y: 0 },
+                        },
                         layer: '0',
                     },
                 ],

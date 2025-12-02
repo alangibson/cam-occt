@@ -12,9 +12,6 @@ import { calculateZoomToFitForDrawing } from '$lib/cam/drawing/functions';
 
 const initialState: DrawingState = {
     drawing: null,
-    selectedShapes: new Set(),
-    hoveredShape: null,
-    selectedOffsetShape: null,
     isDragging: false,
     dragStart: null,
     scale: 1,
@@ -52,77 +49,19 @@ function createDrawingStore(): DrawingStore {
                     displayUnit,
                     scale: zoomToFit.scale,
                     offset: zoomToFit.offset,
-                    selectedShapes: new Set(), // Clear selection
-                    hoveredShape: null, // Clear hover state
                     isDragging: false, // Reset drag state
                     dragStart: null, // Reset drag start
                 };
             });
         },
 
-        selectShape: (shapeIdOrShape: string | ShapeData, multi = false) =>
+        deleteSelected: (shapeIds: string[]) =>
             update((state) => {
                 if (!state.drawing) return state;
 
-                // Extract ID and full shape object
-                const shapeId =
-                    typeof shapeIdOrShape === 'string'
-                        ? shapeIdOrShape
-                        : shapeIdOrShape.id;
-                const shapeObj =
-                    typeof shapeIdOrShape === 'object'
-                        ? shapeIdOrShape
-                        : state.drawing.shapes.find(
-                              (s: ShapeData) => s.id === shapeId
-                          );
-
-                // Check if this is an original shape (in drawing.shapes)
-                const isOriginalShape = state.drawing.shapes.some(
-                    (s: ShapeData) => s.id === shapeId
-                );
-
-                if (isOriginalShape) {
-                    // Existing logic for original shapes
-                    const selectedShapes = new Set(
-                        multi ? state.selectedShapes : []
-                    );
-                    selectedShapes.add(shapeId);
-                    return {
-                        ...state,
-                        selectedShapes,
-                        selectedOffsetShape: null, // Clear offset selection
-                    };
-                } else {
-                    // This is an offset shape - use existing selectOffsetShape logic
-                    return {
-                        ...state,
-                        selectedOffsetShape: shapeObj || null,
-                        selectedShapes: new Set(), // Clear regular shape selection
-                    };
-                }
-            }),
-
-        deselectShape: (shapeId: string) =>
-            update((state) => {
-                const selectedShapes: Set<string> = new Set(
-                    state.selectedShapes
-                );
-                selectedShapes.delete(shapeId);
-                return { ...state, selectedShapes };
-            }),
-
-        clearSelection: () =>
-            update((state) => ({
-                ...state,
-                selectedShapes: new Set(),
-            })),
-
-        deleteSelected: () =>
-            update((state) => {
-                if (!state.drawing) return state;
-
+                const shapeIdSet = new Set(shapeIds);
                 const shapes: ShapeData[] = state.drawing.shapes.filter(
-                    (shape: ShapeData) => !state.selectedShapes.has(shape.id)
+                    (shape: ShapeData) => !shapeIdSet.has(shape.id)
                 );
 
                 // Reset downstream stages when shapes are deleted
@@ -133,7 +72,6 @@ function createDrawingStore(): DrawingStore {
 
                 return {
                     ...state,
-                    selectedShapes: new Set(),
                 };
             }),
 
@@ -285,12 +223,6 @@ function createDrawingStore(): DrawingStore {
                 },
             })),
 
-        setHoveredShape: (shapeId: string | null) =>
-            update((state) => ({
-                ...state,
-                hoveredShape: shapeId,
-            })),
-
         setDisplayUnit: (unit: Unit) =>
             update((state) => ({
                 ...state,
@@ -309,7 +241,6 @@ function createDrawingStore(): DrawingStore {
 
                 return {
                     ...state,
-                    selectedShapes: new Set(), // Clear selection since shape IDs may have changed
                 };
             }),
 
@@ -319,9 +250,7 @@ function createDrawingStore(): DrawingStore {
             fileName: string,
             scale: number,
             offset: Point2D,
-            displayUnit: Unit,
-            selectedShapes: Set<string>,
-            hoveredShape: string | null
+            displayUnit: Unit
         ) => {
             // Update the drawing's fileName property
             if (drawing) {
@@ -334,32 +263,14 @@ function createDrawingStore(): DrawingStore {
                 scale,
                 offset,
                 displayUnit,
-                selectedShapes,
-                hoveredShape,
                 isDragging: false,
                 dragStart: null,
             }));
         },
 
-        selectOffsetShape: (shape: ShapeData | null) =>
-            update((state) => ({
-                ...state,
-                selectedOffsetShape: shape,
-                selectedShapes: new Set(), // Clear regular shape selection when selecting offset shape
-            })),
-
-        clearOffsetShapeSelection: () =>
-            update((state) => ({
-                ...state,
-                selectedOffsetShape: null,
-            })),
-
         reset: () =>
             set({
                 drawing: null,
-                selectedShapes: new Set(),
-                hoveredShape: null,
-                selectedOffsetShape: null,
                 isDragging: false,
                 dragStart: null,
                 scale: 1,

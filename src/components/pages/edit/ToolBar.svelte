@@ -1,14 +1,16 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { selectionStore } from '$lib/stores/selection/store';
 
-    $: selectedCount = $drawingStore.selectedShapes.size;
+    $: selectedShapes = $selectionStore.shapes.selected;
+    $: selectedCount = selectedShapes.size;
 
     function handleScale() {
         const factor = parseFloat(prompt('Enter scale factor:', '1.5') || '1');
         if (factor && selectedCount > 0) {
             // Scale around center of selection
             drawingStore.scaleShapes(
-                Array.from($drawingStore.selectedShapes),
+                Array.from(selectedShapes),
                 factor,
                 { x: 0, y: 0 } // TODO: Calculate center of selection
             );
@@ -22,10 +24,16 @@
         if (degrees && selectedCount > 0) {
             const radians = (degrees * Math.PI) / 180;
             drawingStore.rotateShapes(
-                Array.from($drawingStore.selectedShapes),
+                Array.from(selectedShapes),
                 radians,
                 { x: 0, y: 0 } // TODO: Calculate center of selection
             );
+        }
+    }
+
+    function handleDelete() {
+        if (selectedCount > 0) {
+            drawingStore.deleteSelected(Array.from(selectedShapes));
         }
     }
 </script>
@@ -33,10 +41,7 @@
 <div class="toolbar">
     <div class="toolbar-left">
         <div class="button-group">
-            <button
-                on:click={() => drawingStore.deleteSelected()}
-                disabled={selectedCount === 0}
-            >
+            <button on:click={handleDelete} disabled={selectedCount === 0}>
                 Delete ({selectedCount})
             </button>
 

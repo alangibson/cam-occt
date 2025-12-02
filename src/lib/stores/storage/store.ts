@@ -48,6 +48,8 @@ import type { Tool } from '$lib/cam/tool/interfaces';
 import { settingsStore } from '$lib/stores/settings/store';
 import type { SettingsState } from '$lib/config/settings/interfaces';
 import { kerfStore } from '$lib/stores/kerfs/store';
+import { selectionStore } from '$lib/stores/selection/store';
+import type { SelectionState } from '$lib/stores/selection/interfaces';
 
 /**
  * Collect current state from all stores
@@ -69,6 +71,7 @@ function collectCurrentState(): PersistedState {
     const tools: Tool[] = get(toolStore);
     const settings: SettingsState = get(settingsStore);
     const rapidUIState: RapidsState = get(rapidStore);
+    const selection: SelectionState = get(selectionStore);
 
     // Collect chains from drawing layers
     const allChains =
@@ -81,8 +84,6 @@ function collectCurrentState(): PersistedState {
     return {
         // Drawing state
         drawing: drawing.drawing ? drawing.drawing.toData() : null,
-        selectedShapes: Array.from(drawing.selectedShapes),
-        hoveredShape: drawing.hoveredShape,
         scale: drawing.scale,
         offset: drawing.offset,
         fileName: drawing.drawing?.fileName ?? '',
@@ -96,7 +97,6 @@ function collectCurrentState(): PersistedState {
         // Chains state
         chains: allChains,
         tolerance: chains.tolerance,
-        selectedChainIds: Array.from(chains.selectedChainIds),
 
         // Parts state - get from drawing layers
         parts: drawing.drawing
@@ -105,13 +105,9 @@ function collectCurrentState(): PersistedState {
               )
             : [],
         partWarnings: parts.warnings,
-        highlightedPartId: parts.highlightedPartId,
-        selectedPartIds: Array.from(parts.selectedPartIds),
 
         // Rapids UI state (rapids data is now in Cut.rapidIn)
         showRapids: rapidUIState.showRapids,
-        selectedRapidIds: Array.from(rapidUIState.selectedRapidIds),
-        highlightedRapidId: rapidUIState.highlightedRapidId,
 
         // UI state
         showToolTable: ui.showToolTable,
@@ -130,18 +126,52 @@ function collectCurrentState(): PersistedState {
         // Operations, cuts, and tools
         operations: operations,
         cuts: plan?.cuts?.map((cut) => cut.toData()) ?? [], // Cuts from Plan (convert Cut[] to CutData[])
-        selectedCutIds: Array.from(cutsUIState.selectedCutIds), // Cut selection state
-        highlightedCutId: cutsUIState.highlightedCutId, // Cut highlight state
-        showCutNormals: cutsUIState.showCutNormals, // Cut normals visibility state
-        showCutDirections: cutsUIState.showCutDirections, // Cut directions visibility state
-        showCutPaths: cutsUIState.showCutPaths, // Cut paths visibility state
-        showCutStartPoints: cutsUIState.showCutStartPoints, // Cut start points visibility state
-        showCutEndPoints: cutsUIState.showCutEndPoints, // Cut end points visibility state
-        showCutTangentLines: cutsUIState.showCutTangentLines, // Cut tangent lines visibility state
         tools: tools,
 
         // Application settings
         applicationSettings: settings.settings,
+
+        // Cut visualization state
+        showCutNormals: cutsUIState.showCutNormals,
+        showCutDirections: cutsUIState.showCutDirections,
+        showCutPaths: cutsUIState.showCutPaths,
+        showCutStartPoints: cutsUIState.showCutStartPoints,
+        showCutEndPoints: cutsUIState.showCutEndPoints,
+        showCutTangentLines: cutsUIState.showCutTangentLines,
+
+        // Unified selection state
+        selection: {
+            shapes: {
+                selected: Array.from(selection.shapes.selected),
+                hovered: selection.shapes.hovered,
+                selectedOffset: selection.shapes.selectedOffset,
+            },
+            chains: {
+                selected: Array.from(selection.chains.selected),
+                highlighted: selection.chains.highlighted,
+            },
+            parts: {
+                selected: Array.from(selection.parts.selected),
+                highlighted: selection.parts.highlighted,
+                hovered: selection.parts.hovered,
+            },
+            cuts: {
+                selected: Array.from(selection.cuts.selected),
+                highlighted: selection.cuts.highlighted,
+            },
+            rapids: {
+                selected: Array.from(selection.rapids.selected),
+                highlighted: selection.rapids.highlighted,
+            },
+            leads: {
+                selected: Array.from(selection.leads.selected),
+                highlighted: selection.leads.highlighted,
+            },
+            kerfs: {
+                selected: selection.kerfs.selected,
+                highlighted: selection.kerfs.highlighted,
+            },
+        },
 
         // Timestamp
         savedAt: new Date().toISOString(),
@@ -156,24 +186,9 @@ function restoreStateToStores(state: PersistedState): void {
         // Set chain store state
         // Chains are auto-generated from drawing layers, no need to set them
         chainStore.setTolerance(state.tolerance);
-        if (state.selectedChainIds && state.selectedChainIds.length > 0) {
-            // Restore all selected chains
-            state.selectedChainIds.forEach((chainId, index) => {
-                chainStore.selectChain(chainId, index > 0); // First is not multi, rest are
-            });
-        }
 
         // Set part store state (warnings only - parts now come from Drawing.layers)
         partStore.setWarnings(state.partWarnings);
-        if (state.highlightedPartId) {
-            partStore.highlightPart(state.highlightedPartId);
-        }
-        if (state.selectedPartIds && state.selectedPartIds.length > 0) {
-            // Restore all selected parts
-            state.selectedPartIds.forEach((partId, index) => {
-                partStore.selectPart(partId, index > 0); // First is not multi, rest are
-            });
-        }
 
         // Restore drawing state - use special restoration method to avoid resetting downstream stages
         if (state.drawing) {
@@ -183,9 +198,7 @@ function restoreStateToStores(state: PersistedState): void {
                 state.fileName ?? '',
                 state.scale,
                 state.offset,
-                state.displayUnit === 'mm' ? Unit.MM : Unit.INCH,
-                new Set(state.selectedShapes),
-                state.hoveredShape
+                state.displayUnit === 'mm' ? Unit.MM : Unit.INCH
             );
 
             // Restore layer visibility separately
@@ -204,11 +217,88 @@ function restoreStateToStores(state: PersistedState): void {
 
         // Restore rapids UI state (rapids data is now in Cut.rapidIn)
         rapidStore.setShowRapids(state.showRapids);
-        if (state.selectedRapidIds && state.selectedRapidIds.length > 0) {
-            rapidStore.selectRapids(new Set(state.selectedRapidIds));
-        }
-        if (state.highlightedRapidId) {
-            rapidStore.highlightRapid(state.highlightedRapidId);
+
+        // Restore unified selection state
+        if (state.selection) {
+            // Restore shapes selection
+            if (state.selection.shapes.selected.length > 0) {
+                state.selection.shapes.selected.forEach((shapeId, index) => {
+                    selectionStore.selectShape(shapeId, index > 0);
+                });
+            }
+            if (state.selection.shapes.hovered) {
+                selectionStore.setHoveredShape(state.selection.shapes.hovered);
+            }
+            if (state.selection.shapes.selectedOffset) {
+                selectionStore.selectOffsetShape(
+                    state.selection.shapes.selectedOffset
+                );
+            }
+
+            // Restore chains selection
+            if (state.selection.chains.selected.length > 0) {
+                state.selection.chains.selected.forEach((chainId, index) => {
+                    selectionStore.selectChain(chainId, index > 0);
+                });
+            }
+            if (state.selection.chains.highlighted) {
+                selectionStore.highlightChain(
+                    state.selection.chains.highlighted
+                );
+            }
+
+            // Restore parts selection
+            if (state.selection.parts.selected.length > 0) {
+                state.selection.parts.selected.forEach((partId, index) => {
+                    selectionStore.selectPart(partId, index > 0);
+                });
+            }
+            if (state.selection.parts.highlighted) {
+                selectionStore.highlightPart(state.selection.parts.highlighted);
+            }
+            if (state.selection.parts.hovered) {
+                selectionStore.hoverPart(state.selection.parts.hovered);
+            }
+
+            // Restore cuts selection
+            if (state.selection.cuts.selected.length > 0) {
+                state.selection.cuts.selected.forEach((cutId, index) => {
+                    selectionStore.selectCut(cutId, index > 0);
+                });
+            }
+            if (state.selection.cuts.highlighted) {
+                selectionStore.highlightCut(state.selection.cuts.highlighted);
+            }
+
+            // Restore rapids selection
+            if (state.selection.rapids.selected.length > 0) {
+                selectionStore.selectRapids(
+                    new Set(state.selection.rapids.selected)
+                );
+            }
+            if (state.selection.rapids.highlighted) {
+                selectionStore.highlightRapid(
+                    state.selection.rapids.highlighted
+                );
+            }
+
+            // Restore leads selection
+            if (state.selection.leads.selected.length > 0) {
+                state.selection.leads.selected.forEach((leadId, index) => {
+                    selectionStore.selectLead(leadId, index > 0);
+                });
+            }
+            if (state.selection.leads.highlighted) {
+                selectionStore.highlightLead(state.selection.leads.highlighted);
+            }
+
+            // Restore kerfs selection
+            if (state.selection.kerfs.selected) {
+                selectionStore.selectKerf(state.selection.kerfs.selected);
+            }
+            if (state.selection.kerfs.highlighted) {
+                selectionStore.highlightKerf(state.selection.kerfs.highlighted);
+            }
         }
 
         // Restore UI state
@@ -324,13 +414,14 @@ function restoreStateToStores(state: PersistedState): void {
                 return new Cut(cutData);
             });
 
-            // Restore cuts UI state to cutStore
+            // Restore cuts visualization state to cutStore (selection is in selectionStore)
             const cutsUIState: CutsState = {
-                selectedCutIds: new Set(state.selectedCutIds || []),
-                highlightedCutId: state.highlightedCutId || null,
                 showCutNormals: state.showCutNormals || false,
                 showCutDirections: state.showCutDirections || false,
-                showCutPaths: state.showCutPaths || false,
+                showCutPaths:
+                    state.showCutPaths !== undefined
+                        ? state.showCutPaths
+                        : true,
                 showCutStartPoints: state.showCutStartPoints || false,
                 showCutEndPoints: state.showCutEndPoints || false,
                 showCutTangentLines: state.showCutTangentLines || false,
@@ -403,6 +494,7 @@ export function resetApplicationToDefaults(): void {
     toolStore.reset();
     settingsStore.resetToDefaults();
     kerfStore.clearKerfs();
+    selectionStore.reset();
 
     // Create default tool after clearing
     toolStore.addTool(createDefaultTool(1));
@@ -439,6 +531,9 @@ export function setupAutoSave(): () => void {
     );
     unsubscribers.push(cutStore.subscribe(() => autoSaveApplicationState()));
     unsubscribers.push(toolStore.subscribe(() => autoSaveApplicationState()));
+    unsubscribers.push(
+        selectionStore.subscribe(() => autoSaveApplicationState())
+    );
 
     // Return cleanup function
     return () => {

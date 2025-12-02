@@ -29,9 +29,9 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         // Find the specific chains
-        const chain7 = normalizedChains.find((chain) => chain.id === 'chain-7');
-        const chain8 = normalizedChains.find((chain) => chain.id === 'chain-8');
-        const chain9 = normalizedChains.find((chain) => chain.id === 'chain-9');
+        const chain7 = normalizedChains.find((chain) => chain.name === '7');
+        const chain8 = normalizedChains.find((chain) => chain.name === '8');
+        const chain9 = normalizedChains.find((chain) => chain.name === '9');
 
         expect(chain7).toBeDefined();
         expect(chain8).toBeDefined();

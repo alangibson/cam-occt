@@ -5,8 +5,6 @@
  */
 
 export interface CutsState {
-    selectedCutIds: Set<string>;
-    highlightedCutId: string | null;
     showCutNormals: boolean;
     showCutDirections: boolean;
     showCutPaths: boolean;
@@ -17,11 +15,6 @@ export interface CutsState {
 
 export interface CutsStore {
     subscribe: (run: (value: CutsState) => void) => () => void;
-    selectCut: (cutId: string | null, multi?: boolean) => void;
-    deselectCut: (cutId: string) => void;
-    toggleCutSelection: (cutId: string) => void;
-    highlightCut: (cutId: string | null) => void;
-    clearHighlight: () => void;
     setShowCutNormals: (show: boolean) => void;
     setShowCutDirections: (show: boolean) => void;
     setShowCutPaths: (show: boolean) => void;

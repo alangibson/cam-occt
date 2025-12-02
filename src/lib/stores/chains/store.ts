@@ -4,8 +4,6 @@ import type { ChainStore } from './interfaces';
 function createChainStore() {
     const initialState: ChainStore = {
         tolerance: 0.1,
-        selectedChainIds: new Set(),
-        highlightedChainId: null,
         showChainPaths: true,
         showChainStartPoints: false,
         showChainEndPoints: false,
@@ -21,75 +19,6 @@ function createChainStore() {
         update((state) => ({
             ...state,
             tolerance,
-        }));
-    }
-
-    // Chain selection functions
-    function selectChain(chainId: string | null, multi = false) {
-        update((state) => {
-            if (chainId === null) {
-                return {
-                    ...state,
-                    selectedChainIds: new Set(),
-                };
-            }
-
-            const selectedChainIds = new Set(
-                multi ? state.selectedChainIds : []
-            );
-            selectedChainIds.add(chainId);
-            return {
-                ...state,
-                selectedChainIds,
-            };
-        });
-    }
-
-    function deselectChain(chainId: string) {
-        update((state) => {
-            const selectedChainIds = new Set(state.selectedChainIds);
-            selectedChainIds.delete(chainId);
-            return {
-                ...state,
-                selectedChainIds,
-            };
-        });
-    }
-
-    function toggleChainSelection(chainId: string) {
-        update((state) => {
-            const selectedChainIds = new Set(state.selectedChainIds);
-            if (selectedChainIds.has(chainId)) {
-                selectedChainIds.delete(chainId);
-            } else {
-                selectedChainIds.add(chainId);
-            }
-            return {
-                ...state,
-                selectedChainIds,
-            };
-        });
-    }
-
-    function clearChainSelection() {
-        update((state) => ({
-            ...state,
-            selectedChainIds: new Set(),
-        }));
-    }
-
-    // Chain highlighting functions
-    function highlightChain(chainId: string | null) {
-        update((state) => ({
-            ...state,
-            highlightedChainId: chainId,
-        }));
-    }
-
-    function clearChainHighlight() {
-        update((state) => ({
-            ...state,
-            highlightedChainId: null,
         }));
     }
 
@@ -146,12 +75,6 @@ function createChainStore() {
     return {
         subscribe,
         setTolerance,
-        selectChain,
-        deselectChain,
-        toggleChainSelection,
-        clearChainSelection,
-        highlightChain,
-        clearChainHighlight,
         setShowChainStartPoints,
         setShowChainEndPoints,
         setShowChainTangentLines,

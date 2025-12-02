@@ -52,6 +52,7 @@ export function createCutChain(
         return {
             cutChain: new Chain({
                 id: `${originalChain.id}-cut`,
+                name: `${originalChain.name || originalChain.id}-cut`,
                 shapes: clonedShapes.map((s) => s.toData()),
             }),
             executionClockwise: null,
@@ -71,6 +72,7 @@ export function createCutChain(
             const reversedChain = reverseChain(
                 new Chain({
                     id: originalChain.id,
+                    name: originalChain.name || originalChain.id,
                     shapes: clonedShapes.map((s) => s.toData()),
                 })
             );
@@ -84,6 +86,7 @@ export function createCutChain(
         const reversedChain = reverseChain(
             new Chain({
                 id: originalChain.id,
+                name: originalChain.name || originalChain.id,
                 shapes: clonedShapes.map((s) => s.toData()),
             })
         );
@@ -98,6 +101,7 @@ export function createCutChain(
     // Create cut chain with execution-ordered shapes
     const cutChain = new Chain({
         id: `${originalChain.id}-cut`,
+        name: `${originalChain.name || originalChain.id}-cut`,
         shapes: executionShapes.map((s) => s.toData()),
         originalChainId: originalChain.id, // Preserve reference to original chain for part lookup
         clockwise: executionClockwise, // Use execution winding direction (accounts for shape reversal)

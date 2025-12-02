@@ -9,6 +9,7 @@
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { generateShapePoints } from '$lib/stores/shape/functions';
 
@@ -32,11 +33,11 @@
     $: if (
         $workflowStore.currentStage === WorkflowStage.EDIT &&
         $drawingStore.drawing &&
-        $drawingStore.selectedShapes
+        $selectionStore.shapes.selected
     ) {
         const shapePoints = generateShapePoints(
             $drawingStore.drawing.shapes,
-            $drawingStore.selectedShapes
+            $selectionStore.shapes.selected
         );
         overlayStore.setShapePoints(WorkflowStage.EDIT, shapePoints);
     }

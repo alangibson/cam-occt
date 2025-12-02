@@ -1,15 +1,11 @@
 <script lang="ts">
     import { Layer } from '$lib/cam/layer/classes.svelte';
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { chainStore } from '$lib/stores/chains/store';
-    import { partStore } from '$lib/stores/parts/store';
     import { planStore } from '$lib/stores/plan/store';
-    import { cutStore } from '$lib/stores/cuts/store';
-    import { selectLead } from '$lib/stores/leads/store';
-    import { rapidStore } from '$lib/stores/rapids/store';
-    import { kerfStore } from '$lib/stores/kerfs/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { layerStore } from '$lib/stores/layers/store.svelte';
-    import { Grid, Willow } from '@svar-ui/svelte-grid';
+    import { Grid, Willow, type IColumnConfig } from '@svar-ui/svelte-grid';
+    import LayerTreeCell from './LayerTreeCell.svelte';
 
     interface TreeNode {
         id: string;
@@ -17,6 +13,7 @@
         type: string;
         open?: boolean;
         data?: TreeNode[];
+        layerName?: string; // For layer rows
         chainId?: string; // For chain rows
         shapeId?: string; // For shape rows that are children of chains
         partId?: string; // For part rows
@@ -63,6 +60,7 @@
                                   id: `layer-${layer.name}`,
                                   name: layer.name ?? '0',
                                   type: 'Layer',
+                                  layerName: layer.name, // Store layer name for hover highlighting
                                   open: layerExpansion[layer.name] ?? false,
                                   data: [
                                       {
@@ -269,10 +267,10 @@
                     const layerName = rowId.replace('layer-', '');
                     layerStore.selectLayer(layerName);
                     // Clear other selections
-                    chainStore.clearChainSelection();
-                    partStore.clearPartSelection();
-                    drawingStore.clearSelection();
-                    cutStore.selectCut(null);
+                    selectionStore.clearChainSelection();
+                    selectionStore.selectPart(null);
+                    selectionStore.clearShapeSelection();
+                    selectionStore.selectCut(null);
                     return;
                 }
 
@@ -296,85 +294,84 @@
 
                     if (rowData?.cutId) {
                         // It's a cut row - select the cut
-                        cutStore.selectCut(rowData.cutId);
-                        chainStore.clearChainSelection();
-                        partStore.clearPartSelection();
-                        drawingStore.clearSelection();
+                        selectionStore.selectCut(rowData.cutId);
+                        selectionStore.clearChainSelection();
+                        selectionStore.selectPart(null);
+                        selectionStore.clearShapeSelection();
                     } else if (rowData?.rapidInId) {
                         // It's a rapidIn row - select the rapid
-                        rapidStore.selectRapids(new Set([rowData.rapidInId]));
-                        chainStore.clearChainSelection();
-                        partStore.clearPartSelection();
-                        drawingStore.clearSelection();
-                        cutStore.selectCut(null);
-                        selectLead(null);
-                        kerfStore.selectKerf(null);
+                        selectionStore.selectRapids(
+                            new Set([rowData.rapidInId])
+                        );
+                        selectionStore.clearChainSelection();
+                        selectionStore.selectPart(null);
+                        selectionStore.clearShapeSelection();
+                        selectionStore.selectCut(null);
+                        selectionStore.selectLead(null);
+                        selectionStore.selectKerf(null);
                     } else if (rowData?.leadInId) {
                         // It's a leadIn row - select the cut
-                        cutStore.selectCut(rowData.leadInId);
-                        chainStore.clearChainSelection();
-                        partStore.clearPartSelection();
-                        drawingStore.clearSelection();
+                        selectionStore.selectCut(rowData.leadInId);
+                        selectionStore.clearChainSelection();
+                        selectionStore.selectPart(null);
+                        selectionStore.clearShapeSelection();
                     } else if (rowData?.cutChainId) {
                         // It's a cutChain row - select the chain
-                        chainStore.selectChain(rowData.cutChainId);
-                        partStore.clearPartSelection();
-                        drawingStore.clearSelection();
-                        cutStore.selectCut(null);
-                        selectLead(null);
-                        rapidStore.clearSelection();
-                        kerfStore.selectKerf(null);
+                        selectionStore.selectChain(rowData.cutChainId);
+                        selectionStore.selectPart(null);
+                        selectionStore.clearShapeSelection();
+                        selectionStore.selectCut(null);
+                        selectionStore.selectLead(null);
+                        selectionStore.clearRapidSelection();
+                        selectionStore.selectKerf(null);
                     } else if (rowData?.leadOutId) {
                         // It's a leadOut row - select the cut
-                        cutStore.selectCut(rowData.leadOutId);
-                        chainStore.clearChainSelection();
-                        partStore.clearPartSelection();
-                        drawingStore.clearSelection();
+                        selectionStore.selectCut(rowData.leadOutId);
+                        selectionStore.clearChainSelection();
+                        selectionStore.selectPart(null);
+                        selectionStore.clearShapeSelection();
                     } else if (rowData?.shellChainId) {
                         // It's a part shell row - select the shell chain
                         console.log(
                             '[LayersList] Selecting shell chain:',
                             rowData.shellChainId
                         );
-                        chainStore.selectChain(rowData.shellChainId);
-                        partStore.clearPartSelection();
-                        partStore.clearHighlight();
-                        partStore.clearPartHover();
-                        drawingStore.clearSelection();
-                        cutStore.selectCut(null);
-                        selectLead(null);
-                        rapidStore.clearSelection();
-                        kerfStore.selectKerf(null);
+                        selectionStore.selectChain(rowData.shellChainId);
+                        selectionStore.selectPart(null);
+                        selectionStore.clearPartHighlight();
+                        selectionStore.clearShapeSelection();
+                        selectionStore.selectCut(null);
+                        selectionStore.selectLead(null);
+                        selectionStore.clearRapidSelection();
+                        selectionStore.selectKerf(null);
                     } else if (rowData?.voidChainId) {
                         // It's a part void row - select the void chain
                         console.log(
                             '[LayersList] Selecting void chain:',
                             rowData.voidChainId
                         );
-                        chainStore.selectChain(rowData.voidChainId);
-                        partStore.clearPartSelection();
-                        partStore.clearHighlight();
-                        partStore.clearPartHover();
-                        drawingStore.clearSelection();
-                        cutStore.selectCut(null);
-                        selectLead(null);
-                        rapidStore.clearSelection();
-                        kerfStore.selectKerf(null);
+                        selectionStore.selectChain(rowData.voidChainId);
+                        selectionStore.selectPart(null);
+                        selectionStore.clearPartHighlight();
+                        selectionStore.clearShapeSelection();
+                        selectionStore.selectCut(null);
+                        selectionStore.selectLead(null);
+                        selectionStore.clearRapidSelection();
+                        selectionStore.selectKerf(null);
                     } else if (rowData?.slotChainId) {
                         // It's a part slot row - select the slot chain
                         console.log(
                             '[LayersList] Selecting slot chain:',
                             rowData.slotChainId
                         );
-                        chainStore.selectChain(rowData.slotChainId);
-                        partStore.clearPartSelection();
-                        partStore.clearHighlight();
-                        partStore.clearPartHover();
-                        drawingStore.clearSelection();
-                        cutStore.selectCut(null);
-                        selectLead(null);
-                        rapidStore.clearSelection();
-                        kerfStore.selectKerf(null);
+                        selectionStore.selectChain(rowData.slotChainId);
+                        selectionStore.selectPart(null);
+                        selectionStore.clearPartHighlight();
+                        selectionStore.clearShapeSelection();
+                        selectionStore.selectCut(null);
+                        selectionStore.selectLead(null);
+                        selectionStore.clearRapidSelection();
+                        selectionStore.selectKerf(null);
                     } else if (rowData?.chainId) {
                         // It's a chain row - select the chain
                         console.log(
@@ -383,31 +380,31 @@
                             'from row:',
                             rowId
                         );
-                        chainStore.selectChain(rowData.chainId);
-                        partStore.clearPartSelection();
-                        drawingStore.clearSelection();
-                        cutStore.selectCut(null);
-                        selectLead(null);
-                        rapidStore.clearSelection();
-                        kerfStore.selectKerf(null);
+                        selectionStore.selectChain(rowData.chainId);
+                        selectionStore.selectPart(null);
+                        selectionStore.clearShapeSelection();
+                        selectionStore.selectCut(null);
+                        selectionStore.selectLead(null);
+                        selectionStore.clearRapidSelection();
+                        selectionStore.selectKerf(null);
                     } else if (rowData?.partId) {
                         // It's a part row - select the part
-                        partStore.selectPart(rowData.partId);
-                        chainStore.clearChainSelection();
-                        drawingStore.clearSelection();
-                        cutStore.selectCut(null);
+                        selectionStore.selectPart(rowData.partId);
+                        selectionStore.clearChainSelection();
+                        selectionStore.clearShapeSelection();
+                        selectionStore.selectCut(null);
                     } else if (rowData?.shapeId) {
                         // It's a shape row from a chain (has shapeId property)
-                        drawingStore.selectShape(rowData.shapeId);
-                        chainStore.clearChainSelection();
-                        partStore.clearPartSelection();
-                        cutStore.selectCut(null);
+                        selectionStore.selectShape(rowData.shapeId);
+                        selectionStore.clearChainSelection();
+                        selectionStore.selectPart(null);
+                        selectionStore.selectCut(null);
                     } else {
                         // It's a shape row from Shapes folder (use rowId directly)
-                        drawingStore.selectShape(rowId);
-                        chainStore.clearChainSelection();
-                        partStore.clearPartSelection();
-                        cutStore.selectCut(null);
+                        selectionStore.selectShape(rowId);
+                        selectionStore.clearChainSelection();
+                        selectionStore.selectPart(null);
+                        selectionStore.selectCut(null);
                     }
                 }
             }
@@ -475,17 +472,19 @@
     });
 
     // Define columns for tree table
-    const columns = [
+    const columns: IColumnConfig[] = [
         {
             id: 'name',
             header: 'Name',
             flexgrow: 1,
             treetoggle: true, // This column shows expand/collapse arrows
+            cell: LayerTreeCell,
         },
         {
             id: 'type',
             header: 'Type',
             width: 100,
+            cell: LayerTreeCell,
         },
     ];
 </script>

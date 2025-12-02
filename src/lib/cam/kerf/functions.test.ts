@@ -22,8 +22,10 @@ describe('cutToKerf', () => {
         width: number,
         height: number
     ): CutData {
+        const chainId = crypto.randomUUID();
         const chain: ChainData = {
-            id: crypto.randomUUID(),
+            id: chainId,
+            name: chainId,
             shapes: [
                 {
                     id: crypto.randomUUID(),
@@ -84,8 +86,10 @@ describe('cutToKerf', () => {
         cy: number,
         radius: number
     ): CutData {
+        const chainId = crypto.randomUUID();
         const chain: ChainData = {
-            id: crypto.randomUUID(),
+            id: chainId,
+            name: chainId,
             shapes: [
                 {
                     id: crypto.randomUUID(),
@@ -399,7 +403,8 @@ describe('cutToKerf', () => {
         // This is a spline chain from actual DXF with a lead-in that's positioned correctly
         const originalChain: ChainData = {
             id: 'chain-14',
-            name: 'chain-14', shapes: [
+            name: 'chain-14',
+            shapes: [
                 {
                     id: '1760989421272_37',
                     type: GeometryType.SPLINE,
@@ -559,6 +564,7 @@ describe('cutToKerf', () => {
         // Update cutChain to use the offset shapes
         cut.cutChain = new Chain({
             id: cut.cutChain!.id,
+            name: cut.cutChain!.name || cut.cutChain!.id,
             shapes: cut.offset!.offsetShapes.map((s) => s.toData()),
         });
 

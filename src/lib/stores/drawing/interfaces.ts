@@ -11,9 +11,6 @@ import { Unit } from '$lib/config/units/units';
 
 export interface DrawingState {
     drawing: Drawing | null;
-    selectedShapes: Set<string>;
-    hoveredShape: string | null;
-    selectedOffsetShape: ShapeData | null;
     isDragging: boolean;
     dragStart: Point2D | null;
     scale: number;
@@ -26,10 +23,7 @@ export interface DrawingState {
 export interface DrawingStore {
     subscribe: (run: (value: DrawingState) => void) => () => void;
     setDrawing: (drawing: Drawing, fileName: string) => void;
-    selectShape: (shapeIdOrShape: string | ShapeData, multi?: boolean) => void;
-    deselectShape: (shapeId: string) => void;
-    clearSelection: () => void;
-    deleteSelected: () => void;
+    deleteSelected: (shapeIds: string[]) => void;
     moveShapes: (shapeIds: string[], delta: Point2D) => void;
     scaleShapes: (
         shapeIds: string[],
@@ -41,7 +35,6 @@ export interface DrawingStore {
     setCanvasDimensions: (width: number, height: number) => void;
     zoomToFit: () => void;
     setLayerVisibility: (layerName: string, visible: boolean) => void;
-    setHoveredShape: (shapeId: string | null) => void;
     setDisplayUnit: (unit: Unit) => void;
     replaceAllShapes: (shapes: ShapeData[]) => void;
     restoreDrawing: (
@@ -49,11 +42,7 @@ export interface DrawingStore {
         fileName: string,
         scale: number,
         offset: Point2D,
-        displayUnit: Unit,
-        selectedShapes: Set<string>,
-        hoveredShape: string | null
+        displayUnit: Unit
     ) => void;
-    selectOffsetShape: (shape: ShapeData | null) => void;
-    clearOffsetShapeSelection: () => void;
     reset: () => void;
 }

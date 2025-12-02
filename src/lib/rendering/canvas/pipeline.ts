@@ -342,6 +342,41 @@ export class RenderingPipeline {
     }
 
     /**
+     * Update transform parameters (zoom, pan, unit scale)
+     * This is the single source of truth for coordinate transformation updates
+     */
+    updateTransform(
+        zoomScale: number,
+        panOffset: Point2D,
+        unitScale: number
+    ): void {
+        if (!this.coordinator) return;
+
+        // Update the coordinator with new transform values
+        this.coordinator.updateTransform(zoomScale, panOffset, unitScale);
+
+        // Update all renderer coordinators
+        for (const renderer of this.renderers.values()) {
+            renderer.coordinator = this.coordinator;
+        }
+
+        // Update interaction manager coordinator
+        if (this.interactionManager) {
+            this.interactionManager.setCoordinator(this.coordinator);
+        }
+
+        // Update render state and trigger render
+        this.updateState({
+            transform: {
+                zoomScale,
+                panOffset,
+                unitScale,
+                coordinator: this.coordinator,
+            },
+        });
+    }
+
+    /**
      * Set current state without triggering comparison or rendering
      */
     setCurrentState(newState: RenderState): void {

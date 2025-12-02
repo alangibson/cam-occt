@@ -70,6 +70,7 @@ describe('Lead Concave Area Fix', () => {
 
         return {
             id: 'concave_shape',
+            name: 'concave_shape',
             shapes,
         };
     }
@@ -174,7 +175,11 @@ describe('Lead Concave Area Fix', () => {
             layer: 'layer1',
         });
 
-        const chain: ChainData = { id: 'simple_concave', shapes };
+        const chain: ChainData = {
+            id: 'simple_concave',
+            name: 'simple_concave',
+            shapes,
+        };
 
         const part: PartData = {
             id: 'part1',

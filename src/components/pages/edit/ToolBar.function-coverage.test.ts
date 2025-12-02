@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
@@ -46,8 +47,8 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('2.0');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
-            drawingStore.selectShape('2', true);
+            selectionStore.selectShape('1');
+            selectionStore.selectShape('2', true);
 
             const { getByText } = render(ToolBar);
             const scaleButton = getByText('Scale');
@@ -64,7 +65,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('2.0');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.clearSelection();
+            selectionStore.clearShapeSelection();
 
             const { getByText } = render(ToolBar);
             const scaleButton = getByText('Scale');
@@ -79,7 +80,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('invalid');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
+            selectionStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
             const scaleButton = getByText('Scale');
@@ -94,7 +95,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue(null);
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
+            selectionStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
             const scaleButton = getByText('Scale');
@@ -109,7 +110,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
+            selectionStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
             const scaleButton = getByText('Scale');
@@ -126,7 +127,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('90');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
+            selectionStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
             const rotateButton = getByText('Rotate');
@@ -143,7 +144,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('90');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.clearSelection();
+            selectionStore.clearShapeSelection();
 
             const { getByText } = render(ToolBar);
             const rotateButton = getByText('Rotate');
@@ -158,7 +159,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('0');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
+            selectionStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
             const rotateButton = getByText('Rotate');
@@ -173,7 +174,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('180');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
+            selectionStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
             const rotateButton = getByText('Rotate');
@@ -188,7 +189,7 @@ describe('ToolBar Component - Function Coverage', () => {
             mockPrompt.mockReturnValue('-45');
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
-            drawingStore.selectShape('1');
+            selectionStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
             const rotateButton = getByText('Rotate');

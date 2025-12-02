@@ -36,7 +36,8 @@ describe('Lead Tangent Following Invariant', () => {
     ): Chain {
         return new Chain({
             id: 'circle-chain',
-            name: 'circle-chain', shapes: [
+            name: 'circle-chain',
+            shapes: [
                 {
                     id: 'circle1',
                     type: GeometryType.CIRCLE,
@@ -57,7 +58,8 @@ describe('Lead Tangent Following Invariant', () => {
     } {
         const shell: Chain = new Chain({
             id: 'shell',
-            name: 'shell', shapes: [
+            name: 'shell',
+            shapes: [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,

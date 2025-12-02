@@ -38,7 +38,8 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
 
         return {
             id: 'chain1',
-            name: 'chain1', shapes: [shape],
+            name: 'chain1',
+            shapes: [shape],
             clockwise: true,
         };
     }

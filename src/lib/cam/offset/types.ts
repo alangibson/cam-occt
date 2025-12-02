@@ -25,6 +25,9 @@ export interface OffsetChain {
     /** Unique identifier for this offset chain */
     id: string;
 
+    /** Human-readable name for this chain */
+    name: string;
+
     /** ID of the original chain this was offset from */
     originalChainId: string;
 

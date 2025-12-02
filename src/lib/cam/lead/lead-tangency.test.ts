@@ -44,7 +44,8 @@ describe('Lead Tangency Tests', () => {
 
         return new Chain({
             id: 'chain1',
-            name: 'chain1', shapes: [shape],
+            name: 'chain1',
+            shapes: [shape],
         });
     }
 
@@ -63,6 +64,7 @@ describe('Lead Tangency Tests', () => {
 
         return new Chain({
             id,
+            name: id,
             shapes: [shape],
         });
     }
@@ -306,7 +308,7 @@ describe('Lead Tangency Tests', () => {
             const shellPart: PartData = {
                 id: 'part1',
                 name: 'part1',
-            shell: shellChain,
+                shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
                 layerName: '0',
@@ -317,7 +319,7 @@ describe('Lead Tangency Tests', () => {
             const holeInShellPart: PartData = {
                 id: 'part2',
                 name: 'part2',
-            shell: shellChain,
+                shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
                 layerName: '0',

@@ -305,8 +305,6 @@ export function cloneRenderState(state: RenderState): RenderState {
         cuts: [...state.cuts],
         cutsState: state.cutsState
             ? {
-                  selectedCutIds: new Set(state.cutsState.selectedCutIds),
-                  highlightedCutId: state.cutsState.highlightedCutId,
                   showCutNormals: state.cutsState.showCutNormals,
                   showCutDirections: state.cutsState.showCutDirections,
                   showCutPaths: state.cutsState.showCutPaths,

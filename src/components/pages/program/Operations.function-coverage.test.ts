@@ -5,7 +5,7 @@ import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
-import { chainStore } from '$lib/stores/chains/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import { partStore } from '$lib/stores/parts/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
@@ -13,7 +13,6 @@ import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { GeometryType } from '$lib/geometry/enums';
 
 // Mock DragEvent for jsdom
 interface MockDragEventInit extends EventInit {
@@ -32,10 +31,12 @@ global.DragEvent = class DragEvent extends Event {
 function _createMockPartShell(id: string): PartData {
     const mockChain: ChainData = {
         id: `chain-${id}`,
-        name: 'chain-${id}', shapes: [],
+        name: 'chain-${id}',
+        shapes: [],
     };
     return {
         id: `shell-${id}`,
+        name: `Shell Part ${id}`,
         shell: mockChain,
         type: PartType.SHELL,
         boundingBox: {
@@ -64,7 +65,7 @@ describe('Operations Component - Function Coverage', () => {
         operationsStore.reset();
         toolStore.reset();
         partStore.clearParts();
-        chainStore.clearChainSelection();
+        selectionStore.reset();
 
         // Add test tool
         toolStore.addTool({
@@ -96,7 +97,7 @@ describe('Operations Component - Function Coverage', () => {
             const { component: comp } = render(Operations);
             component = comp;
 
-            partStore.highlightPart('part-1');
+            selectionStore.highlightPart('part-1');
 
             // Call addNewOperation function
             comp.addNewOperation();
@@ -113,24 +114,24 @@ describe('Operations Component - Function Coverage', () => {
             component = comp;
 
             // Add chain to store first with at least one shape (required for normal calculation)
-            // @ts-expect-error - setChains no longer exists, test needs refactoring
-            chainStore.setChains([
-                {
-                    id: 'chain-1',
-                    name: 'chain-1', shapes: [
-                        {
-                            type: GeometryType.LINE,
-                            id: 'line-1',
-                            geometry: {
-                                start: { x: 0, y: 0 },
-                                end: { x: 100, y: 0 },
-                            },
-                            layer: 'layer1',
-                        },
-                    ],
-                },
-            ]);
-            chainStore.selectChain('chain-1');
+            // chainStore.setChains([
+            //     {
+            //         id: 'chain-1',
+            //         name: 'chain-1',
+            //         shapes: [
+            //             {
+            //                 type: GeometryType.LINE,
+            //                 id: 'line-1',
+            //                 geometry: {
+            //                     start: { x: 0, y: 0 },
+            //                     end: { x: 100, y: 0 },
+            //                 },
+            //                 layer: 'layer1',
+            //             },
+            //         ],
+            //     },
+            // ]);
+            selectionStore.selectChain('chain-1');
 
             comp.addNewOperation();
 
@@ -596,8 +597,8 @@ describe('Operations Component - Function Coverage', () => {
                 await fireEvent.mouseEnter(partLabel);
 
                 // Verify part is highlighted
-                const partState = get(partStore);
-                expect(partState.highlightedPartId).toBe('part-1');
+                const selectionState = get(selectionStore);
+                expect(selectionState.parts.highlighted).toBe('part-1');
             }
         });
 
@@ -606,8 +607,9 @@ describe('Operations Component - Function Coverage', () => {
             const { container } = render(Operations);
 
             // Add chains to store
-            // @ts-expect-error - setChains no longer exists, test needs refactoring
-            chainStore.setChains([{ id: 'chain-1', name: 'chain-1', shapes: [] }]);
+            // chainStore.setChains([
+            //     { id: 'chain-1', name: 'chain-1', shapes: [] },
+            // ]);
 
             operationsStore.addOperation({
                 name: 'Test Op',
@@ -642,8 +644,10 @@ describe('Operations Component - Function Coverage', () => {
                 await fireEvent.mouseEnter(chainLabel);
 
                 // Verify chain is selected
-                const chainState = get(chainStore);
-                expect(chainState.selectedChainIds.has('chain-1')).toBe(true);
+                const selectionState = get(selectionStore);
+                expect(selectionState.chains.selected.has('chain-1')).toBe(
+                    true
+                );
             }
         });
     });

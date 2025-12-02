@@ -3,8 +3,6 @@ import type { Kerf } from '$lib/cam/kerf/interfaces';
 
 interface KerfsStore {
     kerfs: Kerf[];
-    selectedKerfId: string | null;
-    highlightedKerfId: string | null;
     showKerfPaths: boolean;
     showCutter: boolean;
 }
@@ -12,8 +10,6 @@ interface KerfsStore {
 function createKerfsStore() {
     const initialState: KerfsStore = {
         kerfs: [],
-        selectedKerfId: null,
-        highlightedKerfId: null,
         showKerfPaths: false,
         showCutter: false,
     };
@@ -61,20 +57,6 @@ function createKerfsStore() {
         }));
     }
 
-    function selectKerf(id: string | null) {
-        update((state) => ({
-            ...state,
-            selectedKerfId: id,
-        }));
-    }
-
-    function setHighlightedKerf(id: string | null) {
-        update((state) => ({
-            ...state,
-            highlightedKerfId: id,
-        }));
-    }
-
     return {
         subscribe,
         addKerf,
@@ -82,8 +64,6 @@ function createKerfsStore() {
         setShowCutter,
         clearKerfs,
         deleteKerfsByCut,
-        selectKerf,
-        setHighlightedKerf,
     };
 }
 

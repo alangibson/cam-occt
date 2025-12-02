@@ -5,78 +5,15 @@ export const showLeadNormals = writable(false);
 export const showLeadPaths = writable(true);
 export const showLeadKerfs = writable(false);
 
-// Selection state
-const selectedLeadIdsStore = writable<Set<string>>(new Set());
-const highlightedLeadIdStore = writable<string | null>(null);
-
-// Exported store with selection state
+// Exported store with visualization state only
 export const leadStore = derived(
-    [
-        selectedLeadIdsStore,
-        highlightedLeadIdStore,
-        showLeadNormals,
-        showLeadPaths,
-        showLeadKerfs,
-    ],
-    ([
-        $selectedLeadIds,
-        $highlightedLeadId,
-        $showLeadNormals,
-        $showLeadPaths,
-        $showLeadKerfs,
-    ]) => ({
-        selectedLeadIds: $selectedLeadIds,
-        highlightedLeadId: $highlightedLeadId,
+    [showLeadNormals, showLeadPaths, showLeadKerfs],
+    ([$showLeadNormals, $showLeadPaths, $showLeadKerfs]) => ({
         showLeadNormals: $showLeadNormals,
         showLeadPaths: $showLeadPaths,
         showLeadKerfs: $showLeadKerfs,
     })
 );
-
-/**
- * Select a lead by its ID (format: {cutId}-leadIn or {cutId}-leadOut)
- */
-export function selectLead(leadId: string | null, multi = false): void {
-    if (leadId === null) {
-        selectedLeadIdsStore.set(new Set());
-        return;
-    }
-
-    selectedLeadIdsStore.update((ids) => {
-        const newIds = new Set(multi ? ids : []);
-        newIds.add(leadId);
-        return newIds;
-    });
-}
-
-/**
- * Toggle lead selection
- */
-export function toggleLeadSelection(leadId: string): void {
-    selectedLeadIdsStore.update((ids) => {
-        const newIds = new Set(ids);
-        if (newIds.has(leadId)) {
-            newIds.delete(leadId);
-        } else {
-            newIds.add(leadId);
-        }
-        return newIds;
-    });
-}
-
-/**
- * Highlight a lead by its ID (for hover state)
- */
-export function highlightLead(leadId: string | null): void {
-    highlightedLeadIdStore.set(leadId);
-}
-
-/**
- * Clear lead highlight
- */
-export function clearLeadHighlight(): void {
-    highlightedLeadIdStore.set(null);
-}
 
 /**
  * Parse a lead ID into its components

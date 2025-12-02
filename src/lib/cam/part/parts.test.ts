@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { partStore } from '$lib/stores/parts/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import { getChainPartType, getPartChainIds } from '$lib/test/parts';
 import { Part } from '$lib/cam/part/classes.svelte';
 import {
@@ -13,6 +14,7 @@ import { PartType } from '$lib/cam/part/enums';
 describe('Parts Store', () => {
     beforeEach(() => {
         partStore.clearParts();
+        selectionStore.reset();
     });
 
     // Helper function to create test parts
@@ -25,6 +27,7 @@ describe('Parts Store', () => {
             id: `hole-${index + 1}`,
             chain: {
                 id: chainId,
+                name: chainId,
                 shapes: [],
             },
             type: PartType.HOLE as const,
@@ -33,8 +36,10 @@ describe('Parts Store', () => {
 
         const partData: PartData = {
             id: partId,
+            name: partId,
             shell: {
                 id: shellChainId,
+                name: shellChainId,
                 shapes: [],
             },
             type: PartType.SHELL as const,
@@ -51,7 +56,6 @@ describe('Parts Store', () => {
         it('should initialize with empty state', () => {
             const state = get(partStore);
             expect(state.warnings).toEqual([]);
-            expect(state.highlightedPartId).toBeNull();
         });
 
         it('should set warnings', () => {
@@ -67,17 +71,15 @@ describe('Parts Store', () => {
 
             const state = get(partStore);
             expect(state.warnings).toEqual(warnings);
-            expect(state.highlightedPartId).toBeNull();
         });
 
-        it('should clear parts and reset highlighting', () => {
-            partStore.highlightPart('part-1');
+        it('should clear parts', () => {
+            selectionStore.highlightPart('part-1');
 
             partStore.clearParts();
 
             const state = get(partStore);
             expect(state.warnings).toEqual([]);
-            expect(state.highlightedPartId).toBeNull();
         });
     });
 
@@ -85,29 +87,30 @@ describe('Parts Store', () => {
         beforeEach(() => {
             // Note: Parts now come from Drawing.layers, not from partStore
             partStore.clearParts();
+            selectionStore.reset();
         });
 
         it('should highlight a part', () => {
-            partStore.highlightPart('part-1');
+            selectionStore.highlightPart('part-1');
 
-            const state = get(partStore);
-            expect(state.highlightedPartId).toBe('part-1');
+            const state = get(selectionStore);
+            expect(state.parts.highlighted).toBe('part-1');
         });
 
         it('should clear highlighting', () => {
-            partStore.highlightPart('part-1');
-            partStore.clearHighlight();
+            selectionStore.highlightPart('part-1');
+            selectionStore.clearPartHighlight();
 
-            const state = get(partStore);
-            expect(state.highlightedPartId).toBeNull();
+            const state = get(selectionStore);
+            expect(state.parts.highlighted).toBeNull();
         });
 
         it('should replace previous highlighting when highlighting different part', () => {
-            partStore.highlightPart('part-1');
-            partStore.highlightPart('part-2');
+            selectionStore.highlightPart('part-1');
+            selectionStore.highlightPart('part-2');
 
-            const state = get(partStore);
-            expect(state.highlightedPartId).toBe('part-2');
+            const state = get(selectionStore);
+            expect(state.parts.highlighted).toBe('part-2');
         });
     });
 
@@ -170,13 +173,18 @@ describe('Parts Store', () => {
             // Create a part with nested structure (holes containing other parts)
             const complexPartData: PartData = {
                 id: 'complex-part',
+                name: 'complex-part',
                 shell: { id: 'shell-chain', name: 'shell-chain', shapes: [] },
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 0, y: 0 }, max: { x: 30, y: 30 } },
                 voids: [
                     {
                         id: 'hole-1',
-                        chain: { id: 'hole-chain', name: 'hole-chain', shapes: [] },
+                        chain: {
+                            id: 'hole-chain',
+                            name: 'hole-chain',
+                            shapes: [],
+                        },
                         type: PartType.HOLE,
                         boundingBox: {
                             min: { x: 5, y: 5 },
@@ -201,23 +209,23 @@ describe('Parts Store', () => {
         it('should hover a part', () => {
             const testPartId = 'part-123';
 
-            partStore.hoverPart(testPartId);
+            selectionStore.hoverPart(testPartId);
 
-            const state = get(partStore);
-            expect(state.hoveredPartId).toBe(testPartId);
-            expect(state.highlightedPartId).toBeNull(); // Should not affect highlighting
+            const state = get(selectionStore);
+            expect(state.parts.hovered).toBe(testPartId);
+            expect(state.parts.highlighted).toBeNull(); // Should not affect highlighting
         });
 
         it('should clear part hover', () => {
             const testPartId = 'part-123';
 
             // First hover a part
-            partStore.hoverPart(testPartId);
-            expect(get(partStore).hoveredPartId).toBe(testPartId);
+            selectionStore.hoverPart(testPartId);
+            expect(get(selectionStore).parts.hovered).toBe(testPartId);
 
             // Then clear the hover
-            partStore.clearPartHover();
-            expect(get(partStore).hoveredPartId).toBeNull();
+            selectionStore.clearPartHover();
+            expect(get(selectionStore).parts.hovered).toBeNull();
         });
 
         it('should allow hovering and highlighting to coexist', () => {
@@ -225,19 +233,19 @@ describe('Parts Store', () => {
             const hoveredPartId = 'part-hovered';
 
             // Highlight one part and hover another
-            partStore.highlightPart(highlightedPartId);
-            partStore.hoverPart(hoveredPartId);
+            selectionStore.highlightPart(highlightedPartId);
+            selectionStore.hoverPart(hoveredPartId);
 
-            const state = get(partStore);
-            expect(state.highlightedPartId).toBe(highlightedPartId);
-            expect(state.hoveredPartId).toBe(hoveredPartId);
+            const state = get(selectionStore);
+            expect(state.parts.highlighted).toBe(highlightedPartId);
+            expect(state.parts.hovered).toBe(hoveredPartId);
         });
 
         it('should handle null part hovering', () => {
-            partStore.hoverPart(null);
+            selectionStore.hoverPart(null);
 
-            const state = get(partStore);
-            expect(state.hoveredPartId).toBeNull();
+            const state = get(selectionStore);
+            expect(state.parts.hovered).toBeNull();
         });
     });
 
@@ -245,24 +253,26 @@ describe('Parts Store', () => {
         it('should select a part', () => {
             const testPartId = 'part-123';
 
-            partStore.selectPart(testPartId);
+            selectionStore.selectPart(testPartId);
 
-            const state = get(partStore);
-            expect(state.selectedPartIds.has(testPartId)).toBe(true);
-            expect(state.highlightedPartId).toBeNull(); // Should not affect highlighting
-            expect(state.hoveredPartId).toBeNull(); // Should not affect hovering
+            const state = get(selectionStore);
+            expect(state.parts.selected.has(testPartId)).toBe(true);
+            expect(state.parts.highlighted).toBeNull(); // Should not affect highlighting
+            expect(state.parts.hovered).toBeNull(); // Should not affect hovering
         });
 
         it('should clear part selection', () => {
             const testPartId = 'part-123';
 
             // First select a part
-            partStore.selectPart(testPartId);
-            expect(get(partStore).selectedPartIds.has(testPartId)).toBe(true);
+            selectionStore.selectPart(testPartId);
+            expect(get(selectionStore).parts.selected.has(testPartId)).toBe(
+                true
+            );
 
             // Then clear the selection
-            partStore.clearPartSelection();
-            expect(get(partStore).selectedPartIds.size).toBe(0);
+            selectionStore.clearPartSelection();
+            expect(get(selectionStore).parts.selected.size).toBe(0);
         });
 
         it('should allow selection, highlighting, and hovering to coexist', () => {
@@ -271,21 +281,21 @@ describe('Parts Store', () => {
             const hoveredPartId = 'part-hovered';
 
             // Select, highlight, and hover different parts
-            partStore.selectPart(selectedPartId);
-            partStore.highlightPart(highlightedPartId);
-            partStore.hoverPart(hoveredPartId);
+            selectionStore.selectPart(selectedPartId);
+            selectionStore.highlightPart(highlightedPartId);
+            selectionStore.hoverPart(hoveredPartId);
 
-            const state = get(partStore);
-            expect(state.selectedPartIds.has(selectedPartId)).toBe(true);
-            expect(state.highlightedPartId).toBe(highlightedPartId);
-            expect(state.hoveredPartId).toBe(hoveredPartId);
+            const state = get(selectionStore);
+            expect(state.parts.selected.has(selectedPartId)).toBe(true);
+            expect(state.parts.highlighted).toBe(highlightedPartId);
+            expect(state.parts.hovered).toBe(hoveredPartId);
         });
 
         it('should handle null part selection', () => {
-            partStore.selectPart(null);
+            selectionStore.selectPart(null);
 
-            const state = get(partStore);
-            expect(state.selectedPartIds.size).toBe(0);
+            const state = get(selectionStore);
+            expect(state.parts.selected.size).toBe(0);
         });
     });
 });

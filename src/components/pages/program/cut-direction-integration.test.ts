@@ -95,7 +95,8 @@ describe.skip('Cut Direction End-to-End Integration', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: clockwiseSquare,
+            name: 'test-chain',
+            shapes: clockwiseSquare,
         };
 
         // @ts-expect-error - setChains no longer exists, test needs refactoring
@@ -190,7 +191,8 @@ describe.skip('Cut Direction End-to-End Integration', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: counterclockwiseSquare,
+            name: 'test-chain',
+            shapes: counterclockwiseSquare,
         };
 
         // @ts-expect-error - setChains no longer exists, test needs refactoring
@@ -273,7 +275,8 @@ describe.skip('Cut Direction End-to-End Integration', () => {
 
         const chain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: clockwiseSquare,
+            name: 'test-chain',
+            shapes: clockwiseSquare,
         };
 
         // @ts-expect-error - setChains no longer exists, test needs refactoring

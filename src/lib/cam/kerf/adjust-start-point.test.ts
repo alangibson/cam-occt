@@ -62,6 +62,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
 
         return {
             id,
+            name: id,
             shapes,
             clockwise: true,
         };
@@ -146,7 +147,8 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
     it('should return false for open chains', async () => {
         const openChain: ChainData = {
             id: 'open-chain',
-            name: 'open-chain', shapes: [
+            name: 'open-chain',
+            shapes: [
                 {
                     id: 'line-1',
                     type: GeometryType.LINE,

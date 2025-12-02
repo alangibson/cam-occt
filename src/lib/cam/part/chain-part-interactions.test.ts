@@ -12,14 +12,14 @@ import { type PartData, type PartVoid } from './interfaces';
 import { Part } from './classes.svelte';
 import { PartType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { chainStore } from '$lib/stores/chains/store';
-import { partStore } from '$lib/stores/parts/store';
+import { selectionStore } from '$lib/stores/selection/store';
 
 describe('findPartContainingChain', () => {
     // Helper function to create a mock chain
     function createMockChain(id: string): ChainData {
         return {
             id,
+            name: id,
             shapes: [],
         };
     }
@@ -315,18 +315,13 @@ describe('findPartContainingChain', () => {
     });
 });
 
-// Mock the stores
-vi.mock('$lib/stores/chains/store', () => ({
-    chainStore: {
+// Mock the selection store
+vi.mock('$lib/stores/selection/store', () => ({
+    selectionStore: {
         selectChain: vi.fn(),
         deselectChain: vi.fn(),
         highlightChain: vi.fn(),
         clearChainHighlight: vi.fn(),
-    },
-}));
-
-vi.mock('$lib/stores/parts/store', () => ({
-    partStore: {
         selectPart: vi.fn(),
         deselectPart: vi.fn(),
         hoverPart: vi.fn(),
@@ -344,24 +339,24 @@ describe('Chain interaction handlers', () => {
             handleChainClick('chain-1', new Set(['chain-1']));
 
             // Selection is handled by DrawingCanvas, so no store calls expected
-            expect(chainStore.deselectChain).not.toHaveBeenCalled();
-            expect(chainStore.selectChain).not.toHaveBeenCalled();
+            expect(selectionStore.deselectChain).not.toHaveBeenCalled();
+            expect(selectionStore.selectChain).not.toHaveBeenCalled();
         });
 
         it('should not modify selection when different chain is selected', async () => {
             handleChainClick('chain-2', new Set(['chain-1']));
 
             // Selection is handled by DrawingCanvas, so no store calls expected
-            expect(chainStore.deselectChain).not.toHaveBeenCalled();
-            expect(chainStore.selectChain).not.toHaveBeenCalled();
+            expect(selectionStore.deselectChain).not.toHaveBeenCalled();
+            expect(selectionStore.selectChain).not.toHaveBeenCalled();
         });
 
         it('should not modify selection when no chain is selected', async () => {
             handleChainClick('chain-1', new Set());
 
             // Selection is handled by DrawingCanvas, so no store calls expected
-            expect(chainStore.deselectChain).not.toHaveBeenCalled();
-            expect(chainStore.selectChain).not.toHaveBeenCalled();
+            expect(selectionStore.deselectChain).not.toHaveBeenCalled();
+            expect(selectionStore.selectChain).not.toHaveBeenCalled();
         });
     });
 
@@ -369,7 +364,9 @@ describe('Chain interaction handlers', () => {
         it('should highlight chain', async () => {
             handleChainMouseEnter('chain-1');
 
-            expect(chainStore.highlightChain).toHaveBeenCalledWith('chain-1');
+            expect(selectionStore.highlightChain).toHaveBeenCalledWith(
+                'chain-1'
+            );
         });
     });
 
@@ -377,7 +374,7 @@ describe('Chain interaction handlers', () => {
         it('should clear chain highlight', async () => {
             handleChainMouseLeave();
 
-            expect(chainStore.clearChainHighlight).toHaveBeenCalledWith();
+            expect(selectionStore.clearChainHighlight).toHaveBeenCalledWith();
         });
     });
 });
@@ -392,24 +389,24 @@ describe('Part interaction handlers', () => {
             handlePartClick('part-1', new Set(['part-1']));
 
             // Selection is handled by DrawingCanvas, so no store calls expected
-            expect(partStore.deselectPart).not.toHaveBeenCalled();
-            expect(partStore.selectPart).not.toHaveBeenCalled();
+            expect(selectionStore.deselectPart).not.toHaveBeenCalled();
+            expect(selectionStore.selectPart).not.toHaveBeenCalled();
         });
 
         it('should not modify selection when different part is selected', async () => {
             handlePartClick('part-2', new Set(['part-1']));
 
             // Selection is handled by DrawingCanvas, so no store calls expected
-            expect(partStore.deselectPart).not.toHaveBeenCalled();
-            expect(partStore.selectPart).not.toHaveBeenCalled();
+            expect(selectionStore.deselectPart).not.toHaveBeenCalled();
+            expect(selectionStore.selectPart).not.toHaveBeenCalled();
         });
 
         it('should not modify selection when no part is selected', async () => {
             handlePartClick('part-1', new Set());
 
             // Selection is handled by DrawingCanvas, so no store calls expected
-            expect(partStore.deselectPart).not.toHaveBeenCalled();
-            expect(partStore.selectPart).not.toHaveBeenCalled();
+            expect(selectionStore.deselectPart).not.toHaveBeenCalled();
+            expect(selectionStore.selectPart).not.toHaveBeenCalled();
         });
     });
 
@@ -417,7 +414,7 @@ describe('Part interaction handlers', () => {
         it('should hover part', async () => {
             handlePartMouseEnter('part-1');
 
-            expect(partStore.hoverPart).toHaveBeenCalledWith('part-1');
+            expect(selectionStore.hoverPart).toHaveBeenCalledWith('part-1');
         });
     });
 
@@ -425,7 +422,7 @@ describe('Part interaction handlers', () => {
         it('should clear part hover', async () => {
             handlePartMouseLeave();
 
-            expect(partStore.clearPartHover).toHaveBeenCalledWith();
+            expect(selectionStore.clearPartHover).toHaveBeenCalledWith();
         });
     });
 });

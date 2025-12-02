@@ -48,13 +48,15 @@ describe('DrawingCanvas Part Highlighting', () => {
         // Create a mock chain for the shell
         const mockChain: ChainData = {
             id: 'chain-1',
-            name: 'chain-1', shapes: [],
+            name: 'chain-1',
+            shapes: [],
             clockwise: true,
         };
 
         // Create a proper Part
         const mockPart: PartData = {
             id: testPartId,
+            name: 'Test Part 1',
             shell: mockChain,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
@@ -156,13 +158,15 @@ describe('DrawingCanvas Part Highlighting', () => {
         // Create a mock chain for the shell
         const mockChain2: ChainData = {
             id: 'chain-2',
-            name: 'chain-2', shapes: [],
+            name: 'chain-2',
+            shapes: [],
             clockwise: true,
         };
 
         // Create a proper Part
         const mockPart2: PartData = {
             id: testPartId,
+            name: 'Test Part 2',
             shell: mockChain2,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },

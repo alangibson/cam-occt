@@ -1,16 +1,17 @@
 <script lang="ts">
-    import { leadStore, parseLeadId } from '$lib/stores/leads/store';
+    import { parseLeadId } from '$lib/stores/leads/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { planStore } from '$lib/stores/plan/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { LeadType } from '$lib/cam/lead/enums';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive lead data
-    $: leadState = $leadStore;
-    $: selectedLeadIds = leadState.selectedLeadIds;
+    $: selection = $selectionStore;
+    $: selectedLeadIds = selection.leads.selected;
     $: selectedLeadId =
         selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null;
-    $: highlightedLeadId = leadState.highlightedLeadId;
+    $: highlightedLeadId = selection.leads.highlighted;
     $: activeLeadId = selectedLeadId || highlightedLeadId;
     $: cuts = $planStore.plan.cuts;
     $: operations = $operationsStore;

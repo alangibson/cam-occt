@@ -24,7 +24,8 @@ describe('cut-optimization-utils - branch coverage', () => {
     // Mock data
     const mockChain: ChainData = {
         id: 'test-chain',
-        name: 'test-chain', shapes: [
+        name: 'test-chain',
+        shapes: [
             {
                 id: 'shape-1',
                 type: GeometryType.LINE,

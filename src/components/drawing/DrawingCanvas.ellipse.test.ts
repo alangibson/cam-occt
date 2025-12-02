@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
@@ -83,7 +84,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
         vi.clearAllMocks();
 
         // Reset drawing store state
-        drawingStore.clearSelection();
+        selectionStore.clearShapeSelection();
         drawingStore.setViewTransform(1, { x: 0, y: 0 });
     });
 
@@ -266,7 +267,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             };
 
             drawingStore.setDrawing(new Drawing(drawing), 'test.dxf');
-            drawingStore.selectShape('selectable-ellipse', false);
+            selectionStore.selectShape('selectable-ellipse', false);
 
             const { container } = render(DrawingCanvas);
 
@@ -293,7 +294,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             };
 
             drawingStore.setDrawing(new Drawing(drawing), 'test.dxf');
-            drawingStore.selectShape('ellipse-with-origin', false);
+            selectionStore.selectShape('ellipse-with-origin', false);
 
             const { container } = render(DrawingCanvas);
 

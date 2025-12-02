@@ -9,9 +9,11 @@ describe('Parts Store Chain Type Detection', () => {
     function createTestPartWithHoles(): PartData {
         return {
             id: 'part-1',
+            name: 'part-1',
             shell: {
                 id: 'chain-shell',
-                name: 'chain-shell', shapes: [],
+                name: 'chain-shell',
+                shapes: [],
             },
             type: PartType.SHELL as const,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
@@ -20,7 +22,8 @@ describe('Parts Store Chain Type Detection', () => {
                     id: 'hole-1',
                     chain: {
                         id: 'chain-hole-1',
-                        name: 'chain-hole-1', shapes: [],
+                        name: 'chain-hole-1',
+                        shapes: [],
                     },
                     type: PartType.HOLE as const,
                     boundingBox: {
@@ -32,7 +35,8 @@ describe('Parts Store Chain Type Detection', () => {
                     id: 'hole-2',
                     chain: {
                         id: 'chain-hole-2',
-                        name: 'chain-hole-2', shapes: [],
+                        name: 'chain-hole-2',
+                        shapes: [],
                     },
                     type: PartType.HOLE as const,
                     boundingBox: {
@@ -84,9 +88,11 @@ describe('Parts Store Chain Type Detection', () => {
         const part1Data = createTestPartWithHoles();
         const part2Data: PartData = {
             id: 'part-2',
+            name: 'part-2',
             shell: {
                 id: 'chain-shell-2',
-                name: 'chain-shell-2', shapes: [],
+                name: 'chain-shell-2',
+                shapes: [],
             },
             type: PartType.SHELL,
             boundingBox: { min: { x: 30, y: 30 }, max: { x: 50, y: 50 } },

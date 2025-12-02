@@ -1,5 +1,6 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import type { ShapeData } from '$lib/cam/shape/interfaces';
     import { Shape } from '$lib/cam/shape/classes';
     import { GeometryType } from '$lib/geometry/enums';
@@ -18,9 +19,10 @@
     import InspectProperties from './InspectProperties.svelte';
 
     $: drawing = $drawingStore.drawing;
-    $: selectedShapes = $drawingStore.selectedShapes;
-    $: hoveredShape = $drawingStore.hoveredShape;
-    $: selectedOffsetShape = $drawingStore.selectedOffsetShape;
+    $: selection = $selectionStore;
+    $: selectedShapes = selection.shapes.selected;
+    $: hoveredShape = selection.shapes.hovered;
+    $: selectedOffsetShape = selection.shapes.selectedOffset;
 
     // Get the shape to display - prioritize offset shape, then selected shape, then hovered
     $: displayShape = selectedOffsetShape
@@ -34,11 +36,6 @@
     // Determine display type
     $: isShowingOffset =
         displayShape === selectedOffsetShape && selectedOffsetShape !== null;
-    $: isShowingHovered =
-        !isShowingOffset &&
-        displayShape &&
-        selectedShapes.size === 0 &&
-        hoveredShape === displayShape?.id;
 
     function getShapeOrigin(shape: ShapeData): Point2D {
         switch (shape.type) {
@@ -255,10 +252,6 @@
         <InspectProperties {properties} onCopy={copyShapeToClipboard}>
             {#if isShowingOffset}
                 <p class="offset-info">Showing offset shape</p>
-            {:else if isShowingHovered}
-                <p class="hover-info">
-                    Showing hovered shape (click to select)
-                </p>
             {:else if selectedShapes.size > 1}
                 <p class="multi-selection">
                     {selectedShapes.size} shapes selected (showing first)
@@ -274,7 +267,6 @@
     }
 
     .multi-selection,
-    .hover-info,
     .offset-info {
         margin-top: 0.5rem;
         font-size: 0.875rem;
@@ -287,11 +279,6 @@
     .multi-selection {
         color: #666;
         background-color: #f9fafb;
-    }
-
-    .hover-info {
-        color: rgb(0, 83, 135);
-        background-color: #eff6ff;
     }
 
     .offset-info {

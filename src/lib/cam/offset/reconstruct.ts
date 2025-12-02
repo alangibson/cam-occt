@@ -110,6 +110,7 @@ export function createOffsetChain(
 ): OffsetChain {
     return {
         id: generateId(),
+        name: `${originalChainId} (${side})`,
         originalChainId,
         side,
         shapes: shapes.map((s) => s.toData()),

@@ -68,6 +68,7 @@ describe('Clockwise Property Fix Validation', () => {
 
         return {
             id: 'rectangle-chain',
+            name: 'rectangle-chain',
             shapes,
             clockwise,
         };

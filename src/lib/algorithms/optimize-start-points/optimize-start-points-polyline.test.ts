@@ -41,6 +41,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
         const chain: ChainData = {
             id: 'chain1',
+            name: 'Chain 1',
             shapes,
         };
 
@@ -103,6 +104,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
         const chain: ChainData = {
             id: 'L-chain',
+            name: 'L chain',
             shapes,
         };
 
@@ -165,6 +167,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
         const chain: ChainData = {
             id: 'complex-chain',
+            name: 'Complex chain',
             shapes,
         };
 
@@ -245,7 +248,8 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
         const chain: ChainData = {
             id: 'chain-with-arcs',
-            name: 'chain-with-arcs', shapes: [polylineWithArcs],
+            name: 'chain-with-arcs',
+            shapes: [polylineWithArcs],
         };
 
         const result = optimizeStartPoints(

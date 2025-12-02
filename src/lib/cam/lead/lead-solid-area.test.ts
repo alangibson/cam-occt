@@ -62,6 +62,7 @@ describe('Lead Solid Area Avoidance', () => {
 
         return {
             id,
+            name: id,
             shapes,
         };
     }
@@ -136,7 +137,7 @@ describe('Lead Solid Area Avoidance', () => {
             const part: PartData = {
                 id: 'part1',
                 name: 'part1',
-            shell: shellChain,
+                shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: {
                     min: { x: 0, y: 0 },
@@ -214,7 +215,7 @@ describe('Lead Solid Area Avoidance', () => {
             const part: PartData = {
                 id: 'part1',
                 name: 'part1',
-            shell: shellChain,
+                shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: {
                     min: { x: 0, y: 0 },
@@ -289,7 +290,7 @@ describe('Lead Solid Area Avoidance', () => {
             const part: PartData = {
                 id: 'part1',
                 name: 'part1',
-            shell: shellChain,
+                shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: {
                     min: { x: 0, y: 0 },

@@ -129,8 +129,14 @@ describe('Geometry Hash Functions', () => {
 
     describe('hashLine', () => {
         it('should produce same hash for identical lines', async () => {
-            const line1: Line = { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } };
-            const line2: Line = { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } };
+            const line1: Line = {
+                start: { x: 0, y: 0 },
+                end: { x: 10, y: 10 },
+            };
+            const line2: Line = {
+                start: { x: 0, y: 0 },
+                end: { x: 10, y: 10 },
+            };
 
             const hash1 = await hashLine(line1);
             const hash2 = await hashLine(line2);
@@ -139,8 +145,14 @@ describe('Geometry Hash Functions', () => {
         });
 
         it('should produce different hashes for reversed lines', async () => {
-            const line1: Line = { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } };
-            const line2: Line = { start: { x: 10, y: 10 }, end: { x: 0, y: 0 } };
+            const line1: Line = {
+                start: { x: 0, y: 0 },
+                end: { x: 10, y: 10 },
+            };
+            const line2: Line = {
+                start: { x: 10, y: 10 },
+                end: { x: 0, y: 0 },
+            };
 
             const hash1 = await hashLine(line1);
             const hash2 = await hashLine(line2);

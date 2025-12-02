@@ -10,12 +10,11 @@ import type { CutData } from '$lib/cam/cut/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { ApplicationSettings } from '$lib/config/settings/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 export interface PersistedState {
     // Drawing state
     drawing: DrawingData | null;
-    selectedShapes: string[];
-    hoveredShape: string | null;
     scale: number;
     offset: { x: number; y: number };
     fileName: string | null;
@@ -29,18 +28,13 @@ export interface PersistedState {
     // Chains state
     chains: ChainData[];
     tolerance: number;
-    selectedChainIds: string[];
 
     // Parts state
     parts: PartData[];
     partWarnings: PartDetectionWarning[];
-    highlightedPartId: string | null;
-    selectedPartIds: string[];
 
     // Rapids UI state (rapids data is now in Cut.rapidIn)
     showRapids: boolean;
-    selectedRapidIds: string[];
-    highlightedRapidId: string | null;
 
     // UI state
     showToolTable: boolean;
@@ -59,7 +53,6 @@ export interface PersistedState {
     // Operations, cuts, and tools
     operations: OperationData[];
     cuts: CutData[];
-    selectedCutIds: string[];
     tools: Tool[];
 
     // Application settings
@@ -68,11 +61,45 @@ export interface PersistedState {
     // Timestamp for debugging
     savedAt: string;
 
-    highlightedCutId: string | null;
+    // Cut visualization state
     showCutNormals: boolean;
     showCutDirections: boolean;
     showCutPaths: boolean;
     showCutStartPoints: boolean;
     showCutEndPoints: boolean;
     showCutTangentLines: boolean;
+
+    // Unified selection state
+    selection: {
+        shapes: {
+            selected: string[];
+            hovered: string | null;
+            selectedOffset: ShapeData | null;
+        };
+        chains: {
+            selected: string[];
+            highlighted: string | null;
+        };
+        parts: {
+            selected: string[];
+            highlighted: string | null;
+            hovered: string | null;
+        };
+        cuts: {
+            selected: string[];
+            highlighted: string | null;
+        };
+        rapids: {
+            selected: string[];
+            highlighted: string | null;
+        };
+        leads: {
+            selected: string[];
+            highlighted: string | null;
+        };
+        kerfs: {
+            selected: string | null;
+            highlighted: string | null;
+        };
+    };
 }

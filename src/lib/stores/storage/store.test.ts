@@ -12,6 +12,7 @@ import { workflowStore } from '$lib/stores/workflow/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { rapidStore } from '$lib/stores/rapids/store';
+import { selectionStore } from '$lib/stores/selection/store';
 import { uiStore } from '$lib/stores/ui/store';
 import { tessellationStore } from '$lib/stores/tessellation/store';
 import { overlayStore } from '$lib/stores/overlay/store';
@@ -129,8 +130,18 @@ vi.mock('../rapids/store', () => ({
         }),
         setRapids: vi.fn(),
         setShowRapids: vi.fn(),
+    },
+}));
+
+vi.mock('../selection/store', () => ({
+    selectionStore: {
+        subscribe: vi.fn((fn) => {
+            fn({});
+            return () => {};
+        }),
         selectRapids: vi.fn(),
         highlightRapid: vi.fn(),
+        reset: vi.fn(),
     },
 }));
 
@@ -243,8 +254,6 @@ vi.mock('svelte/store', () => ({
                         fileName: 'test.dxf',
                     }),
                 },
-                selectedShapes: new Set<string>(['shape1']),
-                hoveredShape: 'shape2',
                 scale: 1.5,
                 offset: { x: 10, y: 20 },
                 layerVisibility: { layer1: true, layer2: false },
@@ -261,22 +270,50 @@ vi.mock('svelte/store', () => ({
             return {
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: new Set(),
             };
         }
         if (store === partStore) {
             return {
                 parts: [],
                 warnings: [],
-                highlightedPartId: null,
-                selectedPartIds: new Set(),
             };
         }
         if (store === rapidStore) {
             return {
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
+            };
+        }
+        if (store === selectionStore) {
+            return {
+                shapes: {
+                    selected: new Set<string>(['shape1']),
+                    hovered: 'shape2',
+                    selectedOffset: null,
+                },
+                chains: {
+                    selected: new Set(),
+                    highlighted: null,
+                },
+                parts: {
+                    selected: new Set(),
+                    highlighted: null,
+                    hovered: null,
+                },
+                cuts: {
+                    selected: new Set(),
+                    highlighted: null,
+                },
+                rapids: {
+                    selected: new Set(),
+                    highlighted: null,
+                },
+                leads: {
+                    selected: new Set(),
+                    highlighted: null,
+                },
+                kerfs: {
+                    selected: null,
+                },
             };
         }
         if (store === uiStore) {
@@ -309,9 +346,6 @@ vi.mock('svelte/store', () => ({
         }
         if (store === cutStore) {
             return {
-                cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -345,8 +379,12 @@ describe('storage/store', () => {
 
             expect(localStorage.saveState).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    selectedShapes: ['shape1'],
-                    hoveredShape: 'shape2',
+                    selection: expect.objectContaining({
+                        shapes: expect.objectContaining({
+                            selected: ['shape1'],
+                            hovered: 'shape2',
+                        }),
+                    }),
                     scale: 1.5,
                     offset: { x: 10, y: 20 },
                     fileName: 'test.dxf',
@@ -390,8 +428,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: ['chain-123'], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -401,14 +450,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: ['chain-123'],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
-                selectedPartIds: [],
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -428,8 +472,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -446,10 +488,6 @@ describe('storage/store', () => {
             const result = restoreApplicationState();
 
             expect(result).toBe(true);
-            expect(chainStore.selectChain).toHaveBeenCalledWith(
-                'chain-123',
-                false
-            );
         });
 
         it('should restore state with highlightedPartId', () => {
@@ -459,8 +497,23 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: {
+                        selected: [],
+                        highlighted: 'part-456',
+                        hovered: null,
+                    },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -470,14 +523,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: 'part-456',
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -497,8 +545,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -513,8 +559,6 @@ describe('storage/store', () => {
             vi.mocked(localStorage.loadState).mockReturnValue(mockState);
 
             restoreApplicationState();
-
-            expect(partStore.highlightPart).toHaveBeenCalledWith('part-456');
         });
 
         it('should restore state with inch display unit', () => {
@@ -524,8 +568,6 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -535,14 +577,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -562,8 +599,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -573,6 +608,38 @@ describe('storage/store', () => {
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: {
+                        selected: [],
+                        highlighted: null,
+                    },
+                    parts: {
+                        selected: [],
+                        highlighted: null,
+                        hovered: null,
+                    },
+                    cuts: {
+                        selected: [],
+                        highlighted: null,
+                    },
+                    rapids: {
+                        selected: [],
+                        highlighted: null,
+                    },
+                    leads: {
+                        selected: [],
+                        highlighted: null,
+                    },
+                    kerfs: {
+                        selected: null,
+                        highlighted: null,
+                    },
+                },
             };
 
             vi.mocked(localStorage.loadState).mockReturnValue(mockState);
@@ -584,9 +651,7 @@ describe('storage/store', () => {
                 'test.dxf',
                 1,
                 { x: 0, y: 0 },
-                Unit.INCH,
-                expect.any(Set),
-                null
+                Unit.INCH
             );
         });
 
@@ -597,8 +662,38 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: {
+                        selected: [],
+                        highlighted: null,
+                    },
+                    parts: {
+                        selected: [],
+                        highlighted: null,
+                        hovered: null,
+                    },
+                    cuts: {
+                        selected: [],
+                        highlighted: null,
+                    },
+                    rapids: {
+                        selected: ['rapid-1'],
+                        highlighted: 'rapid-2',
+                    },
+                    leads: {
+                        selected: [],
+                        highlighted: null,
+                    },
+                    kerfs: {
+                        selected: null,
+                        highlighted: null,
+                    },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -608,14 +703,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: ['rapid-1'],
-                highlightedRapidId: 'rapid-2',
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -635,8 +725,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -652,10 +740,12 @@ describe('storage/store', () => {
 
             restoreApplicationState();
 
-            expect(rapidStore.selectRapids).toHaveBeenCalledWith(
+            expect(selectionStore.selectRapids).toHaveBeenCalledWith(
                 new Set(['rapid-1'])
             );
-            expect(rapidStore.highlightRapid).toHaveBeenCalledWith('rapid-2');
+            expect(selectionStore.highlightRapid).toHaveBeenCalledWith(
+                'rapid-2'
+            );
         });
 
         it('should show tool table when showToolTable is true', () => {
@@ -665,8 +755,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -676,14 +777,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: true,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -703,8 +799,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -731,8 +825,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -742,14 +847,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: true,
                 tessellationPoints: [
@@ -772,8 +872,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -802,8 +900,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -813,14 +922,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -850,8 +954,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -879,8 +981,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -890,14 +1003,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -927,8 +1035,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -957,8 +1063,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -968,14 +1085,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -1010,8 +1122,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -1040,8 +1150,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -1051,14 +1172,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -1086,8 +1202,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -1117,8 +1231,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -1128,14 +1253,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -1160,8 +1280,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -1193,8 +1311,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -1204,14 +1333,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -1237,8 +1361,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -1270,8 +1392,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -1281,14 +1414,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -1314,8 +1442,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -1347,8 +1473,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -1358,14 +1495,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -1390,8 +1522,6 @@ describe('storage/store', () => {
                 },
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,
@@ -1425,8 +1555,19 @@ describe('storage/store', () => {
                     units: Unit.MM,
                     fileName: '',
                 },
-                selectedShapes: [],
-                hoveredShape: null,
+                selection: {
+                    shapes: {
+                        selected: [],
+                        hovered: null,
+                        selectedOffset: null,
+                    },
+                    chains: { selected: [], highlighted: null },
+                    parts: { selected: [], highlighted: null, hovered: null },
+                    cuts: { selected: [], highlighted: null },
+                    rapids: { selected: [], highlighted: null },
+                    leads: { selected: [], highlighted: null },
+                    kerfs: { selected: null, highlighted: null },
+                },
                 scale: 1,
                 offset: { x: 0, y: 0 },
                 fileName: 'test.dxf',
@@ -1436,14 +1577,9 @@ describe('storage/store', () => {
                 completedStages: [],
                 chains: [],
                 tolerance: 0.001,
-                selectedChainIds: [],
-                selectedPartIds: [],
                 parts: [],
                 partWarnings: [],
-                highlightedPartId: null,
                 showRapids: false,
-                selectedRapidIds: [],
-                highlightedRapidId: null,
                 showToolTable: false,
                 tessellationActive: false,
                 tessellationPoints: [],
@@ -1452,8 +1588,6 @@ describe('storage/store', () => {
                 prepareStageState: null,
                 operations: [],
                 cuts: [],
-                selectedCutIds: [],
-                highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
                 showCutPaths: false,

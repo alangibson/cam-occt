@@ -49,8 +49,10 @@ describe('Point-in-Chain Exact Testing', () => {
             },
         ];
 
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes,
         };
     }
@@ -60,8 +62,10 @@ describe('Point-in-Chain Exact Testing', () => {
         centerY: number,
         radius: number
     ): ChainData {
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes: [
                 {
                     id: generateId(),
@@ -175,8 +179,10 @@ describe('Point-in-Chain Exact Testing', () => {
             },
         ];
 
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes,
         };
     }
@@ -276,8 +282,10 @@ describe('Point-in-Chain Exact Testing', () => {
         });
 
         it('should throw error for open chains', () => {
+            const id = generateId();
             const openChain: ChainData = {
-                id: generateId(),
+                id,
+                name: id,
                 shapes: [
                     {
                         id: generateId(),
@@ -450,7 +458,12 @@ describe('Point-in-Chain Exact Testing', () => {
                 },
             ];
 
-            const starChain: ChainData = { id: generateId(), shapes };
+            const starChainId = generateId();
+            const starChain: ChainData = {
+                id: starChainId,
+                name: starChainId,
+                shapes,
+            };
 
             // This star has 8 line segments forming a closed star shape
             // For horizontal ray from center (0,0) going right:
@@ -495,7 +508,12 @@ describe('Point-in-Chain Exact Testing', () => {
                 });
             }
 
-            const flowerChain: ChainData = { id: generateId(), shapes };
+            const flowerChainId = generateId();
+            const flowerChain: ChainData = {
+                id: flowerChainId,
+                name: flowerChainId,
+                shapes,
+            };
 
             // Test that the exact algorithm handles disconnected shapes appropriately
             // (throws error for non-chains, which is correct behavior)

@@ -33,7 +33,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         return new Chain({
             id: 'chain1',
-            name: 'chain1', shapes: [shape],
+            name: 'chain1',
+            shapes: [shape],
             clockwise: true,
         });
     }
@@ -52,7 +53,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         return new Chain({
             id: 'chain1',
-            name: 'chain1', shapes: [shape],
+            name: 'chain1',
+            shapes: [shape],
             clockwise: true,
         });
     }
@@ -72,7 +74,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         return new Chain({
             id: 'chain1',
-            name: 'chain1', shapes: [shape],
+            name: 'chain1',
+            shapes: [shape],
             clockwise,
         });
     }
@@ -85,7 +88,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     } {
         const shell: Chain = new Chain({
             id: 'shell',
-            name: 'shell', shapes: [
+            name: 'shell',
+            shapes: [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -327,7 +331,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
             // Place the chain start very close to a boundary where only one direction is valid
             const edgeChain: Chain = new Chain({
                 id: 'edge-chain',
-                name: 'edge-chain', shapes: [
+                name: 'edge-chain',
+                shapes: [
                     {
                         id: 'edge-line',
                         type: GeometryType.LINE,
@@ -768,7 +773,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
             // Test with a closed chain where start/end points are the same
             const closedChain: Chain = new Chain({
                 id: 'closed',
-                name: 'closed', shapes: [
+                name: 'closed',
+                shapes: [
                     {
                         id: 'line1',
                         type: GeometryType.LINE,

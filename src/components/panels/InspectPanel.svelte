@@ -8,20 +8,16 @@
     import LeadProperties from './LeadProperties.svelte';
     import KerfProperties from './KerfProperties.svelte';
     import RapidProperties from './RapidProperties.svelte';
-    import { chainStore } from '$lib/stores/chains/store';
-    import { partStore } from '$lib/stores/parts/store';
-    import { cutStore } from '$lib/stores/cuts/store';
-    import { leadStore } from '$lib/stores/leads/store';
-    import { kerfStore } from '$lib/stores/kerfs/store';
-    import { rapidStore } from '$lib/stores/rapids/store';
-    import { drawingStore } from '$lib/stores/drawing/store';
+    import { selectionStore } from '$lib/stores/selection/store';
     import { layerStore } from '$lib/stores/layers/store.svelte';
 
-    const selectedChainIds = $derived($chainStore.selectedChainIds);
+    const selection = $derived($selectionStore);
+
+    const selectedChainIds = $derived(selection.chains.selected);
     const selectedChainId = $derived(
         selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null
     );
-    const highlightedChainId = $derived($chainStore.highlightedChainId);
+    const highlightedChainId = $derived(selection.chains.highlighted);
     const hasChainSelection = $derived(
         !!(selectedChainId || highlightedChainId)
     );
@@ -36,44 +32,44 @@
         });
     });
 
-    const selectedPartIds = $derived($partStore.selectedPartIds);
+    const selectedPartIds = $derived(selection.parts.selected);
     const selectedPartId = $derived(
         selectedPartIds.size === 1 ? Array.from(selectedPartIds)[0] : null
     );
-    const highlightedPartId = $derived($partStore.highlightedPartId);
-    const hoveredPartId = $derived($partStore.hoveredPartId);
+    const highlightedPartId = $derived(selection.parts.highlighted);
+    const hoveredPartId = $derived(selection.parts.hovered);
     const hasPartSelection = $derived(
         !!(selectedPartId || highlightedPartId || hoveredPartId)
     );
 
-    const selectedCutIds = $derived($cutStore.selectedCutIds);
+    const selectedCutIds = $derived(selection.cuts.selected);
     const selectedCutId = $derived(
         selectedCutIds.size === 1 ? Array.from(selectedCutIds)[0] : null
     );
-    const highlightedCutId = $derived($cutStore.highlightedCutId);
+    const highlightedCutId = $derived(selection.cuts.highlighted);
     const hasCutSelection = $derived(!!(selectedCutId || highlightedCutId));
 
-    const selectedLeadIds = $derived($leadStore.selectedLeadIds);
+    const selectedLeadIds = $derived(selection.leads.selected);
     const selectedLeadId = $derived(
         selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null
     );
-    const highlightedLeadId = $derived($leadStore.highlightedLeadId);
+    const highlightedLeadId = $derived(selection.leads.highlighted);
     const hasLeadSelection = $derived(!!(selectedLeadId || highlightedLeadId));
 
-    const selectedKerfId = $derived($kerfStore.selectedKerfId);
+    const selectedKerfId = $derived(selection.kerfs.selected);
 
-    const selectedRapidIds = $derived($rapidStore.selectedRapidIds);
+    const selectedRapidIds = $derived(selection.rapids.selected);
     const selectedRapidId = $derived(
         selectedRapidIds.size === 1 ? Array.from(selectedRapidIds)[0] : null
     );
-    const highlightedRapidId = $derived($rapidStore.highlightedRapidId);
+    const highlightedRapidId = $derived(selection.rapids.highlighted);
     const hasRapidSelection = $derived(
         !!(selectedRapidId || highlightedRapidId)
     );
 
-    const selectedShapes = $derived($drawingStore.selectedShapes);
-    const hoveredShape = $derived($drawingStore.hoveredShape);
-    const selectedOffsetShape = $derived($drawingStore.selectedOffsetShape);
+    const selectedShapes = $derived(selection.shapes.selected);
+    const hoveredShape = $derived(selection.shapes.hovered);
+    const selectedOffsetShape = $derived(selection.shapes.selectedOffset);
     const hasShapeSelection = $derived(
         !!(selectedShapes.size > 0 || hoveredShape || selectedOffsetShape)
     );

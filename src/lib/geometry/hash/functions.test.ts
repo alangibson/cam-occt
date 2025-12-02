@@ -52,8 +52,18 @@ describe('hashObject', () => {
     });
 
     it('should handle arrays', async () => {
-        const obj1 = { points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] };
-        const obj2 = { points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] };
+        const obj1 = {
+            points: [
+                { x: 1, y: 2 },
+                { x: 3, y: 4 },
+            ],
+        };
+        const obj2 = {
+            points: [
+                { x: 1, y: 2 },
+                { x: 3, y: 4 },
+            ],
+        };
 
         const hash1 = await hashObject(obj1);
         const hash2 = await hashObject(obj2);
@@ -62,8 +72,18 @@ describe('hashObject', () => {
     });
 
     it('should produce different hashes for different array contents', async () => {
-        const obj1 = { points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] };
-        const obj2 = { points: [{ x: 1, y: 2 }, { x: 5, y: 6 }] };
+        const obj1 = {
+            points: [
+                { x: 1, y: 2 },
+                { x: 3, y: 4 },
+            ],
+        };
+        const obj2 = {
+            points: [
+                { x: 1, y: 2 },
+                { x: 5, y: 6 },
+            ],
+        };
 
         const hash1 = await hashObject(obj1);
         const hash2 = await hashObject(obj2);
@@ -72,8 +92,18 @@ describe('hashObject', () => {
     });
 
     it('should produce different hashes for different array order', async () => {
-        const obj1 = { points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] };
-        const obj2 = { points: [{ x: 3, y: 4 }, { x: 1, y: 2 }] };
+        const obj1 = {
+            points: [
+                { x: 1, y: 2 },
+                { x: 3, y: 4 },
+            ],
+        };
+        const obj2 = {
+            points: [
+                { x: 3, y: 4 },
+                { x: 1, y: 2 },
+            ],
+        };
 
         const hash1 = await hashObject(obj1);
         const hash2 = await hashObject(obj2);

@@ -92,7 +92,8 @@ describe('Optimize Starts for Operations', () => {
 
         squareChain = {
             id: 'chain-square',
-            name: 'chain-square', shapes: [bottomLine, rightLine, topLine, leftLine],
+            name: 'chain-square',
+            shapes: [bottomLine, rightLine, topLine, leftLine],
             clockwise: true, // Closed square
         };
 

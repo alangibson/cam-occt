@@ -21,7 +21,8 @@ describe('getChainCutDirection', () => {
     it('should return CLOCKWISE for chain with clockwise=true', () => {
         const chain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [],
+            name: 'test-chain',
+            shapes: [],
             clockwise: true,
         };
         expect(getChainCutDirection(chain)).toBe(CutDirection.CLOCKWISE);
@@ -30,7 +31,8 @@ describe('getChainCutDirection', () => {
     it('should return COUNTERCLOCKWISE for chain with clockwise=false', () => {
         const chain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [],
+            name: 'test-chain',
+            shapes: [],
             clockwise: false,
         };
         expect(getChainCutDirection(chain)).toBe(CutDirection.COUNTERCLOCKWISE);
@@ -39,7 +41,8 @@ describe('getChainCutDirection', () => {
     it('should return NONE for chain with clockwise=null', () => {
         const chain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [],
+            name: 'test-chain',
+            shapes: [],
             clockwise: null,
         };
         expect(getChainCutDirection(chain)).toBe(CutDirection.NONE);
@@ -48,7 +51,8 @@ describe('getChainCutDirection', () => {
     it('should return NONE for chain without clockwise property', () => {
         const chain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [],
+            name: 'test-chain',
+            shapes: [],
         };
         expect(getChainCutDirection(chain)).toBe(CutDirection.NONE);
     });
@@ -68,7 +72,8 @@ describe('createCutChain', () => {
         const shape1 = createTestShape('shape1');
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [shape1],
+            name: 'test-chain',
+            shapes: [shape1],
             clockwise: true,
         };
 
@@ -89,7 +94,8 @@ describe('createCutChain', () => {
         const offsetShape = new Shape(createTestShape('offset'));
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [originalShape],
+            name: 'test-chain',
+            shapes: [originalShape],
             clockwise: true,
         };
 
@@ -105,7 +111,8 @@ describe('createCutChain', () => {
     it('should return executionClockwise=null when userCutDirection is NONE', () => {
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [createTestShape('shape1')],
+            name: 'test-chain',
+            shapes: [createTestShape('shape1')],
             clockwise: true,
         };
 
@@ -122,7 +129,8 @@ describe('createCutChain', () => {
         const shape2 = createTestShape('shape2');
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [shape1, shape2],
+            name: 'test-chain',
+            shapes: [shape1, shape2],
             clockwise: true,
         };
 
@@ -142,7 +150,8 @@ describe('createCutChain', () => {
         const shape2 = createTestShape('shape2');
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [shape1, shape2],
+            name: 'test-chain',
+            shapes: [shape1, shape2],
             clockwise: true,
         };
 
@@ -161,7 +170,8 @@ describe('createCutChain', () => {
     it('should preserve originalChainId reference', () => {
         const originalChain: ChainData = {
             id: 'original-chain-id',
-            name: 'original-chain-id', shapes: [createTestShape('shape1')],
+            name: 'original-chain-id',
+            shapes: [createTestShape('shape1')],
             clockwise: true,
         };
 
@@ -177,7 +187,8 @@ describe('createCutChain', () => {
     it('should set clockwise property to execution direction', () => {
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [createTestShape('shape1')],
+            name: 'test-chain',
+            shapes: [createTestShape('shape1')],
             clockwise: true,
         };
 
@@ -201,7 +212,8 @@ describe('createCutChain', () => {
         const shape2 = createTestShape('shape2');
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [shape1, shape2],
+            name: 'test-chain',
+            shapes: [shape1, shape2],
             clockwise: null,
         };
 
@@ -221,7 +233,8 @@ describe('createCutChain', () => {
         const shape2 = createTestShape('shape2');
         const originalChain: ChainData = {
             id: 'test-chain',
-            name: 'test-chain', shapes: [shape1, shape2],
+            name: 'test-chain',
+            shapes: [shape1, shape2],
             clockwise: null,
         };
 

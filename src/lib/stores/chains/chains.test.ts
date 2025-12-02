@@ -3,13 +3,15 @@ import { get } from 'svelte/store';
 import { describe, expect, it } from 'vitest';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { chainStore } from './store';
+import { selectionStore } from '$lib/stores/selection/store';
 import { getChainById, getChainShapeIds, getShapeChainId } from './functions';
 
 describe('Chain Store', () => {
     const mockChains: ChainData[] = [
         {
             id: 'chain-1',
-            name: 'chain-1', shapes: [
+            name: 'chain-1',
+            shapes: [
                 {
                     id: 'shape-1',
                     type: GeometryType.LINE,
@@ -24,7 +26,8 @@ describe('Chain Store', () => {
         },
         {
             id: 'chain-2',
-            name: 'chain-2', shapes: [
+            name: 'chain-2',
+            shapes: [
                 {
                     id: 'shape-3',
                     type: GeometryType.CIRCLE,
@@ -42,12 +45,9 @@ describe('Chain Store', () => {
         },
     ];
 
-    it.skip('should initialize with empty chains and default tolerance', () => {
-        // NOTE: chains property no longer exists in ChainStore - chains are now managed through Drawing -> Layers
+    it('should initialize with default tolerance', () => {
         const state = get(chainStore);
         expect(state.tolerance).toBe(0.1);
-        expect(state.selectedChainIds.size).toBe(0);
-        expect(state.highlightedChainId).toBeNull();
     });
 
     it.skip('should set chains correctly', () => {
@@ -92,23 +92,23 @@ describe('Chain Store', () => {
         it('should highlight a chain', () => {
             const testChainId = 'chain-123';
 
-            chainStore.highlightChain(testChainId);
+            selectionStore.highlightChain(testChainId);
 
-            const state = get(chainStore);
-            expect(state.highlightedChainId).toBe(testChainId);
-            expect(state.selectedChainIds.size).toBe(0); // Should not affect selection
+            const state = get(selectionStore);
+            expect(state.chains.highlighted).toBe(testChainId);
+            expect(state.chains.selected.size).toBe(0); // Should not affect selection
         });
 
         it('should clear chain highlight', () => {
             const testChainId = 'chain-123';
 
             // First highlight a chain
-            chainStore.highlightChain(testChainId);
-            expect(get(chainStore).highlightedChainId).toBe(testChainId);
+            selectionStore.highlightChain(testChainId);
+            expect(get(selectionStore).chains.highlighted).toBe(testChainId);
 
             // Then clear the highlight
-            chainStore.clearChainHighlight();
-            expect(get(chainStore).highlightedChainId).toBeNull();
+            selectionStore.clearChainHighlight();
+            expect(get(selectionStore).chains.highlighted).toBeNull();
         });
 
         it('should allow highlighting and selection to coexist', () => {
@@ -116,19 +116,19 @@ describe('Chain Store', () => {
             const highlightedChainId = 'chain-highlighted';
 
             // Select one chain and highlight another
-            chainStore.selectChain(selectedChainId);
-            chainStore.highlightChain(highlightedChainId);
+            selectionStore.selectChain(selectedChainId);
+            selectionStore.highlightChain(highlightedChainId);
 
-            const state = get(chainStore);
-            expect(state.selectedChainIds.has(selectedChainId)).toBe(true);
-            expect(state.highlightedChainId).toBe(highlightedChainId);
+            const state = get(selectionStore);
+            expect(state.chains.selected.has(selectedChainId)).toBe(true);
+            expect(state.chains.highlighted).toBe(highlightedChainId);
         });
 
         it('should handle null chain highlighting', () => {
-            chainStore.highlightChain(null);
+            selectionStore.highlightChain(null);
 
-            const state = get(chainStore);
-            expect(state.highlightedChainId).toBeNull();
+            const state = get(selectionStore);
+            expect(state.chains.highlighted).toBeNull();
         });
     });
 });

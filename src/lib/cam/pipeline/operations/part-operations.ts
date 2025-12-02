@@ -42,8 +42,6 @@ export async function generateCutsForPartsWithOperation(
         return { cuts: [], warnings: [] };
     }
 
-    const targetId = part.id;
-
     // Get all parts from operation targets (for lead calculations)
     const parts: Part[] = operation.targets.filter(
         (t) => !('shapes' in t)

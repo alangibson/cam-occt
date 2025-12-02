@@ -1,7 +1,5 @@
 export interface ChainStore {
     tolerance: number;
-    selectedChainIds: Set<string>;
-    highlightedChainId: string | null;
 
     // Chain visualization options
     showChainPaths: boolean;

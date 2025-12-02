@@ -15,6 +15,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 function createTestChain(id: string, shapes: ShapeData[]): ChainData {
     return {
         id,
+        name: id,
         shapes,
     };
 }

@@ -31,8 +31,10 @@ describe('Slot Detection in Parts', () => {
         width: number,
         height: number
     ): ChainData {
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes: [
                 createLine(x, y, x + width, y), // Bottom edge
                 createLine(x + width, y, x + width, y + height), // Right edge
@@ -49,8 +51,10 @@ describe('Slot Detection in Parts', () => {
         endX: number,
         endY: number
     ): ChainData {
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes: [createLine(startX, startY, endX, endY)],
         };
     }

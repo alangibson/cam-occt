@@ -319,7 +319,8 @@ describe('getChainEndPoint', () => {
         overrides: Partial<ChainData> = {}
     ): ChainData => ({
         id: 'test-chain',
-        name: 'test-chain', shapes: [
+        name: 'test-chain',
+        shapes: [
             {
                 id: 'line1',
                 type: GeometryType.LINE,

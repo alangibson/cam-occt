@@ -30,10 +30,8 @@ describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
         const boundaryChain = normalizedChains.find(
             (chain) => chain.shapes.length === 42
         );
-        const chain7 = normalizedChains.find((chain) => chain.id === 'chain-7');
-        const chain13 = normalizedChains.find(
-            (chain) => chain.id === 'chain-13'
-        );
+        const chain7 = normalizedChains.find((chain) => chain.name === '7');
+        const chain13 = normalizedChains.find((chain) => chain.name === '13');
 
         expect(boundaryChain).toBeDefined();
         expect(chain7).toBeDefined();

@@ -42,8 +42,10 @@ describe('Part Detection Algorithm', () => {
         width: number,
         height: number
     ): ShapeChain {
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes: [
                 createLine(x, y, x + width, y), // Bottom edge
                 createLine(x + width, y, x + width, y + height), // Right edge
@@ -59,8 +61,10 @@ describe('Part Detection Algorithm', () => {
         centerY: number,
         radius: number
     ): ShapeChain {
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes: [createCircle(centerX, centerY, radius)],
         };
     }
@@ -72,8 +76,10 @@ describe('Part Detection Algorithm', () => {
         endX: number,
         endY: number
     ): ShapeChain {
+        const id = generateId();
         return {
-            id: generateId(),
+            id,
+            name: id,
             shapes: [createLine(startX, startY, endX, endY)],
         };
     }
@@ -403,8 +409,10 @@ describe('Part Detection Algorithm', () => {
 
         it('should handle nearly-closed chains (small gap)', async () => {
             // Create a chain with a very small gap (should be considered closed within tolerance)
+            const nearlyClosedChainId = generateId();
             const nearlyClosedChain: ShapeChain = {
-                id: generateId(),
+                id: nearlyClosedChainId,
+                name: nearlyClosedChainId,
                 shapes: [
                     createLine(0, 0, 10, 0),
                     createLine(10, 0, 10, 10),

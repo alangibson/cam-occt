@@ -22,7 +22,8 @@ describe('Lead Direction Debug', () => {
 
         const squareChain = new Chain({
             id: 'test-square',
-            name: 'test-square', shapes: [createPolylineFromVertices(squareVertices, true)],
+            name: 'test-square',
+            shapes: [createPolylineFromVertices(squareVertices, true)],
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
@@ -115,7 +116,8 @@ describe('Lead Direction Debug', () => {
 
         const squareChain = new Chain({
             id: 'test-square',
-            name: 'test-square', shapes: [createPolylineFromVertices(squareVertices, true)],
+            name: 'test-square',
+            shapes: [createPolylineFromVertices(squareVertices, true)],
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
@@ -183,7 +185,8 @@ describe('Lead Direction Debug', () => {
 
         const originalChain = new Chain({
             id: 'test-square',
-            name: 'test-square', shapes: [
+            name: 'test-square',
+            shapes: [
                 createPolylineFromVertices(squareVertices, true, {
                     id: 'square-1',
                 }),

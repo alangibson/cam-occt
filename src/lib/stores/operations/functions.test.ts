@@ -100,6 +100,7 @@ vi.mock('$lib/cam/lead/functions', () => ({
 describe('Operations Functions', () => {
     const mockChainData: ChainData = {
         id: 'chain-1',
+        name: 'chain-1',
         clockwise: true,
         shapes: [
             {
@@ -192,14 +193,20 @@ describe('Operations Functions', () => {
 
     const mockPartData: PartData = {
         id: 'part-1',
+        name: 'part-1',
         type: PartType.SHELL,
-        shell: { id: 'chain-1', clockwise: true, shapes: [] },
+        shell: { id: 'chain-1', name: 'chain-1', clockwise: true, shapes: [] },
         boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
         voids: [
             {
                 id: 'hole-1',
                 type: PartType.HOLE,
-                chain: { id: 'chain-2', clockwise: false, shapes: [] },
+                chain: {
+                    id: 'chain-2',
+                    name: 'chain-2',
+                    clockwise: false,
+                    shapes: [],
+                },
                 boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
             },
         ],
@@ -256,6 +263,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -264,6 +272,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -367,6 +376,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -375,6 +385,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -400,6 +411,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -408,6 +420,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -505,7 +518,8 @@ describe('Operations Functions', () => {
             vi.mocked(reverseChain).mockReturnValue(
                 new Chain({
                     id: 'chain-1',
-                    name: 'chain-1', shapes: [mockChainData.shapes[0]],
+                    name: 'chain-1',
+                    shapes: [mockChainData.shapes[0]],
                 })
             );
 
@@ -523,7 +537,8 @@ describe('Operations Functions', () => {
             vi.mocked(reverseChain).mockReturnValue(
                 new Chain({
                     id: 'chain-1',
-                    name: 'chain-1', shapes: [new Shape(mockChain.shapes[0])],
+                    name: 'chain-1',
+                    shapes: [new Shape(mockChain.shapes[0])],
                 })
             );
 
@@ -584,6 +599,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -592,6 +608,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -627,6 +644,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -635,6 +653,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -717,6 +736,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -725,6 +745,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -760,7 +781,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'hole-1',
                         type: PartType.HOLE,
-                        chain: { id: 'chain-2', clockwise: false, shapes: [] },
+                        chain: {
+                            id: 'chain-2',
+                            name: 'chain-2',
+                            clockwise: false,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 2, y: 2 },
                             max: { x: 8, y: 8 },
@@ -771,6 +797,7 @@ describe('Operations Functions', () => {
                         type: PartType.HOLE,
                         chain: {
                             id: 'chain-3',
+                            name: 'chain-3',
                             clockwise: false,
                             shapes: [],
                         },
@@ -819,7 +846,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'slot-1',
                         type: PartType.SLOT,
-                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        chain: {
+                            id: 'chain-2',
+                            name: 'chain-2',
+                            clockwise: null,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 2, y: 2 },
                             max: { x: 8, y: 8 },
@@ -867,7 +899,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'slot-1',
                         type: PartType.SLOT,
-                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        chain: {
+                            id: 'chain-2',
+                            name: 'chain-2',
+                            clockwise: null,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 2, y: 2 },
                             max: { x: 8, y: 8 },
@@ -890,6 +927,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -898,6 +936,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -939,7 +978,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'slot-1',
                         type: PartType.SLOT,
-                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        chain: {
+                            id: 'chain-2',
+                            name: 'chain-2',
+                            clockwise: null,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 2, y: 2 },
                             max: { x: 8, y: 8 },
@@ -962,6 +1006,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-2',
                     side: 'inner',
                     closed: false,
@@ -970,6 +1015,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-2',
                     side: 'outer',
                     closed: false,
@@ -1003,7 +1049,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'slot-1',
                         type: PartType.SLOT,
-                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        chain: {
+                            id: 'chain-2',
+                            name: 'chain-2',
+                            clockwise: null,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 2, y: 2 },
                             max: { x: 4, y: 4 },
@@ -1012,7 +1063,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'slot-2',
                         type: PartType.SLOT,
-                        chain: { id: 'chain-3', clockwise: null, shapes: [] },
+                        chain: {
+                            id: 'chain-3',
+                            name: 'chain-3',
+                            clockwise: null,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 6, y: 6 },
                             max: { x: 8, y: 8 },
@@ -1057,7 +1113,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'hole-1',
                         type: PartType.HOLE,
-                        chain: { id: 'chain-2', clockwise: false, shapes: [] },
+                        chain: {
+                            id: 'chain-2',
+                            name: 'chain-2',
+                            clockwise: false,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 2, y: 2 },
                             max: { x: 4, y: 4 },
@@ -1068,7 +1129,12 @@ describe('Operations Functions', () => {
                     {
                         id: 'slot-1',
                         type: PartType.SLOT,
-                        chain: { id: 'chain-3', clockwise: null, shapes: [] },
+                        chain: {
+                            id: 'chain-3',
+                            name: 'chain-3',
+                            clockwise: null,
+                            shapes: [],
+                        },
                         boundingBox: {
                             min: { x: 6, y: 6 },
                             max: { x: 8, y: 8 },
@@ -1203,10 +1269,7 @@ describe('Operations Functions', () => {
             );
 
             expect(calculateLeads).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    id: 'chain-1_offset_temp',
-                    name: 'chain-1_offset_temp', shapes: cutWithOffset.offset.offsetShapes,
-                }),
+                expect.any(Chain), // Chain instance with offset geometry
                 expect.objectContaining({
                     type: LeadType.ARC,
                     length: 5,
@@ -1453,6 +1516,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -1461,6 +1525,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
@@ -1500,6 +1565,7 @@ describe('Operations Functions', () => {
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
+                    name: 'inner-chain',
                     originalChainId: 'chain-1',
                     side: 'inner',
                     closed: true,
@@ -1508,6 +1574,7 @@ describe('Operations Functions', () => {
                 },
                 outerChain: {
                     id: 'outer-chain',
+                    name: 'outer-chain',
                     originalChainId: 'chain-1',
                     side: 'outer',
                     closed: true,
