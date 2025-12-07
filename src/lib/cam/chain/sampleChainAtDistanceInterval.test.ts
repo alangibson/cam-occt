@@ -8,7 +8,7 @@ import type { ChainData } from './interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import { Chain } from './classes';
+import { Chain } from './classes.svelte';
 
 describe('sampleChainAtDistanceInterval', () => {
     it('should return empty array for empty chain', () => {

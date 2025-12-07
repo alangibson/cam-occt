@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import DrawingCanvas from './DrawingCanvas.svelte';
-import { drawingStore } from '$lib/stores/drawing/store';
-import { selectionStore } from '$lib/stores/selection/store';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
 import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
@@ -105,7 +105,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             drawingStore.setDrawing(new Drawing(drawing), 'test.dxf');
 
             render(DrawingCanvas, {
-                props: { currentStage: WorkflowStage.EDIT },
+                props: { currentStage: WorkflowStage.PROGRAM },
             });
 
             // Verify canvas context methods were called for ellipse rendering
@@ -142,7 +142,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             drawingStore.setDrawing(new Drawing(drawing), 'test.dxf');
 
             render(DrawingCanvas, {
-                props: { currentStage: WorkflowStage.EDIT },
+                props: { currentStage: WorkflowStage.PROGRAM },
             });
 
             // Check that transform methods were called correctly
@@ -167,7 +167,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             drawingStore.setDrawing(new Drawing(drawing), 'test.dxf');
 
             render(DrawingCanvas, {
-                props: { currentStage: WorkflowStage.EDIT },
+                props: { currentStage: WorkflowStage.PROGRAM },
             });
 
             // Should render as circle with equal major and minor axes
@@ -202,7 +202,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             drawingStore.setDrawing(new Drawing(drawing), 'test.dxf');
 
             render(DrawingCanvas, {
-                props: { currentStage: WorkflowStage.EDIT },
+                props: { currentStage: WorkflowStage.PROGRAM },
             });
 
             // Should render arc instead of full ellipse
@@ -234,7 +234,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             drawingStore.setDrawing(new Drawing(drawing), 'test.dxf');
 
             render(DrawingCanvas, {
-                props: { currentStage: WorkflowStage.EDIT },
+                props: { currentStage: WorkflowStage.PROGRAM },
             });
 
             // Should handle parameter wrapping by adding 2π to end parameter

@@ -4,7 +4,7 @@ import { hashArc } from './arc/functions';
 import { hashCircle } from './circle/functions';
 import { hashEllipse } from './ellipse/functions';
 import { hashLine } from './line/functions';
-import { hashPolyline } from './polyline/functions';
+import { hashPolyline } from './dxf-polyline/functions';
 import { hashSpline } from './spline/functions';
 import { hashBoundingBox } from './bounding-box/functions';
 import type { Point2D } from './point/interfaces';
@@ -12,7 +12,7 @@ import type { Arc } from './arc/interfaces';
 import type { Circle } from './circle/interfaces';
 import type { Ellipse } from './ellipse/interfaces';
 import type { Line } from './line/interfaces';
-import type { Polyline } from './polyline/interfaces';
+import type { DxfPolyline } from './dxf-polyline/interfaces';
 import type { Spline } from './spline/interfaces';
 import type { BoundingBoxData } from './bounding-box/interfaces';
 
@@ -201,11 +201,11 @@ describe('Geometry Hash Functions', () => {
 
     describe('hashPolyline', () => {
         it('should produce same hash for identical polylines', async () => {
-            const polyline1: Polyline = {
+            const polyline1: DxfPolyline = {
                 closed: false,
                 shapes: [],
             };
-            const polyline2: Polyline = {
+            const polyline2: DxfPolyline = {
                 closed: false,
                 shapes: [],
             };
@@ -217,11 +217,11 @@ describe('Geometry Hash Functions', () => {
         });
 
         it('should produce different hashes for open vs closed', async () => {
-            const polyline1: Polyline = {
+            const polyline1: DxfPolyline = {
                 closed: false,
                 shapes: [],
             };
-            const polyline2: Polyline = {
+            const polyline2: DxfPolyline = {
                 closed: true,
                 shapes: [],
             };

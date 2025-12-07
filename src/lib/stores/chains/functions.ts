@@ -54,7 +54,7 @@ export function getShapeChainId(
                     (s: ShapeData) => s.id === shapeId
                 );
                 if (found) {
-                    return cut.chainId; // Return the chain that this cut is based on
+                    return cut.sourceChainId; // Return the chain that this cut is based on
                 }
             }
         }

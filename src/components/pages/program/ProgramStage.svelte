@@ -6,18 +6,18 @@
     import InspectPanel from '$components/panels/InspectPanel.svelte';
     import OptimizePanel from '$components/panels/OptimizePanel.svelte';
     import LayersPanel from '$components/panels/LayersPanel.svelte';
-    import { workflowStore } from '$lib/stores/workflow/store';
+    import { workflowStore } from '$lib/stores/workflow/store.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { Chain } from '$lib/cam/chain/classes';
-    import { planStore } from '$lib/stores/plan/store';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { Chain } from '$lib/cam/chain/classes.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
     import {
         optimizeCutOrder,
         generateRapidsFromCutOrder,
     } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
     import ShowPanel from '$components/panels/ShowPanel.svelte';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
 
     // Props from WorkflowContainer for shared canvas
     let {
@@ -39,7 +39,7 @@
     let operationsComponent: Operations;
 
     // Subscribe to stores
-    const drawing = $derived($drawingStore.drawing);
+    const drawing = $derived(drawingStore.drawing);
     const chains = $derived(
         drawing
             ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
@@ -50,14 +50,14 @@
             ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
             : []
     );
-    const cuts = $derived($planStore.plan.cuts);
+    const cuts = $derived(planStore.plan.cuts);
     const optimizationSettings = $derived(
-        $settingsStore.settings.optimizationSettings
+        settingsStore.settings.optimizationSettings
     );
 
     // Apply zoom to fit when stage mounts
     onMount(async () => {
-        const settings = $settingsStore.settings;
+        const settings = settingsStore.settings;
 
         // Apply zoom to fit if enabled in settings
         if (settings.optimizationSettings.zoomToFit) {
@@ -112,7 +112,7 @@
     });
 
     function handleNext() {
-        if ($workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)) {
+        if (workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)) {
             workflowStore.setStage(WorkflowStage.SIMULATE);
         }
     }
@@ -227,10 +227,10 @@
                 <div class="next-stage-content">
                     <button
                         class="next-button"
-                        class:disabled={!$workflowStore.canAdvanceTo(
+                        class:disabled={!workflowStore.canAdvanceTo(
                             WorkflowStage.SIMULATE
                         )}
-                        disabled={!$workflowStore.canAdvanceTo(
+                        disabled={!workflowStore.canAdvanceTo(
                             WorkflowStage.SIMULATE
                         )}
                         onclick={handleNext}
@@ -238,7 +238,7 @@
                         Next: Simulate Cutting
                     </button>
                     <p class="next-help">
-                        {#if !$workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)}
+                        {#if !workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)}
                             Create at least one operation with cuts to simulate
                             the cutting process.
                         {:else}

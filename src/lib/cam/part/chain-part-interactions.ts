@@ -1,4 +1,4 @@
-import { selectionStore } from '$lib/stores/selection/store';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
 import type { Part, PartVoid } from './interfaces';
 
 /**

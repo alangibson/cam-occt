@@ -5,9 +5,12 @@ import { detectParts } from '$lib/cam/part/part-detection';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
+import {
+    getShapeEndPoint,
+    getShapeStartPoint,
+    shapesBoundingBox,
+} from '$lib/cam/shape/functions';
 import { isChainClosed } from '$lib/cam/chain/functions';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 import { Shape } from '$lib/cam/shape/classes';
 
 /**
@@ -152,7 +155,7 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
         // Parse with original units (cm → mm)
         const drawing = await parseDXF(dxfContent);
 
-        const bounds = getBoundingBoxForShapes(drawing.shapes);
+        const bounds = shapesBoundingBox(drawing.shapes);
         console.log(`\n=== Analyzing Tiger DXF Gaps ===`);
         console.log(`Drawing units: ${drawing.units}`);
         console.log(

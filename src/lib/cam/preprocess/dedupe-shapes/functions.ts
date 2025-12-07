@@ -1,4 +1,3 @@
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 
 /**
@@ -11,15 +10,13 @@ import { Shape } from '$lib/cam/shape/classes';
  * @param shapes - Array of shapes to deduplicate
  * @returns Array of deduplicated shapes
  */
-export async function deduplicateShapes(
-    shapes: ShapeData[]
-): Promise<ShapeData[]> {
+export async function deduplicateShapes(shapes: Shape[]): Promise<Shape[]> {
     if (shapes.length === 0) {
         return [];
     }
 
     // Group shapes by layer
-    const shapesByLayer = new Map<string, ShapeData[]>();
+    const shapesByLayer = new Map<string, Shape[]>();
 
     for (const shape of shapes) {
         const layer = shape.layer || 'default';
@@ -30,18 +27,17 @@ export async function deduplicateShapes(
     }
 
     // Deduplicate within each layer
-    const deduplicatedShapes: ShapeData[] = [];
+    const deduplicatedShapes: Shape[] = [];
 
     for (const layerShapes of shapesByLayer.values()) {
         const seenHashes = new Set<string>();
 
-        for (const shapeData of layerShapes) {
-            const shape = new Shape(shapeData);
+        for (const shape of layerShapes) {
             const hash = await shape.hash();
 
             if (!seenHashes.has(hash)) {
                 seenHashes.add(hash);
-                deduplicatedShapes.push(shapeData);
+                deduplicatedShapes.push(shape);
             }
         }
     }

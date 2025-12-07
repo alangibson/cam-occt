@@ -1,4 +1,4 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, it, expect } from 'vitest';
 import type { ChainData } from './interfaces';
 import { GeometryType } from '$lib/geometry/enums';

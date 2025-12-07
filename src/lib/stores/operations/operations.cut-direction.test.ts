@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { get } from 'svelte/store';
-import { operationsStore } from './store';
-import { planStore } from '$lib/stores/plan/store';
-import { cutStore } from '$lib/stores/cuts/store';
-import { drawingStore } from '$lib/stores/drawing/store';
-import { toolStore } from '$lib/stores/tools/store';
+import { operationsStore } from './store.svelte';
+import { planStore } from '$lib/stores/plan/store.svelte';
+import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
+import { toolStore } from '$lib/stores/tools/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
@@ -20,7 +19,7 @@ async function waitForCuts(expectedCount: number, timeout = 100) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             if (cuts.length === expectedCount) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
@@ -166,25 +165,25 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             operationsStore.addOperation(operation);
 
             // Get the added operation and apply it
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             await operationsStore.applyOperation(operations[0].id);
 
             // Wait for async cut generation
             await waitForCuts(1);
 
             // Check that cut was created with correct cutChain
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             expect(cuts).toHaveLength(1);
 
             const cut = cuts[0];
-            expect(cut.cutChain).toBeDefined();
-            expect(cut.cutChain!.shapes).toHaveLength(4);
+            expect(cut.chain).toBeDefined();
+            expect(cut.chain!.shapes).toHaveLength(4);
 
             // Should be in original order (no reversal needed)
-            expect(cut.cutChain!.shapes[0].id).toBe('line1');
-            expect(cut.cutChain!.shapes[1].id).toBe('line2');
-            expect(cut.cutChain!.shapes[2].id).toBe('line3');
-            expect(cut.cutChain!.shapes[3].id).toBe('line4');
+            expect(cut.chain!.shapes[0].id).toBe('line1');
+            expect(cut.chain!.shapes[1].id).toBe('line2');
+            expect(cut.chain!.shapes[2].id).toBe('line3');
+            expect(cut.chain!.shapes[3].id).toBe('line4');
         });
 
         it('should create cutChain in reversed order when operation wants counterclockwise (natural = clockwise)', async () => {
@@ -252,20 +251,20 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             operationsStore.addOperation(operation);
 
             // Get the added operation and apply it
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             await operationsStore.applyOperation(operations[0].id);
 
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             const cut = cuts[0];
 
             // Should be in reversed order (reversal needed)
-            expect(cut.cutChain!.shapes[0].id).toBe('line4');
-            expect(cut.cutChain!.shapes[1].id).toBe('line3');
-            expect(cut.cutChain!.shapes[2].id).toBe('line2');
-            expect(cut.cutChain!.shapes[3].id).toBe('line1');
+            expect(cut.chain!.shapes[0].id).toBe('line4');
+            expect(cut.chain!.shapes[1].id).toBe('line3');
+            expect(cut.chain!.shapes[2].id).toBe('line2');
+            expect(cut.chain!.shapes[3].id).toBe('line1');
         });
     });
 
@@ -335,21 +334,21 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             operationsStore.addOperation(operation);
 
             // Get the added operation and apply it
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             await operationsStore.applyOperation(operations[0].id);
 
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             const cut = cuts[0];
 
             // After normalization, chains start from line1 and go counterclockwise
             // Normalized chain: line1 → line2 → line3 → line4
-            expect(cut.cutChain!.shapes[0].id).toBe('line1');
-            expect(cut.cutChain!.shapes[1].id).toBe('line2');
-            expect(cut.cutChain!.shapes[2].id).toBe('line3');
-            expect(cut.cutChain!.shapes[3].id).toBe('line4');
+            expect(cut.chain!.shapes[0].id).toBe('line1');
+            expect(cut.chain!.shapes[1].id).toBe('line2');
+            expect(cut.chain!.shapes[2].id).toBe('line3');
+            expect(cut.chain!.shapes[3].id).toBe('line4');
         });
 
         it('should create cutChain in reversed order when operation wants clockwise (natural = counterclockwise)', async () => {
@@ -417,21 +416,21 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             operationsStore.addOperation(operation);
 
             // Get the added operation and apply it
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             await operationsStore.applyOperation(operations[0].id);
 
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             const cut = cuts[0];
 
             // After normalization, the natural chain goes: line1 → line2 → line3 → line4 (counterclockwise)
             // When operation wants clockwise, it should be reversed: line4 → line3 → line2 → line1
-            expect(cut.cutChain!.shapes[0].id).toBe('line4');
-            expect(cut.cutChain!.shapes[1].id).toBe('line3');
-            expect(cut.cutChain!.shapes[2].id).toBe('line2');
-            expect(cut.cutChain!.shapes[3].id).toBe('line1');
+            expect(cut.chain!.shapes[0].id).toBe('line4');
+            expect(cut.chain!.shapes[1].id).toBe('line3');
+            expect(cut.chain!.shapes[2].id).toBe('line2');
+            expect(cut.chain!.shapes[3].id).toBe('line1');
         });
     });
 
@@ -484,21 +483,21 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             operationsStore.addOperation(clockwiseOp);
 
             // Get the added operation and apply it
-            let operations = get(operationsStore);
+            let operations = operationsStore.operations;
             await operationsStore.applyOperation(operations[0].id);
 
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             expect(cuts).toHaveLength(1);
-            expect(cuts[0].cutChain).toBeDefined();
-            expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+            expect(cuts[0].chain).toBeDefined();
+            expect(cuts[0].direction).toBe(CutDirection.CLOCKWISE);
 
             // Clear and test counterclockwise
             operationsStore.reset();
             cutStore.reset();
-            get(planStore).plan.cuts = [];
+            planStore.plan.cuts = [];
 
             const counterclockwiseOp: Omit<OperationData, 'id'> = {
                 name: 'Counterclockwise Circle',
@@ -529,18 +528,16 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             operationsStore.addOperation(counterclockwiseOp);
 
             // Get the added operation and apply it
-            operations = get(operationsStore);
+            operations = operationsStore.operations;
             await operationsStore.applyOperation(operations[0].id);
 
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cutsSecond = get(planStore).plan.cuts;
+            const cutsSecond = planStore.plan.cuts;
             expect(cutsSecond).toHaveLength(1);
-            expect(cutsSecond[0].cutChain).toBeDefined();
-            expect(cutsSecond[0].cutDirection).toBe(
-                CutDirection.COUNTERCLOCKWISE
-            );
+            expect(cutsSecond[0].chain).toBeDefined();
+            expect(cutsSecond[0].direction).toBe(CutDirection.COUNTERCLOCKWISE);
         });
     });
 
@@ -589,17 +586,17 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             operationsStore.addOperation(operation);
 
             // Get the added operation and apply it
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             await operationsStore.applyOperation(operations[0].id);
 
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             const cut = cuts[0];
 
-            expect(cut.cutDirection).toBe(CutDirection.CLOCKWISE); // Should respect operation's cut direction
-            expect(cut.cutChain!.shapes[0].id).toBe('line1'); // Should use original order
+            expect(cut.direction).toBe(CutDirection.CLOCKWISE); // Should respect operation's cut direction
+            expect(cut.chain!.shapes[0].id).toBe('line1'); // Should use original order
         });
     });
 

@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Layer } from '$lib/cam/layer/classes.svelte';
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { planStore } from '$lib/stores/plan/store';
-    import { selectionStore } from '$lib/stores/selection/store';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
     import { layerStore } from '$lib/stores/layers/store.svelte';
     import { Grid, Willow, type IColumnConfig } from '@svar-ui/svelte-grid';
     import LayerTreeCell from './LayerTreeCell.svelte';
@@ -27,9 +27,9 @@
         leadOutId?: string; // For leadOut rows
     }
 
-    const drawing = $derived($drawingStore.drawing);
+    const drawing = $derived(drawingStore.drawing);
     const fileName = $derived(drawing?.fileName ?? 'Drawing');
-    const cuts = $derived($planStore.plan.cuts);
+    const cuts = $derived(planStore.plan.cuts);
     // Get layers from Drawing class
     const layers = $derived(
         drawing
@@ -205,12 +205,12 @@
                                   }
 
                                   // Add cutChain row if it exists
-                                  if (cut.cutChain) {
+                                  if (cut.chain) {
                                       childRows.push({
                                           id: `cut-${cut.id}-cutChain`,
                                           name: 'Cut Path',
                                           type: 'Chain',
-                                          cutChainId: cut.cutChain.id,
+                                          cutChainId: cut.chain.id,
                                       });
                                   }
 

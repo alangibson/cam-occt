@@ -5,7 +5,7 @@
     import { LeadType } from '$lib/cam/lead/enums';
     import { KerfCompensation } from '$lib/cam/operation/enums';
     import { getReactiveUnitSymbol } from '$lib/config/units/units';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
 
     // Props
     export let operation: Operation;
@@ -126,7 +126,7 @@
         <div class="field-group">
             <label for="lead-in-length-{operation.id}"
                 >Length ({getReactiveUnitSymbol(
-                    $settingsStore.settings.measurementSystem
+                    settingsStore.settings.measurementSystem
                 )}):</label
             >
             <input
@@ -151,7 +151,7 @@
         <div class="field-group">
             <label for="lead-out-length-{operation.id}"
                 >Length ({getReactiveUnitSymbol(
-                    $settingsStore.settings.measurementSystem
+                    settingsStore.settings.measurementSystem
                 )}):</label
             >
             <input

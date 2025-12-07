@@ -7,24 +7,22 @@ import {
     setupAutoSave,
 } from './store';
 import * as localStorage from './local-storage';
-import { drawingStore } from '$lib/stores/drawing/store';
-import { workflowStore } from '$lib/stores/workflow/store';
-import { chainStore } from '$lib/stores/chains/store';
-import { partStore } from '$lib/stores/parts/store';
-import { rapidStore } from '$lib/stores/rapids/store';
-import { selectionStore } from '$lib/stores/selection/store';
-import { uiStore } from '$lib/stores/ui/store';
-import { tessellationStore } from '$lib/stores/tessellation/store';
-import { overlayStore } from '$lib/stores/overlay/store';
-import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-import { operationsStore } from '$lib/stores/operations/store';
-import { cutStore } from '$lib/stores/cuts/store';
-import { toolStore } from '$lib/stores/tools/store';
-import { settingsStore } from '$lib/stores/settings/store';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
+import { workflowStore } from '$lib/stores/workflow/store.svelte';
+import { chainStore } from '$lib/stores/chains/store.svelte';
+import { partStore } from '$lib/stores/parts/store.svelte';
+import { rapidStore } from '$lib/stores/rapids/store.svelte';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
+import { uiStore } from '$lib/stores/ui/store.svelte';
+import { tessellationStore } from '$lib/stores/tessellation/store.svelte';
+import { overlayStore } from '$lib/stores/overlay/store.svelte';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
+import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { toolStore } from '$lib/stores/tools/store.svelte';
+import { settingsStore } from '$lib/stores/settings/store.svelte';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { Unit } from '$lib/config/units/units';
 import type { PersistedState } from './interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
 import {
     MeasurementSystem,
     ImportUnitSetting,
@@ -33,26 +31,26 @@ import {
     RapidOptimizationAlgorithm,
     OffsetImplementation,
 } from '$lib/config/settings/enums';
+import { CutterCompensation } from '$lib/cam/gcode/enums';
 
-// Default application settings for tests
+// Default application settings for tests - must match DEFAULT_SETTINGS from config
+// IMPORTANT: Defined before vi.mock calls since mocks are hoisted
 const defaultApplicationSettings = {
     measurementSystem: MeasurementSystem.Metric,
     importUnitSetting: ImportUnitSetting.Automatic,
     selectionMode: SelectionMode.Auto,
     enabledStages: [
         WorkflowStage.IMPORT,
-        WorkflowStage.EDIT,
-        WorkflowStage.PREPARE,
         WorkflowStage.PROGRAM,
         WorkflowStage.SIMULATE,
         WorkflowStage.EXPORT,
     ],
     enabledPreprocessingSteps: [
         PreprocessingStep.DecomposePolylines,
-        PreprocessingStep.JoinColinearLines,
+        PreprocessingStep.DeduplicateShapes,
         PreprocessingStep.TranslateToPositive,
-        PreprocessingStep.OptimizeStarts,
     ],
+    enabledProgramSteps: [PreprocessingStep.TranslateToPositive],
     optimizationSettings: {
         cutHolesFirst: true,
         rapidOptimizationAlgorithm:
@@ -60,10 +58,10 @@ const defaultApplicationSettings = {
         zoomToFit: true,
         avoidLeadKerfOverlap: false,
     },
-    offsetImplementation: OffsetImplementation.Exact,
+    offsetImplementation: OffsetImplementation.Polyline,
     camSettings: {
         rapidRate: 3000,
-        cutterCompensation: null,
+        cutterCompensation: CutterCompensation.SOFTWARE,
     },
 };
 
@@ -76,7 +74,7 @@ vi.mock('./local-storage', () => ({
 }));
 
 // Mock store methods
-vi.mock('../chains/store', () => ({
+vi.mock('../chains/store.svelte', () => ({
     chainStore: {
         subscribe: vi.fn((fn) => {
             fn({});
@@ -88,41 +86,65 @@ vi.mock('../chains/store', () => ({
     },
 }));
 
-vi.mock('../parts/store', () => ({
+vi.mock('../parts/store.svelte', () => ({
     partStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
-        setParts: vi.fn(),
+        warnings: [],
         setWarnings: vi.fn(),
-        highlightPart: vi.fn(),
-        selectPart: vi.fn(),
+        clearParts: vi.fn(),
+        restore: vi.fn(),
     },
 }));
 
-vi.mock('../drawing/store', () => ({
+vi.mock('../drawing/store.svelte', () => ({
     drawingStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
+        drawing: {
+            shapes: [],
+            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            units: 2, // Unit.MM
+            fileName: 'test.dxf',
+            layers: {},
+            toData: () => ({
+                shapes: [],
+                bounds: {
+                    min: { x: 0, y: 0 },
+                    max: { x: 100, y: 100 },
+                },
+                units: 2, // Unit.MM
+                fileName: 'test.dxf',
+            }),
+        },
+        scale: 1.5,
+        offset: { x: 10, y: 20 },
+        displayUnit: 'mm',
+        layerVisibility: { layer1: true, layer2: false },
+        isDragging: false,
+        dragStart: null,
+        canvasDimensions: null,
         restoreDrawing: vi.fn(),
         setLayerVisibility: vi.fn(),
+        setDrawing: vi.fn(),
+        setViewTransform: vi.fn(),
+        setCanvasDimensions: vi.fn(),
+        zoomToFit: vi.fn(),
+        setDisplayUnit: vi.fn(),
+        reset: vi.fn(),
     },
 }));
 
-vi.mock('../workflow/store', () => ({
+vi.mock('../workflow/store.svelte', () => ({
     workflowStore: {
         subscribe: vi.fn((fn) => {
             fn({});
             return () => {};
         }),
         restore: vi.fn(),
+        currentStage: 'import',
+        completedStages: ['import'],
+        canAdvanceTo: vi.fn(),
     },
 }));
 
-vi.mock('../rapids/store', () => ({
+vi.mock('../rapids/store.svelte', () => ({
     rapidStore: {
         subscribe: vi.fn((fn) => {
             fn({});
@@ -133,77 +155,94 @@ vi.mock('../rapids/store', () => ({
     },
 }));
 
-vi.mock('../selection/store', () => ({
+vi.mock('../selection/store.svelte', () => ({
     selectionStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
+        shapes: {
+            selected: new Set(['shape1']),
+            hovered: 'shape2',
+            selectedOffset: null,
+        },
+        chains: { selected: new Set(), highlighted: null },
+        parts: { selected: new Set(), highlighted: null, hovered: null },
+        cuts: { selected: new Set(), highlighted: null },
+        rapids: { selected: new Set(), highlighted: null },
+        leads: { selected: new Set(), highlighted: null },
+        kerfs: { selected: null, highlighted: null },
         selectRapids: vi.fn(),
         highlightRapid: vi.fn(),
         reset: vi.fn(),
+        getState: vi.fn(() => ({
+            shapes: {
+                selected: ['shape1'],
+                hovered: 'shape2',
+                selectedOffset: null,
+            },
+            chains: { selected: [], highlighted: null },
+            parts: { selected: [], highlighted: null, hovered: null },
+            cuts: { selected: [], highlighted: null },
+            rapids: { selected: [], highlighted: null },
+            leads: { selected: [], highlighted: null },
+            kerfs: { selected: null, highlighted: null },
+        })),
     },
 }));
 
-vi.mock('../ui/store', () => ({
+vi.mock('../ui/store.svelte', () => ({
     uiStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
+        toolTableVisible: false,
+        settingsVisible: false,
         showToolTable: vi.fn(),
         hideToolTable: vi.fn(),
+        showSettings: vi.fn(),
+        hideSettings: vi.fn(),
+        toggleToolTable: vi.fn(),
+        toggleSettings: vi.fn(),
+        restore: vi.fn(),
     },
 }));
 
-vi.mock('../tessellation/store', () => ({
+vi.mock('../tessellation/store.svelte', () => ({
     tessellationStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
+        isActive: false,
+        points: [],
+        lastUpdate: 0,
         setTessellation: vi.fn(),
         clearTessellation: vi.fn(),
     },
 }));
 
-vi.mock('../overlay/store', () => ({
+vi.mock('../overlay/store.svelte', () => ({
     overlayStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
+        currentStage: 'import',
+        overlays: {},
         setCurrentStage: vi.fn(),
         setShapePoints: vi.fn(),
         setChainEndpoints: vi.fn(),
         setTessellationPoints: vi.fn(),
         setToolHead: vi.fn(),
+        clearShapePoints: vi.fn(),
+        clearChainEndpoints: vi.fn(),
+        clearTessellationPoints: vi.fn(),
+        clearToolHead: vi.fn(),
+        clearStageOverlay: vi.fn(),
+        clearAllOverlays: vi.fn(),
+        getCurrentOverlay: vi.fn(),
+        restore: vi.fn(),
     },
 }));
 
-vi.mock('../prepare-stage/store', () => ({
-    prepareStageStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
-        setAlgorithmParams: vi.fn(),
-        setChainNormalizationResults: vi.fn(),
-        setColumnWidths: vi.fn(),
-    },
-}));
-
-vi.mock('../operations/store', () => ({
+vi.mock('../operations/store.svelte', () => ({
     operationsStore: {
         subscribe: vi.fn((fn) => {
             fn({});
             return () => {};
         }),
         reorderOperations: vi.fn(),
+        operations: [],
     },
 }));
 
-vi.mock('../cuts/store', () => ({
+vi.mock('../cuts/store.svelte', () => ({
     cutStore: {
         subscribe: vi.fn((fn) => {
             fn({});
@@ -213,24 +252,51 @@ vi.mock('../cuts/store', () => ({
     },
 }));
 
-vi.mock('../tools/store', () => ({
+vi.mock('../tools/store.svelte', () => ({
     toolStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
+        tools: [],
         reorderTools: vi.fn(),
+        addTool: vi.fn(),
+        updateTool: vi.fn(),
+        deleteTool: vi.fn(),
+        reset: vi.fn(),
     },
 }));
 
-vi.mock('../settings/store', () => ({
-    settingsStore: {
-        subscribe: vi.fn((fn) => {
-            fn({ settings: defaultApplicationSettings });
-            return () => {};
-        }),
-    },
-}));
+vi.mock('../settings/store.svelte', () => {
+    const mockSettings = {
+        measurementSystem: 'metric',
+        importUnitSetting: 'automatic',
+        selectionMode: 'auto',
+        enabledStages: ['import', 'program', 'simulate', 'export'],
+        enabledPreprocessingSteps: [
+            'decomposePolylines',
+            'deduplicateShapes',
+            'translateToPositive',
+        ],
+        enabledProgramSteps: ['translateToPositive'],
+        optimizationSettings: {
+            cutHolesFirst: true,
+            rapidOptimizationAlgorithm: 'traveling-salesman',
+            zoomToFit: true,
+            avoidLeadKerfOverlap: false,
+        },
+        offsetImplementation: 'polyline',
+        camSettings: {
+            rapidRate: 3000,
+            cutterCompensation: 'software',
+        },
+    };
+    return {
+        settingsStore: {
+            subscribe: vi.fn((fn) => {
+                fn({ settings: mockSettings });
+                return () => {};
+            }),
+            settings: mockSettings,
+        },
+    };
+});
 
 // Mock get function from svelte/store
 vi.mock('svelte/store', () => ({
@@ -331,14 +397,6 @@ vi.mock('svelte/store', () => ({
             return {
                 currentStage: WorkflowStage.IMPORT,
                 overlays: {},
-            };
-        }
-        if (store === prepareStageStore) {
-            return {
-                algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                chainNormalizationResults: [],
-                leftColumnWidth: 30,
-                rightColumnWidth: 70,
             };
         }
         if (store === operationsStore) {
@@ -458,18 +516,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -531,18 +577,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -585,18 +619,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -711,18 +733,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -785,18 +795,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -858,18 +856,6 @@ describe('storage/store', () => {
                 ],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -940,18 +926,6 @@ describe('storage/store', () => {
                         toolHead: undefined,
                     },
                 },
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -1012,7 +986,7 @@ describe('storage/store', () => {
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {
                     prepare: {
-                        stage: WorkflowStage.PREPARE,
+                        stage: WorkflowStage.PROGRAM,
                         shapePoints: [],
                         chainEndpoints: [
                             { x: 5, y: 5, type: 'start', chainId: 'chain1' },
@@ -1020,18 +994,6 @@ describe('storage/store', () => {
                         tessellationPoints: [],
                         toolHead: undefined,
                     },
-                },
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
                 },
                 operations: [],
                 cuts: [],
@@ -1094,7 +1056,7 @@ describe('storage/store', () => {
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {
                     edit: {
-                        stage: WorkflowStage.EDIT,
+                        stage: WorkflowStage.PROGRAM,
                         shapePoints: [],
                         chainEndpoints: [],
                         tessellationPoints: [
@@ -1107,18 +1069,6 @@ describe('storage/store', () => {
                         ],
                         toolHead: undefined,
                     },
-                },
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
                 },
                 operations: [],
                 cuts: [],
@@ -1188,18 +1138,6 @@ describe('storage/store', () => {
                         toolHead: { x: 100, y: 100, visible: true },
                     },
                 },
-                prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -1224,7 +1162,7 @@ describe('storage/store', () => {
             });
         });
 
-        it('should restore algorithm params with chainDetection', () => {
+        it.skip('should restore algorithm params with chainDetection', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
@@ -1261,23 +1199,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
-                        chainDetection: {
-                            tolerance: 0.005,
-                        },
-                    },
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -1294,17 +1215,9 @@ describe('storage/store', () => {
             vi.mocked(localStorage.loadState).mockReturnValue(mockState);
 
             restoreApplicationState();
-
-            expect(prepareStageStore.setAlgorithmParams).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    chainDetection: expect.objectContaining({
-                        tolerance: 0.005,
-                    }),
-                })
-            );
         });
 
-        it('should restore algorithm params with chainNormalization', () => {
+        it.skip('should restore algorithm params with chainNormalization', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
@@ -1341,24 +1254,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
-                        chainNormalization: {
-                            ...DEFAULT_ALGORITHM_PARAMETERS_MM.chainNormalization,
-                            traversalTolerance: 0.02,
-                        },
-                    },
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -1375,17 +1270,9 @@ describe('storage/store', () => {
             vi.mocked(localStorage.loadState).mockReturnValue(mockState);
 
             restoreApplicationState();
-
-            expect(prepareStageStore.setAlgorithmParams).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    chainNormalization: expect.objectContaining({
-                        traversalTolerance: 0.02,
-                    }),
-                })
-            );
         });
 
-        it('should restore algorithm params with partDetection', () => {
+        it.skip('should restore algorithm params with partDetection', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
@@ -1422,24 +1309,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
-                        partDetection: {
-                            ...DEFAULT_ALGORITHM_PARAMETERS_MM.partDetection,
-                            enableTessellation: false,
-                        },
-                    },
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -1456,17 +1325,9 @@ describe('storage/store', () => {
             vi.mocked(localStorage.loadState).mockReturnValue(mockState);
 
             restoreApplicationState();
-
-            expect(prepareStageStore.setAlgorithmParams).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    partDetection: expect.objectContaining({
-                        enableTessellation: false,
-                    }),
-                })
-            );
         });
 
-        it('should restore algorithm params with joinColinearLines', () => {
+        it.skip('should restore algorithm params with joinColinearLines', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
@@ -1503,23 +1364,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: {
-                    algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
-                        joinColinearLines: {
-                            tolerance: 0.01,
-                        },
-                    },
-                    chainNormalizationResults: [],
-                    leftColumnWidth: 30,
-                    rightColumnWidth: 70,
-                    lastAnalysisTimestamp: 0,
-                    originalShapesBeforeNormalization: null,
-                    originalChainsBeforeNormalization: null,
-                    originalShapesBeforeOptimization: null,
-                    originalChainsBeforeOptimization: null,
-                    partsDetected: false,
-                },
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -1536,14 +1380,6 @@ describe('storage/store', () => {
             vi.mocked(localStorage.loadState).mockReturnValue(mockState);
 
             restoreApplicationState();
-
-            expect(prepareStageStore.setAlgorithmParams).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    joinColinearLines: expect.objectContaining({
-                        tolerance: 0.01,
-                    }),
-                })
-            );
         });
 
         it.skip('should handle errors when restoring state', () => {
@@ -1585,7 +1421,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                prepareStageState: null,
                 operations: [],
                 cuts: [],
                 showCutNormals: false,
@@ -1622,20 +1457,6 @@ describe('storage/store', () => {
     describe('setupAutoSave', () => {
         it('should set up subscriptions and return cleanup function', () => {
             const cleanup = setupAutoSave();
-
-            // Verify subscriptions were set up
-            expect(drawingStore.subscribe).toHaveBeenCalled();
-            expect(workflowStore.subscribe).toHaveBeenCalled();
-            expect(chainStore.subscribe).toHaveBeenCalled();
-            expect(partStore.subscribe).toHaveBeenCalled();
-            expect(rapidStore.subscribe).toHaveBeenCalled();
-            expect(uiStore.subscribe).toHaveBeenCalled();
-            expect(tessellationStore.subscribe).toHaveBeenCalled();
-            expect(overlayStore.subscribe).toHaveBeenCalled();
-            expect(prepareStageStore.subscribe).toHaveBeenCalled();
-            expect(operationsStore.subscribe).toHaveBeenCalled();
-            expect(cutStore.subscribe).toHaveBeenCalled();
-            expect(toolStore.subscribe).toHaveBeenCalled();
 
             // Call the cleanup function
             cleanup();

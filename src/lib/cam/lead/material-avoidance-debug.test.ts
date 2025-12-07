@@ -9,7 +9,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import { getChainTangent } from '$lib/cam/chain/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Debug test to understand the material avoidance logic and identify the correct behavior

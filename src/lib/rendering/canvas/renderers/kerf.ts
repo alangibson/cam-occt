@@ -11,7 +11,7 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import type { Kerf } from '$lib/cam/kerf/interfaces';
+import type { KerfData } from '$lib/cam/kerf/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -90,7 +90,7 @@ export class KerfRenderer extends BaseRenderer {
      */
     private renderKerf(
         ctx: CanvasRenderingContext2D,
-        kerf: Kerf,
+        kerf: KerfData,
         state: RenderState
     ): void {
         ctx.save();
@@ -372,10 +372,12 @@ export class KerfRenderer extends BaseRenderer {
                 cut.offset.offsetShapes.length > 0
             ) {
                 shapesToDraw = cut.offset.offsetShapes;
-            } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
-                shapesToDraw = cut.cutChain.shapes;
+            } else if (cut.chain?.shapes && cut.chain.shapes.length > 0) {
+                shapesToDraw = cut.chain.shapes;
             } else {
-                const chain = state.chains.find((c) => c.id === cut.chainId);
+                const chain = state.chains.find(
+                    (c) => c.id === cut.sourceChainId
+                );
                 if (chain && chain.shapes.length > 0) {
                     shapesToDraw = chain.shapes;
                 }

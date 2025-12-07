@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';

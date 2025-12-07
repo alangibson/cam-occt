@@ -4,8 +4,8 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { polylineToPoints } from '$lib/geometry/polyline/functions';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 
@@ -26,7 +26,7 @@ describe('Lead Solid Area Verification - Catch the Error', () => {
         const shellShape = part5.shell.shapes[0];
 
         if (shellShape.type === 'polyline') {
-            const polylineGeom = shellShape.geometry as Polyline;
+            const polylineGeom = shellShape.geometry as DxfPolyline;
 
             // Calculate bounding box
             let minX = Infinity,

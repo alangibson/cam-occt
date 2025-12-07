@@ -5,34 +5,26 @@
  */
 
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { partStore } from '$lib/stores/parts/store';
-import { overlayStore } from '$lib/stores/overlay/store';
-import { tessellationStore } from '$lib/stores/tessellation/store';
-import { cutStore } from '$lib/stores/cuts/store';
-import { operationsStore } from '$lib/stores/operations/store';
-import { rapidStore } from '$lib/stores/rapids/store';
-import { workflowStore } from '$lib/stores/workflow/store';
-import { planStore } from '$lib/stores/plan/store';
-
-// Import workflow store for state management
-interface WorkflowStore {
-    invalidateDownstreamStages: (
-        fromStage: 'edit' | WorkflowStage.PREPARE
-    ) => void;
-}
+import { partStore } from '$lib/stores/parts/store.svelte';
+import { overlayStore } from '$lib/stores/overlay/store.svelte';
+import { tessellationStore } from '$lib/stores/tessellation/store.svelte';
+import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
+import { rapidStore } from '$lib/stores/rapids/store.svelte';
+import { workflowStore } from '$lib/stores/workflow/store.svelte';
+import { planStore } from '$lib/stores/plan/store.svelte';
 
 /**
  * Helper function to reset downstream stages when drawing is modified
  */
 export const resetDownstreamStages = (
-    fromStage: 'edit' | WorkflowStage.PREPARE = 'edit'
+    fromStage: WorkflowStage = WorkflowStage.IMPORT
 ): void => {
     // Clear stage-specific data
     // Chains are auto-generated from drawing layers, no need to clear them
     partStore.clearParts();
 
     // Clear other stores
-    overlayStore.clearStageOverlay(WorkflowStage.PREPARE);
     overlayStore.clearStageOverlay(WorkflowStage.PROGRAM);
     overlayStore.clearStageOverlay(WorkflowStage.SIMULATE);
     overlayStore.clearStageOverlay(WorkflowStage.EXPORT);
@@ -45,5 +37,5 @@ export const resetDownstreamStages = (
     planStore.reset();
 
     // Reset workflow completion status for downstream stages
-    (workflowStore as WorkflowStore).invalidateDownstreamStages(fromStage);
+    workflowStore.invalidateDownstreamStages(fromStage);
 };

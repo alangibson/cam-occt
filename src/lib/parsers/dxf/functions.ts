@@ -5,11 +5,11 @@ import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { PolylineVertex } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolylineVertex } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { generateId } from '$lib/domain/id';
-import { generateSegments } from '$lib/geometry/polyline/functions';
+import { generateSegments } from '$lib/geometry/dxf-polyline/functions';
 import { normalizeSplineWeights } from '$lib/geometry/spline/functions';
 import {
     FULL_CIRCLE_RADIANS,
@@ -32,7 +32,7 @@ import {
     DEFAULT_SPLINE_DEGREE,
     MIN_CONTROL_POINTS_FOR_SPLINE,
 } from '$lib/geometry/spline/constants';
-import { MIN_VERTICES_FOR_POLYLINE } from '$lib/geometry/polyline/constants';
+import { MIN_VERTICES_FOR_POLYLINE } from '$lib/geometry/dxf-polyline/constants';
 
 function convertEllipseEntity(entity: DXFEntity): ShapeData | null {
     // Handle ELLIPSE entities
@@ -87,7 +87,7 @@ function convertPolylineEntity(entity: DXFEntity): ShapeData | null {
         entity.vertices.length > 0
     ) {
         // Filter and map vertices to preserve bulge data
-        const vertices: PolylineVertex[] = entity.vertices
+        const vertices: DxfPolylineVertex[] = entity.vertices
             .filter(
                 (v: { x?: number | null; y?: number | null }) =>
                     v &&

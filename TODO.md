@@ -1,21 +1,13 @@
+- Add ability to delete shapes from Drawing tree in LayersPanel
+
 ## Fix UI
 
+- Enable hole underspeed should be available when creating operations on chains, not just parts
+- Don't automatically Apply To when creating other than first operation
+- hover highlighting doesnt work on shapes
 - Place cut direction chevrons at regular intervals around Path
 - Add chevrons to Rapid
-
-## From snowgoer
-
-- Fix degree 3 spline offset
-- Add developer mode to settings that does this:
-  - Developer mode defaults to off
-  - Hide Edit and Prepare stages when on
-  - Automatically apply when on
-    - Decompose Polylines
-    - Translate to Positive
-    - Detect Chains
-    - Normalize Chains
-    - Optimize Starts
-    - Detect Parts
+- Dont display "Shapes in Chain" in InspectPanel for Chain type
 
 ## Fix
 

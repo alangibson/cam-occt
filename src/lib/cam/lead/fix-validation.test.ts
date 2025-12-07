@@ -12,7 +12,7 @@ import { Cut } from '$lib/cam/cut/classes.svelte';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Test to validate that the clockwise property fix works in the actual code cuts
@@ -82,15 +82,15 @@ describe('Clockwise Property Fix Validation', () => {
         return new Cut({
             id: 'test-cut',
             name: 'Test Cut',
-            operationId: 'test-operation',
-            chainId: originalChain.id,
-            toolId: 'test-tool',
+            sourceOperationId: 'test-operation',
+            sourceChainId: originalChain.id,
+            sourceToolId: 'test-tool',
             enabled: true,
             order: 1,
             action: OperationAction.CUT,
             leadInConfig: baseLeadConfig,
             leadOutConfig: { type: LeadType.NONE, length: 0 },
-            cutDirection: CutDirection.CLOCKWISE,
+            direction: CutDirection.CLOCKWISE,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
             normalSide: NormalSide.LEFT,

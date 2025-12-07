@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
@@ -40,13 +40,13 @@ describe('cutToToolPath', () => {
     const createMockCut = (overrides: Partial<CutData> = {}): CutData => ({
         id: 'test-cut',
         name: 'Test Cut',
-        operationId: 'test-operation',
-        chainId: 'test-chain',
-        toolId: null,
+        sourceOperationId: 'test-operation',
+        sourceChainId: 'test-chain',
+        sourceToolId: null,
         enabled: true,
         order: 0,
         action: OperationAction.CUT,
-        cutDirection: 'clockwise' as CutDirection,
+        direction: 'clockwise' as CutDirection,
         feedRate: 2000,
         pierceHeight: 4.0,
         pierceDelay: 1.0,
@@ -77,7 +77,7 @@ describe('cutToToolPath', () => {
 
     describe('basic cut conversion', () => {
         it('should convert cut with original shapes', async () => {
-            const cut = createMockCut({ toolId: 'test-tool-1' });
+            const cut = createMockCut({ sourceToolId: 'test-tool-1' });
             const shapes: Shape[] = [
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
@@ -144,7 +144,7 @@ describe('cutToToolPath', () => {
 
         it('should use offset shapes when available', async () => {
             const cut = createMockCut({
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'test-chain-cut',
                     name: 'test-chain-cut',
                     shapes: [
@@ -199,7 +199,7 @@ describe('cutToToolPath', () => {
             ]);
             // Should use cutChain shapes, which contain the offset shapes
             expect(mockGetShapePoints).toHaveBeenCalledWith(
-                cut.cutChain!.shapes[0],
+                cut.chain!.shapes[0],
                 false
             );
         });
@@ -426,7 +426,7 @@ describe('cutToToolPath', () => {
         it('should include lead-in when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
             const cut = createMockCut({
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'test-chain-cut',
                     name: 'test-chain-cut',
                     shapes: [
@@ -503,7 +503,7 @@ describe('cutToToolPath', () => {
         it('should exclude lead-in when it does not connect to offset geometry', async () => {
             // Real function will handle this case
             const cut = createMockCut({
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'test-chain-cut',
                     name: 'test-chain-cut',
                     shapes: [
@@ -656,7 +656,7 @@ describe('cutToToolPath', () => {
         it('should include lead-out when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
             const cut = createMockCut({
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'test-chain-cut',
                     name: 'test-chain-cut',
                     shapes: [
@@ -732,7 +732,7 @@ describe('cutToToolPath', () => {
 
         it('should exclude lead-out when it does not connect to offset geometry', async () => {
             const cut = createMockCut({
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'test-chain-cut',
                     name: 'test-chain-cut',
                     shapes: [
@@ -836,13 +836,13 @@ describe('cutsToToolPaths', () => {
     const createMockCut = (overrides: Partial<CutData> = {}): CutData => ({
         id: 'test-cut',
         name: 'Test Cut',
-        operationId: 'test-operation',
-        chainId: 'test-chain',
-        toolId: null,
+        sourceOperationId: 'test-operation',
+        sourceChainId: 'test-chain',
+        sourceToolId: null,
         enabled: true,
         order: 0,
         action: OperationAction.CUT,
-        cutDirection: 'clockwise' as CutDirection,
+        direction: 'clockwise' as CutDirection,
         feedRate: 2000,
         pierceHeight: 4.0,
         pierceDelay: 1.0,
@@ -940,8 +940,8 @@ describe('cutsToToolPaths', () => {
 
         it('should skip cuts with missing chain shapes', async () => {
             const cuts: CutData[] = [
-                createMockCut({ id: 'cut-1', chainId: 'existing-chain' }),
-                createMockCut({ id: 'cut-2', chainId: 'missing-chain' }),
+                createMockCut({ id: 'cut-1', sourceChainId: 'existing-chain' }),
+                createMockCut({ id: 'cut-2', sourceChainId: 'missing-chain' }),
             ];
 
             const chainShapes = new Map<string, Shape[]>([

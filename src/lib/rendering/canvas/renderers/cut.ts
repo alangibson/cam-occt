@@ -45,10 +45,10 @@ function getShapesForCut(
 ): ShapeData[] | null {
     if (cut.offset?.offsetShapes && cut.offset.offsetShapes.length > 0) {
         return cut.offset.offsetShapes;
-    } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
-        return cut.cutChain.shapes;
+    } else if (cut.chain?.shapes && cut.chain.shapes.length > 0) {
+        return cut.chain.shapes;
     } else {
-        const chain = chains.find((c) => c.id === cut.chainId);
+        const chain = chains.find((c) => c.id === cut.sourceChainId);
         if (chain && chain.shapes.length > 0) {
             return chain.shapes;
         }
@@ -117,12 +117,14 @@ export class CutRenderer extends BaseRenderer {
             ) {
                 // Use offset shapes if available (kerf compensation applied)
                 shapesToDraw = cut.offset.offsetShapes;
-            } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
+            } else if (cut.chain?.shapes && cut.chain.shapes.length > 0) {
                 // Use cutChain if no offset (kerf compensation NONE)
-                shapesToDraw = cut.cutChain.shapes;
+                shapesToDraw = cut.chain.shapes;
             } else {
                 // Fall back to original chain shapes
-                const chain = state.chains.find((c) => c.id === cut.chainId);
+                const chain = state.chains.find(
+                    (c) => c.id === cut.sourceChainId
+                );
                 if (chain && chain.shapes.length > 0) {
                     shapesToDraw = chain.shapes;
                 }
@@ -505,10 +507,12 @@ export class CutRenderer extends BaseRenderer {
                 cut.offset.offsetShapes.length > 0
             ) {
                 shapesToTest = cut.offset.offsetShapes;
-            } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
-                shapesToTest = cut.cutChain.shapes;
+            } else if (cut.chain?.shapes && cut.chain.shapes.length > 0) {
+                shapesToTest = cut.chain.shapes;
             } else {
-                const chain = state.chains.find((c) => c.id === cut.chainId);
+                const chain = state.chains.find(
+                    (c) => c.id === cut.sourceChainId
+                );
                 if (chain && chain.shapes.length > 0) {
                     shapesToTest = chain.shapes;
                 }

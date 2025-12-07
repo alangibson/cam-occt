@@ -10,7 +10,7 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
@@ -518,7 +518,7 @@ export class ShapeRenderer extends BaseRenderer {
                 return distanceFromEllipsePerimeter(point, ellipse);
 
             case GeometryType.POLYLINE:
-                const polyline = shape.geometry as Polyline;
+                const polyline = shape.geometry as DxfPolyline;
                 if (!polyline.shapes || polyline.shapes.length === 0)
                     return Infinity;
 

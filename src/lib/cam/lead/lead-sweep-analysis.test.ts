@@ -8,7 +8,7 @@ import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Lead Sweep Direction Analysis', () => {
     /**

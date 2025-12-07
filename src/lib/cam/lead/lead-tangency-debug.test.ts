@@ -7,7 +7,7 @@ import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { convertLeadGeometryToPoints } from './functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Lead Tangency Debug', () => {
     function createLineChain(

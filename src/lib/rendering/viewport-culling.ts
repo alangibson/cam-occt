@@ -8,7 +8,7 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
-import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
+import { shapeBoundingBox } from '$lib/cam/shape/functions';
 import {
     QUARTER_PERCENT,
     THREE_QUARTERS_PERCENT,
@@ -49,7 +49,7 @@ function convertBoundingBox(bbox: BoundingBoxData): ShapeBounds {
  */
 export function calculateShapeBounds(shape: ShapeData): ShapeBounds {
     try {
-        const bbox = getBoundingBoxForShape(shape);
+        const bbox = shapeBoundingBox(shape);
         return convertBoundingBox(bbox);
     } catch (error) {
         console.warn(

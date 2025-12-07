@@ -4,10 +4,10 @@ import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
 import type {
-    PolylineVertex,
-    Polyline,
-} from '$lib/geometry/polyline/interfaces';
-import { polylineToVertices } from '$lib/geometry/polyline/functions';
+    DxfPolylineVertex,
+    DxfPolyline,
+} from '$lib/geometry/dxf-polyline/interfaces';
+import { polylineToVertices } from '$lib/geometry/dxf-polyline/functions';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 
 describe('DXF Parser - Integration Tests', () => {
@@ -148,9 +148,11 @@ EOF`;
             // Verify bulge values are preserved in segments (via vertices utility)
             const polylinesWithBulge = polylines.filter((p) => {
                 if (p.type === 'polyline' && p.geometry) {
-                    const vertices = polylineToVertices(p.geometry as Polyline);
+                    const vertices = polylineToVertices(
+                        p.geometry as DxfPolyline
+                    );
                     return vertices.some(
-                        (vertex: PolylineVertex) =>
+                        (vertex: DxfPolylineVertex) =>
                             vertex.bulge !== undefined && vertex.bulge !== 0
                     );
                 }

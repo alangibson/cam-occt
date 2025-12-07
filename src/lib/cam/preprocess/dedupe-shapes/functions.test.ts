@@ -3,6 +3,7 @@ import { deduplicateShapes } from './functions';
 import { GeometryType } from '$lib/geometry/enums';
 import { generateId } from '$lib/domain/id';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('deduplicateShapes', () => {
     it('should remove exact duplicate shapes within same layer', async () => {
@@ -27,11 +28,11 @@ describe('deduplicateShapes', () => {
             },
         ];
 
-        const result = await deduplicateShapes(shapes);
+        const result = await deduplicateShapes(shapes.map((s) => new Shape(s)));
 
         expect(result).toHaveLength(2);
-        expect(result[0]).toEqual(shapes[0]);
-        expect(result[1]).toEqual(shapes[2]);
+        expect(result[0].toData()).toEqual(shapes[0]);
+        expect(result[1].toData()).toEqual(shapes[2]);
     });
 
     it('should not deduplicate across different layers', async () => {
@@ -50,11 +51,11 @@ describe('deduplicateShapes', () => {
             },
         ];
 
-        const result = await deduplicateShapes(shapes);
+        const result = await deduplicateShapes(shapes.map((s) => new Shape(s)));
 
         expect(result).toHaveLength(2);
-        expect(result[0]).toEqual(shapes[0]);
-        expect(result[1]).toEqual(shapes[1]);
+        expect(result[0].toData()).toEqual(shapes[0]);
+        expect(result[1].toData()).toEqual(shapes[1]);
     });
 
     it('should preserve order of first occurrence', async () => {
@@ -79,11 +80,11 @@ describe('deduplicateShapes', () => {
             },
         ];
 
-        const result = await deduplicateShapes(shapes);
+        const result = await deduplicateShapes(shapes.map((s) => new Shape(s)));
 
         expect(result).toHaveLength(2);
-        expect(result[0]).toEqual(shapes[0]);
-        expect(result[1]).toEqual(shapes[1]);
+        expect(result[0].toData()).toEqual(shapes[0]);
+        expect(result[1].toData()).toEqual(shapes[1]);
     });
 
     it('should handle empty array', async () => {
@@ -101,10 +102,10 @@ describe('deduplicateShapes', () => {
             },
         ];
 
-        const result = await deduplicateShapes(shapes);
+        const result = await deduplicateShapes(shapes.map((s) => new Shape(s)));
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual(shapes[0]);
+        expect(result[0].toData()).toEqual(shapes[0]);
     });
 
     it('should handle shapes without layer property', async () => {
@@ -121,7 +122,7 @@ describe('deduplicateShapes', () => {
             },
         ];
 
-        const result = await deduplicateShapes(shapes);
+        const result = await deduplicateShapes(shapes.map((s) => new Shape(s)));
 
         expect(result).toHaveLength(1);
     });
@@ -148,10 +149,10 @@ describe('deduplicateShapes', () => {
             },
         ];
 
-        const result = await deduplicateShapes(shapes);
+        const result = await deduplicateShapes(shapes.map((s) => new Shape(s)));
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual(shapes[0]);
+        expect(result[0].toData()).toEqual(shapes[0]);
     });
 
     it('should handle different geometry types', async () => {
@@ -182,7 +183,7 @@ describe('deduplicateShapes', () => {
             },
         ];
 
-        const result = await deduplicateShapes(shapes);
+        const result = await deduplicateShapes(shapes.map((s) => new Shape(s)));
 
         expect(result).toHaveLength(2);
         expect(result[0].type).toBe(GeometryType.LINE);

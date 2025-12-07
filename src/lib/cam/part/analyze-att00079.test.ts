@@ -8,8 +8,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
-import { isChainClosed } from '$lib/cam/chain/functions';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import { isChainClosed, chainBoundingBox } from '$lib/cam/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
@@ -73,7 +72,7 @@ describe('ATT00079.dxf Part Detection Verification', () => {
                 chainId,
                 shapeCount: chain.shapes.length,
                 shapeTypes: chain.shapes.map((s) => s.type).join(', '),
-                bounds: calculateChainBoundingBox(chain),
+                bounds: chainBoundingBox(chain),
                 gapDistance: 0,
                 isClosed: false,
                 potentialContainers: [] as ContainerInfo[],
@@ -95,7 +94,7 @@ describe('ATT00079.dxf Part Detection Verification', () => {
             for (const otherChain of closedChains) {
                 if (otherChain.id === chainId) continue;
 
-                const otherBounds = calculateChainBoundingBox(otherChain);
+                const otherBounds = chainBoundingBox(otherChain);
 
                 // Check bounding box containment
                 const isContained =

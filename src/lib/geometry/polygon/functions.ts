@@ -6,6 +6,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polygon } from './interfaces';
 import { POLYGON_POINTS_MIN } from '$lib/cam/chain/constants';
 import { doLineSegmentsIntersect } from '$lib/geometry/line/functions';
 import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
@@ -15,14 +16,15 @@ import { getDefaults } from '$lib/config/defaults/defaults-manager';
  * Calculate the area of a polygon using the shoelace formula
  * Consolidated from multiple implementations
  */
-export function calculatePolygonArea(polygon: Point2D[]): number {
-    if (polygon.length < POLYGON_POINTS_MIN) return 0;
+export function calculatePolygonArea(polygon: Polygon): number {
+    const points = polygon.points;
+    if (points.length < POLYGON_POINTS_MIN) return 0;
 
     let area: number = 0;
-    for (let i: number = 0; i < polygon.length; i++) {
-        const j: number = (i + 1) % polygon.length;
-        area += polygon[i].x * polygon[j].y;
-        area -= polygon[j].x * polygon[i].y;
+    for (let i: number = 0; i < points.length; i++) {
+        const j: number = (i + 1) % points.length;
+        area += points[i].x * points[j].y;
+        area -= points[j].x * points[i].y;
     }
 
     return Math.abs(area) / 2;
@@ -32,22 +34,23 @@ export function calculatePolygonArea(polygon: Point2D[]): number {
  * Point-in-polygon test using ray casting algorithm
  * Consolidated from geometric-containment.ts, geometric-operations.ts, and polygon-utilities.ts
  */
-export function isPointInPolygon(point: Point2D, polygon: Point2D[]): boolean {
-    if (polygon.length < POLYGON_POINTS_MIN) return false;
+export function isPointInPolygon(point: Point2D, polygon: Polygon): boolean {
+    const points = polygon.points;
+    if (points.length < POLYGON_POINTS_MIN) return false;
 
     let inside: boolean = false;
     const x: number = point.x;
     const y: number = point.y;
 
     for (
-        let i: number = 0, j: number = polygon.length - 1;
-        i < polygon.length;
+        let i: number = 0, j: number = points.length - 1;
+        i < points.length;
         j = i++
     ) {
-        const xi: number = polygon[i].x;
-        const yi: number = polygon[i].y;
-        const xj: number = polygon[j].x;
-        const yj: number = polygon[j].y;
+        const xi: number = points[i].x;
+        const yi: number = points[i].y;
+        const xj: number = points[j].x;
+        const yj: number = points[j].y;
 
         if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
             inside = !inside;
@@ -55,25 +58,27 @@ export function isPointInPolygon(point: Point2D, polygon: Point2D[]): boolean {
     }
 
     return inside;
-} /**
+}
+
+/**
  * Calculates the bounding box of a polygon
  */
-
 export function calculatePolygonBounds(
-    polygon: Point2D[]
+    polygon: Polygon
 ): { min: Point2D; max: Point2D } | null {
-    if (polygon.length === 0) return null;
+    const points = polygon.points;
+    if (points.length === 0) return null;
 
-    let minX: number = polygon[0].x;
-    let maxX: number = polygon[0].x;
-    let minY: number = polygon[0].y;
-    let maxY: number = polygon[0].y;
+    let minX: number = points[0].x;
+    let maxX: number = points[0].x;
+    let minY: number = points[0].y;
+    let maxY: number = points[0].y;
 
-    for (let i: number = 1; i < polygon.length; i++) {
-        minX = Math.min(minX, polygon[i].x);
-        maxX = Math.max(maxX, polygon[i].x);
-        minY = Math.min(minY, polygon[i].y);
-        maxY = Math.max(maxY, polygon[i].y);
+    for (let i: number = 1; i < points.length; i++) {
+        minX = Math.min(minX, points[i].x);
+        maxX = Math.max(maxX, points[i].x);
+        minY = Math.min(minY, points[i].y);
+        maxY = Math.max(maxY, points[i].y);
     }
 
     return {
@@ -81,12 +86,13 @@ export function calculatePolygonBounds(
         max: { x: maxX, y: maxY },
     };
 }
+
 /**
  * Calculates the centroid of a polygon
  */
-
-export function calculatePolygonCentroid2(polygon: Point2D[]): Point2D | null {
-    if (polygon.length < POLYGON_POINTS_MIN) return null;
+export function calculatePolygonCentroid2(polygon: Polygon): Point2D | null {
+    const points = polygon.points;
+    if (points.length < POLYGON_POINTS_MIN) return null;
 
     const area = calculatePolygonArea(polygon);
     if (area === 0) return null;
@@ -94,16 +100,15 @@ export function calculatePolygonCentroid2(polygon: Point2D[]): Point2D | null {
     let cx = 0;
     let cy = 0;
 
-    for (let i = 0; i < polygon.length; i++) {
-        const j = (i + 1) % polygon.length;
-        const factor =
-            polygon[i].x * polygon[j].y - polygon[j].x * polygon[i].y;
-        cx += (polygon[i].x + polygon[j].x) * factor;
-        cy += (polygon[i].y + polygon[j].y) * factor;
+    for (let i = 0; i < points.length; i++) {
+        const j = (i + 1) % points.length;
+        const factor = points[i].x * points[j].y - points[j].x * points[i].y;
+        cx += (points[i].x + points[j].x) * factor;
+        cy += (points[i].y + points[j].y) * factor;
     }
 
     // eslint-disable-next-line no-magic-numbers
-    const signedArea = area * (polygon[0].x < polygon[1].x ? 1 : -1);
+    const signedArea = area * (points[0].x < points[1].x ? 1 : -1);
     // eslint-disable-next-line no-magic-numbers
     cx /= 6 * signedArea;
     // eslint-disable-next-line no-magic-numbers
@@ -111,17 +116,18 @@ export function calculatePolygonCentroid2(polygon: Point2D[]): Point2D | null {
 
     return { x: cx, y: cy };
 }
-/**
- * Removes duplicate points from an array
- */
 
+/**
+ * Removes duplicate points from a polygon
+ */
 export function removeDuplicatePoints(
-    points: Point2D[],
+    polygon: Polygon,
     tolerance?: number
-): Point2D[] {
+): Polygon {
+    const points = polygon.points;
     const effectiveTolerance =
         tolerance ?? getDefaults().geometry.precisionTolerance;
-    if (points.length <= 1) return points;
+    if (points.length <= 1) return polygon;
 
     const result: Point2D[] = [points[0]];
 
@@ -136,18 +142,18 @@ export function removeDuplicatePoints(
         }
     }
 
-    return result;
+    return { points: result };
 }
+
 /**
  * Checks if one polygon is completely contained within another
  */
-
 export function isPolygonContained(
-    innerPolygon: Point2D[],
-    outerPolygon: Point2D[]
+    innerPolygon: Polygon,
+    outerPolygon: Polygon
 ): boolean {
     // Check if all points of inner polygon are inside outer polygon
-    for (const point of innerPolygon) {
+    for (const point of innerPolygon.points) {
         if (!isPointInPolygon(point, outerPolygon)) {
             return false;
         }
@@ -157,18 +163,22 @@ export function isPolygonContained(
     // If inner is truly contained, no edges should intersect
     return !doPolygonsIntersect(innerPolygon, outerPolygon);
 }
+
 /**
  * Checks if two polygons intersect at their edges
  */
-function doPolygonsIntersect(poly1: Point2D[], poly2: Point2D[]): boolean {
-    // Check each edge of poly1 against each edge of poly2
-    for (let i: number = 0; i < poly1.length; i++) {
-        const p1: Point2D = poly1[i];
-        const p2: Point2D = poly1[(i + 1) % poly1.length];
+function doPolygonsIntersect(poly1: Polygon, poly2: Polygon): boolean {
+    const points1 = poly1.points;
+    const points2 = poly2.points;
 
-        for (let j: number = 0; j < poly2.length; j++) {
-            const p3: Point2D = poly2[j];
-            const p4: Point2D = poly2[(j + 1) % poly2.length];
+    // Check each edge of poly1 against each edge of poly2
+    for (let i: number = 0; i < points1.length; i++) {
+        const p1: Point2D = points1[i];
+        const p2: Point2D = points1[(i + 1) % points1.length];
+
+        for (let j: number = 0; j < points2.length; j++) {
+            const p3: Point2D = points2[j];
+            const p4: Point2D = points2[(j + 1) % points2.length];
 
             if (doLineSegmentsIntersect(p1, p2, p3, p4)) {
                 return true;
@@ -178,12 +188,14 @@ function doPolygonsIntersect(poly1: Point2D[], poly2: Point2D[]): boolean {
 
     return false;
 }
+
 /**
  * Calculate signed area using the shoelace formula
  * Positive area indicates counterclockwise orientation
  * Negative area indicates clockwise orientation
  */
-export function calculateSignedArea(points: Point2D[]): number {
+export function calculateSignedArea(polygon: Polygon): number {
+    const points = polygon.points;
     if (points.length < POLYGON_POINTS_MIN) return 0;
 
     let area: number = 0;

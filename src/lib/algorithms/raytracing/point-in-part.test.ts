@@ -1,4 +1,4 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it } from 'vitest';
 import { isPointInsidePart } from '$lib/cam/chain/point-in-chain';
 import type { Point2D } from '$lib/geometry/point/interfaces';

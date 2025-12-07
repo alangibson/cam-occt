@@ -12,11 +12,11 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
-import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
+import { shapeBoundingBox } from '$lib/cam/shape/functions';
 
 // Mock the bounding box function
-vi.mock('$lib/geometry/bounding-box/functions', () => ({
-    getBoundingBoxForShape: vi.fn(),
+vi.mock('$lib/cam/shape/functions', () => ({
+    shapeBoundingBox: vi.fn(),
 }));
 
 describe('viewport-culling', () => {
@@ -27,7 +27,7 @@ describe('viewport-culling', () => {
                 max: { x: 15, y: 12 },
             };
 
-            vi.mocked(getBoundingBoxForShape).mockReturnValue(mockBoundingBox);
+            vi.mocked(shapeBoundingBox).mockReturnValue(mockBoundingBox);
 
             const shape: ShapeData = {
                 id: 'line1',
@@ -49,7 +49,7 @@ describe('viewport-culling', () => {
         });
 
         it('should handle bounding box calculation errors', async () => {
-            vi.mocked(getBoundingBoxForShape).mockImplementation(() => {
+            vi.mocked(shapeBoundingBox).mockImplementation(() => {
                 throw new Error('Bounding box calculation failed');
             });
 
@@ -279,7 +279,7 @@ describe('viewport-culling', () => {
 
         it('should return all shapes when all are visible', async () => {
             // Mock all shapes to be within viewport
-            vi.mocked(getBoundingBoxForShape)
+            vi.mocked(shapeBoundingBox)
                 .mockReturnValueOnce({
                     min: { x: 10, y: 10 },
                     max: { x: 20, y: 20 },
@@ -308,7 +308,7 @@ describe('viewport-culling', () => {
 
         it('should cull shapes outside viewport', async () => {
             // First shape inside, second outside, third inside
-            vi.mocked(getBoundingBoxForShape)
+            vi.mocked(shapeBoundingBox)
                 .mockReturnValueOnce({
                     min: { x: 10, y: 10 },
                     max: { x: 20, y: 20 },
@@ -338,7 +338,7 @@ describe('viewport-culling', () => {
 
         it('should respect margin parameter', async () => {
             // Shape just outside viewport by 40 units
-            vi.mocked(getBoundingBoxForShape).mockReturnValue({
+            vi.mocked(shapeBoundingBox).mockReturnValue({
                 min: { x: 120, y: 120 },
                 max: { x: 130, y: 130 },
             });
@@ -366,7 +366,7 @@ describe('viewport-culling', () => {
         });
 
         it('should handle shapes with bounding box errors gracefully', async () => {
-            vi.mocked(getBoundingBoxForShape)
+            vi.mocked(shapeBoundingBox)
                 .mockImplementationOnce(() => {
                     throw new Error('Bounding box error');
                 })
@@ -397,7 +397,7 @@ describe('viewport-culling', () => {
 
         it('should maintain shape order in visible shapes', async () => {
             // All shapes visible but in specific order
-            vi.mocked(getBoundingBoxForShape)
+            vi.mocked(shapeBoundingBox)
                 .mockReturnValueOnce({
                     min: { x: 10, y: 10 },
                     max: { x: 20, y: 20 },

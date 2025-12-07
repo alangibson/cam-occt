@@ -33,8 +33,8 @@ const defaultApplicationSettings = {
     selectionMode: SelectionMode.Auto,
     enabledStages: [
         WorkflowStage.IMPORT,
-        WorkflowStage.EDIT,
-        WorkflowStage.PREPARE,
+        WorkflowStage.PROGRAM,
+        WorkflowStage.PROGRAM,
         WorkflowStage.PROGRAM,
         WorkflowStage.SIMULATE,
         WorkflowStage.EXPORT,
@@ -45,6 +45,7 @@ const defaultApplicationSettings = {
         PreprocessingStep.TranslateToPositive,
         PreprocessingStep.OptimizeStarts,
     ],
+    enabledProgramSteps: [PreprocessingStep.TranslateToPositive],
     optimizationSettings: {
         cutHolesFirst: true,
         rapidOptimizationAlgorithm:
@@ -98,7 +99,7 @@ describe('State Persistence', () => {
 
             // Workflow state
             currentStage: WorkflowStage.PROGRAM,
-            completedStages: [WorkflowStage.IMPORT, WorkflowStage.EDIT],
+            completedStages: [WorkflowStage.IMPORT, WorkflowStage.PROGRAM],
 
             // Chains state
             chains: [{ id: 'chain1', name: 'chain1', shapes: [] }],
@@ -136,44 +137,6 @@ describe('State Persistence', () => {
             overlayStage: WorkflowStage.PROGRAM,
             overlays: {},
 
-            // Prepare stage state
-            prepareStageState: {
-                algorithmParams: {
-                    chainDetection: { tolerance: 0.1 },
-                    chainNormalization: {
-                        traversalTolerance: 0.01,
-                        maxTraversalAttempts: 5,
-                    },
-                    partDetection: {
-                        circleTessellationPoints: 64,
-                        tessellationTolerance: 0.1,
-                        decimalPrecision: 3,
-                        enableTessellation: false,
-                    },
-                    joinColinearLines: { tolerance: 0.05 },
-                    startPointOptimization: {
-                        splitPosition: 'midpoint',
-                        tolerance: 0.05,
-                    },
-                },
-                chainNormalizationResults: [
-                    {
-                        chainId: 'chain1',
-                        canTraverse: true,
-                        description: 'Test chain',
-                        issues: [],
-                    },
-                ],
-                leftColumnWidth: 350,
-                rightColumnWidth: 400,
-                lastAnalysisTimestamp: Date.now(),
-                originalShapesBeforeNormalization: null,
-                originalChainsBeforeNormalization: null,
-                originalShapesBeforeOptimization: null,
-                originalChainsBeforeOptimization: null,
-                partsDetected: false,
-            },
-
             // Operations, cuts, and tools
             operations: [
                 {
@@ -206,11 +169,11 @@ describe('State Persistence', () => {
                 {
                     id: 'path1',
                     name: 'Cut Cut',
-                    operationId: 'op1',
-                    chainId: 'chain1',
-                    toolId: 'tool1',
+                    sourceOperationId: 'op1',
+                    sourceChainId: 'chain1',
+                    sourceToolId: 'tool1',
                     action: OperationAction.CUT,
-                    cutDirection: CutDirection.CLOCKWISE,
+                    direction: CutDirection.CLOCKWISE,
                     enabled: true,
                     order: 1,
                     normal: { x: 1, y: 0 },
@@ -321,11 +284,6 @@ describe('State Persistence', () => {
         expect(loadedState?.selection).toEqual(testState.selection);
         expect(loadedState?.scale).toBe(testState.scale);
         expect(loadedState?.fileName).toBe(testState.fileName);
-        expect(loadedState?.prepareStageState?.leftColumnWidth).toBe(350);
-        expect(
-            loadedState?.prepareStageState?.algorithmParams?.chainDetection
-                ?.tolerance
-        ).toBe(0.1);
         expect(loadedState?.operations?.length).toBe(1);
         expect(loadedState?.operations?.[0]?.name).toBe('Cut Part');
         expect(loadedState?.cuts?.length).toBe(1);
@@ -358,35 +316,6 @@ describe('State Persistence', () => {
             tessellationPoints: [],
             overlayStage: WorkflowStage.IMPORT,
             overlays: {},
-            prepareStageState: {
-                algorithmParams: {
-                    chainDetection: { tolerance: 0.05 },
-                    chainNormalization: {
-                        traversalTolerance: 0.01,
-                        maxTraversalAttempts: 5,
-                    },
-                    partDetection: {
-                        circleTessellationPoints: 64,
-                        tessellationTolerance: 0.1,
-                        decimalPrecision: 3,
-                        enableTessellation: false,
-                    },
-                    joinColinearLines: { tolerance: 0.05 },
-                    startPointOptimization: {
-                        splitPosition: 'midpoint',
-                        tolerance: 0.05,
-                    },
-                },
-                chainNormalizationResults: [],
-                leftColumnWidth: 280,
-                rightColumnWidth: 280,
-                lastAnalysisTimestamp: 0,
-                originalShapesBeforeNormalization: null,
-                originalChainsBeforeNormalization: null,
-                originalShapesBeforeOptimization: null,
-                originalChainsBeforeOptimization: null,
-                partsDetected: false,
-            },
             operations: [],
             cuts: [],
             tools: [],

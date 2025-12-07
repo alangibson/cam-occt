@@ -1,5 +1,5 @@
 import { Part } from '$lib/cam/part/classes.svelte';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Determine if a chain (original or offset) is a hole within the given part.

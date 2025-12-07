@@ -1,10 +1,10 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it } from 'vitest';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { createPolylineFromVertices } from '$lib/geometry/dxf-polyline/functions';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { optimizeStartPoints } from './optimize-start-points';

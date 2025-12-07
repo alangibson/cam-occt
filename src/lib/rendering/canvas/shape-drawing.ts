@@ -8,7 +8,7 @@ import { Shape } from '$lib/cam/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
@@ -80,7 +80,10 @@ function drawArc(ctx: CanvasRenderingContext2D, arc: Arc): void {
 /**
  * Draw a polyline shape
  */
-function drawPolyline(ctx: CanvasRenderingContext2D, polyline: Polyline): void {
+function drawPolyline(
+    ctx: CanvasRenderingContext2D,
+    polyline: DxfPolyline
+): void {
     if (!polyline.shapes || polyline.shapes.length === 0) return;
 
     // Draw each shape in the polyline using drawLine or drawArc
@@ -183,7 +186,7 @@ export function drawShape(
             drawArc(ctx, shape.geometry as Arc);
             break;
         case GeometryType.POLYLINE:
-            drawPolyline(ctx, shape.geometry as Polyline);
+            drawPolyline(ctx, shape.geometry as DxfPolyline);
             break;
         case GeometryType.ELLIPSE:
             drawEllipse(ctx, shape.geometry as Ellipse, shape);

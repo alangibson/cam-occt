@@ -17,7 +17,7 @@ import {
     getChainEndPoint,
     getChainTangent,
 } from '$lib/cam/chain/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Lead Generation Visual Test with Specific Spline', () => {
     it('should generate SVG with spline and colored lead arcs', async () => {

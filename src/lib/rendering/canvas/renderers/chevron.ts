@@ -72,8 +72,8 @@ export class ChevronRenderer extends BaseRenderer {
             let shapesToSample: Shape[] = [];
 
             // Use execution chain if available (contains shapes in correct execution order)
-            if (cut.cutChain && cut.cutChain.shapes.length > 0) {
-                shapesToSample = cut.cutChain.shapes.map((s) => new Shape(s));
+            if (cut.chain && cut.chain.shapes.length > 0) {
+                shapesToSample = cut.chain.shapes.map((s) => new Shape(s));
             } else {
                 // Fallback to original shapes for backward compatibility
                 // IMPORTANT: Don't manually apply cut direction here - it conflicts with stored chain direction
@@ -88,7 +88,7 @@ export class ChevronRenderer extends BaseRenderer {
                 } else {
                     // Get the chain for this cut and use original shapes
                     const chain = state.chains.find(
-                        (c) => c.id === cut.chainId
+                        (c) => c.id === cut.sourceChainId
                     );
                     if (!chain || chain.shapes.length === 0) {
                         return;

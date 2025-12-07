@@ -137,9 +137,9 @@ describe('Optimize Starts for Operations', () => {
 
         const cut = result.cuts[0];
         expect(cut).toBeDefined();
-        expect(cut.cutChain).toBeDefined();
+        expect(cut.chain).toBeDefined();
 
-        const cutChain = cut.cutChain!;
+        const cutChain = cut.chain!;
 
         // The original chain had 4 shapes
         // After optimization, the first line should be split, giving us 5 shapes total
@@ -184,9 +184,9 @@ describe('Optimize Starts for Operations', () => {
 
         const cut = result.cuts[0];
         expect(cut).toBeDefined();
-        expect(cut.cutChain).toBeDefined();
+        expect(cut.chain).toBeDefined();
 
-        const cutChain = cut.cutChain!;
+        const cutChain = cut.chain!;
 
         // The chain should still have 4 shapes (no optimization)
         expect(cutChain.shapes.length).toBe(4);

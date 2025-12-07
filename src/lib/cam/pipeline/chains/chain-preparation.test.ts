@@ -11,7 +11,7 @@ import type { ChainData } from '$lib/cam/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { GeometryType } from '$lib/geometry/enums';
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('getChainCutDirection', () => {
     it('should return NONE for undefined chain', () => {
@@ -25,7 +25,9 @@ describe('getChainCutDirection', () => {
             shapes: [],
             clockwise: true,
         };
-        expect(getChainCutDirection(chain)).toBe(CutDirection.CLOCKWISE);
+        expect(getChainCutDirection(new Chain(chain))).toBe(
+            CutDirection.CLOCKWISE
+        );
     });
 
     it('should return COUNTERCLOCKWISE for chain with clockwise=false', () => {
@@ -35,7 +37,9 @@ describe('getChainCutDirection', () => {
             shapes: [],
             clockwise: false,
         };
-        expect(getChainCutDirection(chain)).toBe(CutDirection.COUNTERCLOCKWISE);
+        expect(getChainCutDirection(new Chain(chain))).toBe(
+            CutDirection.COUNTERCLOCKWISE
+        );
     });
 
     it('should return NONE for chain with clockwise=null', () => {
@@ -45,7 +49,7 @@ describe('getChainCutDirection', () => {
             shapes: [],
             clockwise: null,
         };
-        expect(getChainCutDirection(chain)).toBe(CutDirection.NONE);
+        expect(getChainCutDirection(new Chain(chain))).toBe(CutDirection.NONE);
     });
 
     it('should return NONE for chain without clockwise property', () => {
@@ -54,7 +58,7 @@ describe('getChainCutDirection', () => {
             name: 'test-chain',
             shapes: [],
         };
-        expect(getChainCutDirection(chain)).toBe(CutDirection.NONE);
+        expect(getChainCutDirection(new Chain(chain))).toBe(CutDirection.NONE);
     });
 });
 

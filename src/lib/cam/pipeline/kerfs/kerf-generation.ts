@@ -4,14 +4,14 @@
 
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Chain } from '$lib/cam/chain/classes';
+import type { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Part } from '$lib/cam/part/classes.svelte';
-import type { Kerf } from '$lib/cam/kerf/interfaces';
+import type { KerfData } from '$lib/cam/kerf/interfaces';
 import {
     cutToKerf,
     adjustCutStartPointForLeadKerfOverlap,
 } from '$lib/cam/kerf/functions';
-import { kerfStore } from '$lib/stores/kerfs/store';
+import { kerfStore } from '$lib/stores/kerfs/store.svelte';
 import type { KerfGenerationResult } from './interfaces';
 
 /**
@@ -36,11 +36,11 @@ async function adjustKerfForLeadOverlap(
     originalChain: Chain,
     tolerance: number,
     parts: Part[],
-    initialKerf: Kerf
+    initialKerf: KerfData
 ): Promise<{
     adjustmentAttempted: boolean;
     adjustmentSucceeded: boolean;
-    kerf: Kerf;
+    kerf: KerfData;
 }> {
     // Check if lead kerf overlaps the original chain
     const hasOverlap =

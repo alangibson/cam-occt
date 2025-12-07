@@ -1,42 +1,45 @@
 <script lang="ts">
-    import { parseLeadId } from '$lib/stores/leads/store';
-    import { selectionStore } from '$lib/stores/selection/store';
-    import { planStore } from '$lib/stores/plan/store';
-    import { operationsStore } from '$lib/stores/operations/store';
+    import { parseLeadId } from '$lib/stores/leads/store.svelte';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
+    import { operationsStore } from '$lib/stores/operations/store.svelte';
     import { LeadType } from '$lib/cam/lead/enums';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive lead data
-    $: selection = $selectionStore;
-    $: selectedLeadIds = selection.leads.selected;
-    $: selectedLeadId =
-        selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null;
-    $: highlightedLeadId = selection.leads.highlighted;
-    $: activeLeadId = selectedLeadId || highlightedLeadId;
-    $: cuts = $planStore.plan.cuts;
-    $: operations = $operationsStore;
+    let selectedLeadIds = $derived(selectionStore.leads.selected);
+    let selectedLeadId = $derived(
+        selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null
+    );
+    let highlightedLeadId = $derived(selectionStore.leads.highlighted);
+    let activeLeadId = $derived(selectedLeadId || highlightedLeadId);
+    let cuts = $derived(planStore.plan.cuts);
+    let operations = $derived(operationsStore.operations);
 
     // Parse lead ID and get associated data
-    $: parsedLead = activeLeadId ? parseLeadId(activeLeadId) : null;
-    $: selectedCut = parsedLead
-        ? cuts.find((cut) => cut.id === parsedLead.cutId)
-        : null;
-    $: selectedOperation =
+    let parsedLead = $derived(activeLeadId ? parseLeadId(activeLeadId) : null);
+    let selectedCut = $derived(
+        parsedLead ? cuts.find((cut) => cut.id === parsedLead.cutId) : null
+    );
+    let selectedOperation = $derived(
         selectedCut && operations && operations.length > 0
-            ? operations.find((op) => op.id === selectedCut.operationId)
-            : null;
-    $: leadConfig =
+            ? operations.find((op) => op.id === selectedCut.sourceOperationId)
+            : null
+    );
+    let leadConfig = $derived(
         parsedLead && selectedCut
             ? parsedLead.leadType === 'leadIn'
                 ? selectedCut.leadInConfig
                 : selectedCut.leadOutConfig
-            : null;
-    $: leadGeometry =
+            : null
+    );
+    let leadGeometry = $derived(
         parsedLead && selectedCut
             ? parsedLead.leadType === 'leadIn'
                 ? selectedCut.leadIn
                 : selectedCut.leadOut
-            : null;
+            : null
+    );
 
     function getLeadTypeName(leadType: 'leadIn' | 'leadOut'): string {
         return leadType === 'leadIn' ? 'Lead-In' : 'Lead-Out';
@@ -80,7 +83,7 @@
     }
 
     // Build properties array
-    $: properties =
+    let properties = $derived(
         parsedLead && selectedCut && leadConfig
             ? (() => {
                   const props: Array<{ property: string; value: string }> = [];
@@ -156,7 +159,8 @@
 
                   return props;
               })()
-            : [];
+            : []
+    );
 
     async function copyLeadToClipboard() {
         if (!selectedLeadId || !parsedLead || !selectedCut || !leadConfig)

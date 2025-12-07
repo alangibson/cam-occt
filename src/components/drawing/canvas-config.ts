@@ -28,22 +28,6 @@ export function getCanvasConfigForStage(
                 interactionMode: 'shapes',
             };
 
-        case 'edit':
-            return {
-                respectLayerVisibility: true,
-                onChainClick: null,
-                onPartClick: null,
-                interactionMode: 'shapes',
-            };
-
-        case 'prepare':
-            return {
-                respectLayerVisibility: false, // Show all layers in prepare
-                onChainClick: handlers.onChainClick || null,
-                onPartClick: handlers.onPartClick || null,
-                interactionMode: 'chains',
-            };
-
         case 'program':
             return {
                 respectLayerVisibility: false, // Show all layers in program

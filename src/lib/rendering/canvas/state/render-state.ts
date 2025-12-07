@@ -13,8 +13,8 @@ import type { Rapid } from '$lib/cam/rapid/interfaces';
 import { Unit } from '$lib/config/units/units';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { CutData } from '$lib/cam/cut/interfaces';
-import type { Kerf } from '$lib/cam/kerf/interfaces';
-import type { Chain } from '$lib/cam/chain/classes';
+import type { KerfData } from '$lib/cam/kerf/interfaces';
+import type { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Transform state for canvas rendering
@@ -148,7 +148,7 @@ export interface RenderState {
     rapids: Rapid[];
 
     // Kerfs
-    kerfs: Kerf[];
+    kerfs: KerfData[];
 
     // Overlays
     overlays: Record<WorkflowStage, OverlayState>;

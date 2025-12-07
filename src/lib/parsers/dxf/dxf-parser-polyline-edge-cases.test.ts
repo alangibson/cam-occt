@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
-import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { shapeBoundingBox } from '$lib/cam/shape/functions';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -84,7 +84,7 @@ EOF`;
         expect(drawing.shapes).toHaveLength(1);
         expect(drawing.shapes[0].type).toBe('polyline');
 
-        const polyline = drawing.shapes[0].geometry as Polyline;
+        const polyline = drawing.shapes[0].geometry as DxfPolyline;
         expect(polyline.shapes).toHaveLength(1);
         expect(polyline.closed).toBe(false);
     });
@@ -122,7 +122,7 @@ EOF`;
         const drawing = await parseDXF(dxfContent);
         // Should still create polyline with the two valid vertices (first and last)
         expect(drawing.shapes).toHaveLength(1);
-        const polyline = drawing.shapes[0].geometry as Polyline;
+        const polyline = drawing.shapes[0].geometry as DxfPolyline;
         // Two valid vertices create one line segment
         expect(polyline.shapes).toHaveLength(1);
         expect(polyline.shapes[0].type).toBe('line');
@@ -161,7 +161,7 @@ EOF`;
         const drawing = await parseDXF(dxfContent);
         expect(drawing.shapes).toHaveLength(1);
 
-        const polyline = drawing.shapes[0].geometry as Polyline;
+        const polyline = drawing.shapes[0].geometry as DxfPolyline;
         expect(polyline.closed).toBe(true);
         expect(polyline.shapes).toHaveLength(3);
     });
@@ -215,7 +215,7 @@ EOF`;
         expect(drawing.shapes).toHaveLength(1);
         expect(drawing.shapes[0].type).toBe('polyline');
 
-        const polyline = drawing.shapes[0].geometry as Polyline;
+        const polyline = drawing.shapes[0].geometry as DxfPolyline;
         expect(polyline.shapes).toHaveLength(1);
         expect(polyline.shapes[0].type).toBe('line');
     });
@@ -287,7 +287,7 @@ EOF`;
         const drawing = await parseDXF(dxfContent);
         expect(drawing.shapes).toHaveLength(1);
 
-        const polyline = drawing.shapes[0].geometry as Polyline;
+        const polyline = drawing.shapes[0].geometry as DxfPolyline;
         expect(polyline.shapes).toHaveLength(2);
         // First segment should be an arc due to bulge
         expect(polyline.shapes[0].type).toBe('arc');
@@ -311,15 +311,15 @@ EOF`;
         expect(polylineShapes.length).toBeGreaterThan(0);
 
         for (const shape of polylineShapes) {
-            const polyline = shape.geometry as Polyline;
+            const polyline = shape.geometry as DxfPolyline;
 
             // Each polyline should have at least one segment
             expect(polyline.shapes.length).toBeGreaterThan(0);
 
             // Should be able to calculate bounding box without errors
-            expect(() => getBoundingBoxForShape(shape)).not.toThrow();
+            expect(() => shapeBoundingBox(shape)).not.toThrow();
 
-            const bbox = getBoundingBoxForShape(shape);
+            const bbox = shapeBoundingBox(shape);
             expect(bbox).toBeDefined();
             expect(bbox.min).toBeDefined();
             expect(bbox.max).toBeDefined();

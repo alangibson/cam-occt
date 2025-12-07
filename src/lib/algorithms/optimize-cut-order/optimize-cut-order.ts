@@ -27,7 +27,7 @@ import {
 import { getChainEndPoint } from '$lib/cam/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Result of the cut order optimization
@@ -60,8 +60,8 @@ function processNearestCut(
         cutEnd = cachedPoints.end;
     } else {
         // Fallback: calculate if not in cache (shouldn't happen)
-        const chain = chains.get(nearestResult.cut.chainId)!;
-        const part = findPartForChain(nearestResult.cut.chainId);
+        const chain = chains.get(nearestResult.cut.sourceChainId)!;
+        const part = findPartForChain(nearestResult.cut.sourceChainId);
         cutStart = getCutStartPoint(nearestResult.cut, chain, part);
         cutEnd = getCutEndPoint(nearestResult.cut, chain, part);
     }
@@ -73,9 +73,9 @@ function processNearestCut(
         name: cutData.name,
         enabled: cutData.enabled,
         order: cutData.order,
-        operationId: cutData.operationId,
-        chainId: cutData.chainId,
-        toolId: cutData.toolId,
+        sourceOperationId: cutData.sourceOperationId,
+        sourceChainId: cutData.sourceChainId,
+        sourceToolId: cutData.sourceToolId,
         action: cutData.action,
         feedRate: cutData.feedRate,
         pierceHeight: cutData.pierceHeight,
@@ -83,8 +83,8 @@ function processNearestCut(
         arcVoltage: cutData.arcVoltage,
         thcEnabled: cutData.thcEnabled,
         overcutLength: cutData.overcutLength,
-        cutDirection: cutData.cutDirection,
-        cutChain: cutData.cutChain,
+        direction: cutData.direction,
+        chain: cutData.chain,
         executionClockwise: cutData.executionClockwise,
         normal: cutData.normal,
         normalConnectionPoint: cutData.normalConnectionPoint,
@@ -120,7 +120,7 @@ function processNearestCut(
  */
 function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
     // Use cut.cutChain if it exists (it may have been reversed for open chains)
-    const chainToUse = cut.cutChain || chain;
+    const chainToUse = cut.chain || chain;
 
     // Check if cut has lead-out
     if (
@@ -136,7 +136,7 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
                 leadCalculationChain,
                 leadInConfig,
                 leadOutConfig,
-                cut.cutDirection,
+                cut.direction,
                 part,
                 cut.normal
             );
@@ -194,10 +194,10 @@ function buildCutPointsCache(
     const cache = new Map<string, CutPointsCache>();
 
     for (const cut of cuts) {
-        const chain = chains.get(cut.chainId);
+        const chain = chains.get(cut.sourceChainId);
         if (!chain) continue;
 
-        const part = findPartForChain(cut.chainId);
+        const part = findPartForChain(cut.sourceChainId);
         const start = getCutStartPoint(cut, chain, part);
         const end = getCutEndPoint(cut, chain, part);
 
@@ -261,7 +261,7 @@ function nearestNeighborTSP(
 
     // Find which part each cut belongs to
     for (const cut of cutInstances) {
-        const chain: Chain | undefined = chains.get(cut.chainId);
+        const chain: Chain | undefined = chains.get(cut.sourceChainId);
         if (!chain) continue;
 
         let belongsToPart: boolean = false;
@@ -342,7 +342,7 @@ function nearestNeighborTSP(
             for (const cut of partCuts) {
                 if (!unvisited.has(cut)) continue;
 
-                const chain: Chain | undefined = chains.get(cut.chainId);
+                const chain: Chain | undefined = chains.get(cut.sourceChainId);
                 if (!chain) continue;
 
                 if (chain.id === part.shell.id) {
@@ -431,7 +431,7 @@ function nearestNeighborTSP(
             for (const cut of partCuts) {
                 if (!unvisited.has(cut)) continue;
 
-                const chain: Chain | undefined = chains.get(cut.chainId);
+                const chain: Chain | undefined = chains.get(cut.sourceChainId);
                 if (!chain) continue;
 
                 if (chain.id === part.shell.id) {
@@ -489,9 +489,9 @@ function nearestNeighborTSP(
                     cutEnd = cachedPoints.end;
                 } else {
                     // Fallback: calculate if not in cache (shouldn't happen)
-                    const chain: Chain = chains.get(shellCut.chainId)!;
+                    const chain: Chain = chains.get(shellCut.sourceChainId)!;
                     const part: Part | undefined = findPartForChain(
-                        shellCut.chainId
+                        shellCut.sourceChainId
                     );
                     cutStart = getCutStartPoint(shellCut, chain, part);
                     cutEnd = getCutEndPoint(shellCut, chain, part);
@@ -506,9 +506,9 @@ function nearestNeighborTSP(
                     name: shellCutData.name,
                     enabled: shellCutData.enabled,
                     order: shellCutData.order,
-                    operationId: shellCutData.operationId,
-                    chainId: shellCutData.chainId,
-                    toolId: shellCutData.toolId,
+                    sourceOperationId: shellCutData.sourceOperationId,
+                    sourceChainId: shellCutData.sourceChainId,
+                    sourceToolId: shellCutData.sourceToolId,
                     action: shellCutData.action,
                     feedRate: shellCutData.feedRate,
                     pierceHeight: shellCutData.pierceHeight,
@@ -516,8 +516,8 @@ function nearestNeighborTSP(
                     arcVoltage: shellCutData.arcVoltage,
                     thcEnabled: shellCutData.thcEnabled,
                     overcutLength: shellCutData.overcutLength,
-                    cutDirection: shellCutData.cutDirection,
-                    cutChain: shellCutData.cutChain,
+                    direction: shellCutData.direction,
+                    chain: shellCutData.chain,
                     executionClockwise: shellCutData.executionClockwise,
                     normal: shellCutData.normal,
                     normalConnectionPoint: shellCutData.normalConnectionPoint,
@@ -610,9 +610,9 @@ export function generateRapidsFromCutOrder(
             name: cutDataForRapid.name,
             enabled: cutDataForRapid.enabled,
             order: cutDataForRapid.order,
-            operationId: cutDataForRapid.operationId,
-            chainId: cutDataForRapid.chainId,
-            toolId: cutDataForRapid.toolId,
+            sourceOperationId: cutDataForRapid.sourceOperationId,
+            sourceChainId: cutDataForRapid.sourceChainId,
+            sourceToolId: cutDataForRapid.sourceToolId,
             action: cutDataForRapid.action,
             feedRate: cutDataForRapid.feedRate,
             pierceHeight: cutDataForRapid.pierceHeight,
@@ -620,8 +620,8 @@ export function generateRapidsFromCutOrder(
             arcVoltage: cutDataForRapid.arcVoltage,
             thcEnabled: cutDataForRapid.thcEnabled,
             overcutLength: cutDataForRapid.overcutLength,
-            cutDirection: cutDataForRapid.cutDirection,
-            cutChain: cutDataForRapid.cutChain,
+            direction: cutDataForRapid.direction,
+            chain: cutDataForRapid.chain,
             executionClockwise: cutDataForRapid.executionClockwise,
             normal: cutDataForRapid.normal,
             normalConnectionPoint: cutDataForRapid.normalConnectionPoint,
@@ -679,7 +679,9 @@ export function optimizeCutOrder(
     }
 
     // Filter out cuts that don't have corresponding chains
-    const validCuts: Cut[] = cuts.filter((cut) => chains.has(cut.chainId));
+    const validCuts: Cut[] = cuts.filter((cut) =>
+        chains.has(cut.sourceChainId)
+    );
 
     if (validCuts.length === 0) {
         return {

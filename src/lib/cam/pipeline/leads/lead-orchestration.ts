@@ -3,8 +3,8 @@
  */
 
 import { Cut } from '$lib/cam/cut/classes.svelte';
-import type { OperationData } from '$lib/cam/operation/interface';
-import { Chain } from '$lib/cam/chain/classes';
+import type { Operation } from '$lib/cam/operation/classes.svelte';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { PartVoid } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
@@ -16,7 +16,7 @@ import type { CutLeadResult } from './interfaces';
  */
 export async function calculateCutLeads(
     cut: Cut,
-    operation: OperationData,
+    operation: Operation,
     chain: Chain,
     parts: Part[]
 ): Promise<CutLeadResult> {
@@ -34,14 +34,16 @@ export async function calculateCutLeads(
         if (operation.targetType === 'parts') {
             part = parts?.find(
                 (p) =>
-                    p.shell.id === cut.chainId ||
-                    p.voids.some((h: PartVoid) => h.chain.id === cut.chainId)
+                    p.shell.id === cut.sourceChainId ||
+                    p.voids.some(
+                        (h: PartVoid) => h.chain.id === cut.sourceChainId
+                    )
             );
         }
 
         // Prepare lead calculation chain and configs using shared utility
         const { leadCalculationChain, leadInConfig, leadOutConfig } =
-            prepareChainsAndLeadConfigs(new Cut(cut), new Chain(chain));
+            prepareChainsAndLeadConfigs(cut, chain);
 
         // Calculate leads using the appropriate chain (original or offset)
         // Pass the cut's pre-calculated normal for consistency
@@ -49,7 +51,7 @@ export async function calculateCutLeads(
             leadCalculationChain,
             leadInConfig,
             leadOutConfig,
-            cut.cutDirection,
+            cut.direction,
             part,
             cut.normal
         );
@@ -111,7 +113,7 @@ export async function calculateCutLeads(
  * Returns a map of cut IDs to lead geometry results
  */
 export async function calculateOperationLeads(
-    operation: OperationData,
+    operation: Operation,
     cuts: Cut[],
     chains: Chain[],
     parts: Part[]
@@ -121,13 +123,13 @@ export async function calculateOperationLeads(
     try {
         // Find all cuts for this operation
         const operationCuts: Cut[] = cuts.filter(
-            (c) => c.operationId === operation.id
+            (c) => c.sourceOperationId === operation.id
         );
 
         // Calculate leads for each cut
         const calculations: Promise<void>[] = operationCuts.map(async (cut) => {
             const chain: Chain | undefined = chains.find(
-                (c: Chain) => c.id === cut.chainId
+                (c: Chain) => c.id === cut.sourceChainId
             );
             if (chain) {
                 const leadGeometry = await calculateCutLeads(

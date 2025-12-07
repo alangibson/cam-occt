@@ -4,7 +4,7 @@
  * Type definitions for the CAM pipeline chain preparation module.
  */
 
-import type { Chain } from '$lib/cam/chain/classes';
+import type { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Result of creating a cut chain with execution ordering

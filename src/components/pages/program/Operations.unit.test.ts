@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { get } from 'svelte/store';
-import { toolStore } from '$lib/stores/tools/store';
+import { toolStore } from '$lib/stores/tools/store.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import { operationsStore } from '$lib/stores/operations/store';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OperationAction } from '$lib/cam/operation/enums';
@@ -33,7 +32,7 @@ describe('Operations Store Integration', () => {
 
         toolStore.addTool(testTool);
 
-        const toolsInStore = get(toolStore);
+        const toolsInStore = toolStore.tools;
         expect(toolsInStore).toHaveLength(1);
         expect(toolsInStore[0].toolName).toBe('Test Tool 1');
         expect(toolsInStore[0].toolNumber).toBe(1);
@@ -59,7 +58,7 @@ describe('Operations Store Integration', () => {
             plungeRate: 500,
         });
 
-        const tools = get(toolStore);
+        const tools = toolStore.tools;
         const toolId = tools[0].id;
 
         // Create an operation that references the tool
@@ -88,7 +87,7 @@ describe('Operations Store Integration', () => {
             },
         });
 
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         expect(operations).toHaveLength(1);
         expect(operations[0].toolId).toBe(toolId);
         expect(operations[0].name).toBe('Test Operation');
@@ -130,7 +129,7 @@ describe('Operations Store Integration', () => {
             plungeRate: 600,
         });
 
-        const tools = get(toolStore);
+        const tools = toolStore.tools;
         expect(tools).toHaveLength(2);
         expect(tools[0].toolName).toBe('Tool One');
         expect(tools[1].toolName).toBe('Tool Two');
@@ -138,20 +137,14 @@ describe('Operations Store Integration', () => {
         expect(tools[1].toolNumber).toBe(2);
     });
 
-    it('should verify tool store subscription behavior', () => {
-        let callbackTriggered = false;
-        let receivedTools: Tool[] = [];
-
-        // Subscribe to the store
-        const unsubscribe = toolStore.subscribe((tools) => {
-            callbackTriggered = true;
-            receivedTools = tools;
-        });
+    it('should verify tool store reactive behavior', () => {
+        // Verify initial state
+        expect(toolStore.tools).toHaveLength(0);
 
         // Add a tool
         toolStore.addTool({
             toolNumber: 1,
-            toolName: 'Subscription Test Tool',
+            toolName: 'Reactive Test Tool',
             feedRate: 100,
             pierceHeight: 3.8,
             cutHeight: 1.5,
@@ -166,10 +159,8 @@ describe('Operations Store Integration', () => {
             plungeRate: 500,
         });
 
-        expect(callbackTriggered).toBe(true);
-        expect(receivedTools).toHaveLength(1);
-        expect(receivedTools[0].toolName).toBe('Subscription Test Tool');
-
-        unsubscribe();
+        // Verify tools array is updated
+        expect(toolStore.tools).toHaveLength(1);
+        expect(toolStore.tools[0].toolName).toBe('Reactive Test Tool');
     });
 });

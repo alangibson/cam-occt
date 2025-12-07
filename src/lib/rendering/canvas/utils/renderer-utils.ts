@@ -18,7 +18,9 @@ export function isCutEnabledForRendering(
     cut: CutData,
     state: RenderState
 ): boolean {
-    const operation = state.operations.find((op) => op.id === cut.operationId);
+    const operation = state.operations.find(
+        (op) => op.id === cut.sourceOperationId
+    );
     return !!(operation && operation.enabled && cut.enabled);
 }
 

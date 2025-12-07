@@ -1,16 +1,14 @@
 <script lang="ts">
-    import { operationsStore } from '$lib/stores/operations/store';
-    import { toolStore } from '$lib/stores/tools/store';
+    import { operationsStore } from '$lib/stores/operations/store.svelte';
+    import { toolStore } from '$lib/stores/tools/store.svelte';
     import type { Tool } from '$lib/cam/tool/interfaces';
-    import { chainStore } from '$lib/stores/chains/store';
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { planStore } from '$lib/stores/plan/store';
-    import { selectionStore } from '$lib/stores/selection/store';
+    import { chainStore } from '$lib/stores/chains/store.svelte';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
     import { onMount } from 'svelte';
     import type { OperationData } from '$lib/cam/operation/interface';
     import { Operation } from '$lib/cam/operation/classes.svelte';
-    import type { ChainData } from '$lib/cam/chain/interfaces';
-    import type { Part } from '$lib/cam/part/classes.svelte';
     import {
         DEFAULT_OPERATION_ACTION,
         DEFAULT_CUT_DIRECTION,
@@ -27,36 +25,26 @@
     import { DEFAULT_OPTIMIZE_STARTS } from '$lib/cam/cut/defaults';
     import { OperationAction } from '$lib/cam/operation/enums';
 
-    let operations: Operation[] = [];
-    let chains: ChainData[] = [];
-    let parts: Part[] = [];
-    let draggedOperation: Operation | null = null;
-    let dragOverIndex: number | null = null;
-    let tolerance = 0.01; // Default tolerance
-    let previousOperations = new Map<string, Operation>();
+    let operations = $derived(operationsStore.operations);
+    let draggedOperation = $state<Operation | null>(null);
+    let dragOverIndex = $state<number | null>(null);
+    let tolerance = $derived(chainStore.tolerance); // Reactive tolerance from chainStore
 
     // Tool search functionality
-    let toolSearchTerms: { [operationId: string]: string } = {};
-    let showToolDropdowns: { [operationId: string]: boolean } = {};
+    let toolSearchTerms = $state<{ [operationId: string]: string }>({});
+    let showToolDropdowns = $state<{ [operationId: string]: boolean }>({});
 
     // Apply to menu functionality
-    let showApplyToMenus: { [operationId: string]: boolean } = {};
+    let showApplyToMenus = $state<{ [operationId: string]: boolean }>({});
 
     // Hover highlighting for parts/chains
-    let hoveredPartId: string | null = null;
-    let hoveredChainId: string | null = null;
+    let hoveredPartId = $state<string | null>(null);
+    let hoveredChainId = $state<string | null>(null);
 
     // Collapsed state for operations
-    let collapsedOperations: { [operationId: string]: boolean } = {};
+    let collapsedOperations = $state<{ [operationId: string]: boolean }>({});
 
-    // Track assigned targets for side effects
-    $: if ($operationsStore) {
-        operationsStore.getAssignedTargets();
-    }
-
-    // Reactive statement to ensure proper tool store reactivity
-    $: console.log('Tools reactive update:', $toolStore);
-    $: availableTools = $toolStore;
+    let availableTools = $derived(toolStore.tools);
 
     // Tools and operations are now handled by the main persistence system
     onMount(() => {
@@ -83,58 +71,23 @@
         };
     });
 
-    // Subscribe to stores and save operations to localStorage
-    operationsStore.subscribe((value) => {
-        operations = value;
-        // Operations are now saved by the main persistence system
-    });
-    drawingStore.subscribe((state) => {
-        // Get chains from all layers in the drawing
-        chains = state.drawing
-            ? Object.values(state.drawing.layers).flatMap(
+    // Reactive statements to get chains and parts from all layers
+    // These automatically re-evaluate when the underlying data changes (including async part detection)
+    let chains = $derived(
+        drawingStore.drawing
+            ? Object.values(drawingStore.drawing.layers).flatMap(
                   (layer) => layer.chains
               )
-            : [];
-    });
-    drawingStore.subscribe((state) => {
-        // Get parts from all layers in the drawing
-        parts = state.drawing
-            ? Object.values(state.drawing.layers).flatMap(
+            : []
+    );
+
+    let parts = $derived(
+        drawingStore.drawing
+            ? Object.values(drawingStore.drawing.layers).flatMap(
                   (layer) => layer.parts
               )
-            : [];
-    });
-    chainStore.subscribe((state) => {
-        tolerance = state.tolerance;
-    });
-
-    // Detect new or updated operations and regenerate cuts
-    $: {
-        operations.forEach((op) => {
-            const previousOp = previousOperations.get(op.id);
-
-            // New operation: not in previous map
-            if (!previousOp) {
-                if (op.enabled && op.targetIds.length > 0) {
-                    console.log('[Operations] Applying NEW operation:', op.id);
-                    operationsStore.applyOperation(op.id);
-                }
-            }
-            // Updated operation: different object reference means it was updated
-            else if (previousOp !== op) {
-                if (op.enabled && op.targetIds.length > 0) {
-                    console.log(
-                        '[Operations] Applying UPDATED operation:',
-                        op.id
-                    );
-                    operationsStore.applyOperation(op.id);
-                }
-            }
-        });
-
-        // Update the previous operations map
-        previousOperations = new Map(operations.map((op) => [op.id, op]));
-    }
+            : []
+    );
 
     export function addNewOperation(options?: { enabled?: boolean }) {
         const newOrder =
@@ -147,14 +100,14 @@
         let targetIds: string[] = [];
 
         // Priority 1: Check if a single part is highlighted
-        const highlightedPartId = $selectionStore.parts.highlighted;
+        const highlightedPartId = selectionStore.parts.highlighted;
         if (highlightedPartId) {
             targetType = 'parts';
             targetIds = [highlightedPartId];
         }
         // Priority 2: For parts - if parts are selected, use those; for first operation only, use all parts
         else if (parts.length > 0) {
-            const selectedPartIds = $selectionStore.parts.selected;
+            const selectedPartIds = selectionStore.parts.selected;
             targetType = 'parts';
             if (selectedPartIds.size > 0) {
                 targetIds = Array.from(selectedPartIds);
@@ -165,7 +118,7 @@
         }
         // Priority 3: If no parts, check chains (keep existing chain behavior)
         else {
-            const selectedChainIds = $selectionStore.chains.selected;
+            const selectedChainIds = selectionStore.chains.selected;
             if (selectedChainIds.size > 0) {
                 targetType = 'chains';
                 targetIds = Array.from(selectedChainIds);
@@ -180,7 +133,7 @@
         operationsStore.addOperation({
             name: `Operation ${newOrder}`,
             action: DEFAULT_OPERATION_ACTION,
-            toolId: $toolStore.length > 0 ? $toolStore[0].id : null,
+            toolId: toolStore.tools.length > 0 ? toolStore.tools[0].id : null,
             targetType,
             targetIds,
             enabled: options?.enabled ?? DEFAULT_OPERATION_ENABLED,
@@ -197,20 +150,42 @@
             optimizeStarts: DEFAULT_OPTIMIZE_STARTS,
             spotDuration: DEFAULT_SPOT_DURATION,
         });
+
+        // Apply the operation if it's enabled and has targets
+        const enabled = options?.enabled ?? DEFAULT_OPERATION_ENABLED;
+        if (enabled && targetIds.length > 0) {
+            // Get the newly created operation ID
+            const newOperation = operations[operations.length - 1];
+            if (newOperation) {
+                operationsStore.applyOperation(newOperation.id);
+            }
+        }
     }
 
     function deleteOperation(id: string) {
         // Remove from plan first
         const operation = operations.find((op) => op.id === id);
         if (operation) {
-            $planStore.plan.remove(operation);
+            planStore.plan.remove(operation);
         }
 
         operationsStore.deleteOperation(id);
     }
 
     function duplicateOperation(id: string) {
+        const originalOp = operations.find((op) => op.id === id);
+        if (!originalOp) return;
+
         operationsStore.duplicateOperation(id);
+
+        // Apply the duplicated operation if the original was enabled and has targets
+        if (originalOp.enabled && originalOp.targetIds.length > 0) {
+            // Get the newly duplicated operation (should be last in list)
+            const duplicatedOp = operations[operations.length - 1];
+            if (duplicatedOp) {
+                operationsStore.applyOperation(duplicatedOp.id);
+            }
+        }
     }
 
     function updateOperationField<K extends keyof OperationData>(
@@ -231,7 +206,7 @@
         // Update plan with the modified operation
         const operation = operations.find((op) => op.id === id);
         if (operation && operation.enabled) {
-            $planStore.plan.update(operation, tolerance);
+            planStore.plan.update(operation, tolerance);
         }
     }
 
@@ -316,7 +291,7 @@
 
     function getToolName(toolId: string | null): string {
         if (!toolId) return 'No Tool';
-        const tool = $toolStore.find((t) => t.id === toolId);
+        const tool = toolStore.tools.find((t) => t.id === toolId);
         return tool ? tool.toolName : 'Unknown Tool';
     }
 

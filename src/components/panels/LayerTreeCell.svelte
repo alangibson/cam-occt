@@ -4,7 +4,7 @@
      * Handles hover events to highlight entities on the canvas
      */
 
-    import { selectionStore } from '$lib/stores/selection/store';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
     import { layerStore } from '$lib/stores/layers/store.svelte';
     import type { ICellProps } from '@svar-ui/svelte-grid';
 
@@ -94,7 +94,7 @@
     onmouseenter={handleMouseEnter}
     onmouseleave={handleMouseLeave}
 >
-    {column.id ? row[column.id] ?? '' : ''}
+    {column.id ? (row[column.id] ?? '') : ''}
 </div>
 
 <style>

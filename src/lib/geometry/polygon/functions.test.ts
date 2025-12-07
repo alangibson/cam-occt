@@ -17,7 +17,9 @@ describe('isPointInPolygon', () => {
             { x: 0, y: 10 },
         ];
 
-        expect(isPointInPolygon({ x: 5, y: 5 }, polygon)).toBe(true);
+        expect(isPointInPolygon({ x: 5, y: 5 }, { points: polygon })).toBe(
+            true
+        );
     });
 
     it('should detect point outside polygon', () => {
@@ -28,7 +30,9 @@ describe('isPointInPolygon', () => {
             { x: 0, y: 10 },
         ];
 
-        expect(isPointInPolygon({ x: 15, y: 5 }, polygon)).toBe(false);
+        expect(isPointInPolygon({ x: 15, y: 5 }, { points: polygon })).toBe(
+            false
+        );
     });
 
     it('should handle point on polygon boundary', () => {
@@ -40,7 +44,7 @@ describe('isPointInPolygon', () => {
         ];
 
         // Point on edge behavior depends on the ray casting implementation
-        const result = isPointInPolygon({ x: 5, y: 0 }, polygon);
+        const result = isPointInPolygon({ x: 5, y: 0 }, { points: polygon });
         expect(typeof result).toBe('boolean');
     });
 });
@@ -54,7 +58,10 @@ describe('calculatePolygonArea', () => {
             { x: 0, y: 10 },
         ];
 
-        expect(Math.abs(calculatePolygonArea(square))).toBeCloseTo(100, 1);
+        expect(Math.abs(calculatePolygonArea({ points: square }))).toBeCloseTo(
+            100,
+            1
+        );
     });
 
     it('should calculate area of triangle correctly', () => {
@@ -64,7 +71,9 @@ describe('calculatePolygonArea', () => {
             { x: 5, y: 10 },
         ];
 
-        expect(Math.abs(calculatePolygonArea(triangle))).toBeCloseTo(50, 1);
+        expect(
+            Math.abs(calculatePolygonArea({ points: triangle }))
+        ).toBeCloseTo(50, 1);
     });
 
     it('should handle clockwise vs counterclockwise orientation', () => {
@@ -82,8 +91,8 @@ describe('calculatePolygonArea', () => {
             { x: 10, y: 0 },
         ];
 
-        const area1 = calculatePolygonArea(ccwSquare);
-        const area2 = calculatePolygonArea(cwSquare);
+        const area1 = calculatePolygonArea({ points: ccwSquare });
+        const area2 = calculatePolygonArea({ points: cwSquare });
 
         // Both should have same magnitude regardless of orientation
         expect(Math.abs(area1)).toBeCloseTo(Math.abs(area2), 1);
@@ -106,8 +115,8 @@ describe('calculatePolygonArea', () => {
             { x: 0, y: 1 },
         ];
 
-        const areaCW = calculatePolygonArea(unitSquareCW);
-        const areaCCW = calculatePolygonArea(unitSquareCCW);
+        const areaCW = calculatePolygonArea({ points: unitSquareCW });
+        const areaCCW = calculatePolygonArea({ points: unitSquareCCW });
 
         expect(areaCW).toBe(1);
         expect(areaCCW).toBe(1);
@@ -124,7 +133,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 0, y: 10 },
         ];
 
-        const centroid = calculatePolygonCentroid2(square);
+        const centroid = calculatePolygonCentroid2({ points: square });
         expect(centroid).not.toBeNull();
         expect(centroid!.x).toBeCloseTo(5, 1);
         expect(centroid!.y).toBeCloseTo(5, 1);
@@ -137,7 +146,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 3, y: 6 },
         ];
 
-        const centroid = calculatePolygonCentroid2(triangle);
+        const centroid = calculatePolygonCentroid2({ points: triangle });
         expect(centroid).not.toBeNull();
         expect(centroid!.x).toBeCloseTo(3, 1);
         expect(centroid!.y).toBeCloseTo(2, 1);
@@ -149,7 +158,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 10, y: 0 },
         ];
 
-        expect(calculatePolygonCentroid2(twoPoints)).toBeNull();
+        expect(calculatePolygonCentroid2({ points: twoPoints })).toBeNull();
     });
 
     it('should return null for degenerate polygon (zero area)', () => {
@@ -159,7 +168,9 @@ describe('calculatePolygonCentroid', () => {
             { x: 0, y: 0 },
         ];
 
-        const centroid = calculatePolygonCentroid2(degeneratePolygon);
+        const centroid = calculatePolygonCentroid2({
+            points: degeneratePolygon,
+        });
         expect(centroid).toBeNull();
     });
 
@@ -238,7 +249,7 @@ describe('calculatePolygonBounds', () => {
             { x: 2, y: 13 },
         ];
 
-        const bounds = calculatePolygonBounds(square);
+        const bounds = calculatePolygonBounds({ points: square });
         expect(bounds).not.toBeNull();
         expect(bounds!.min.x).toBe(2);
         expect(bounds!.min.y).toBe(3);
@@ -253,7 +264,7 @@ describe('calculatePolygonBounds', () => {
             { x: 5, y: 15 },
         ];
 
-        const bounds = calculatePolygonBounds(triangle);
+        const bounds = calculatePolygonBounds({ points: triangle });
         expect(bounds).not.toBeNull();
         expect(bounds!.min.x).toBe(0);
         expect(bounds!.min.y).toBe(2);
@@ -262,13 +273,13 @@ describe('calculatePolygonBounds', () => {
     });
 
     it('should return null for empty polygon', () => {
-        expect(calculatePolygonBounds([])).toBeNull();
+        expect(calculatePolygonBounds({ points: [] })).toBeNull();
     });
 
     it('should handle single point polygon', () => {
         const singlePoint = [{ x: 5, y: 7 }];
 
-        const bounds = calculatePolygonBounds(singlePoint);
+        const bounds = calculatePolygonBounds({ points: singlePoint });
         expect(bounds).not.toBeNull();
         expect(bounds!.min.x).toBe(5);
         expect(bounds!.min.y).toBe(7);
@@ -283,7 +294,7 @@ describe('calculatePolygonBounds', () => {
             { x: 3, y: -1 },
         ];
 
-        const bounds = calculatePolygonBounds(polygon);
+        const bounds = calculatePolygonBounds({ points: polygon });
         expect(bounds).not.toBeNull();
         expect(bounds!.min.x).toBe(-10);
         expect(bounds!.min.y).toBe(-8);

@@ -9,7 +9,7 @@ import { Shape } from '$lib/cam/shape/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { getChainCutDirection, reverseChain } from '$lib/cam/chain/functions';
 import type { CutChainResult } from './interfaces';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Helper function to create cut chain with deep cloned shapes ordered for execution.

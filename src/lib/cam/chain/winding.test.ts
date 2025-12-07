@@ -3,7 +3,6 @@ import { EPSILON } from '$lib/geometry/math/constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import {
     calculatePolygonPerimeter,
-    calculateSignedArea,
     ensureClockwise,
     ensureCounterClockwise,
     getWindingDirection,
@@ -12,7 +11,10 @@ import {
     isSimplePolygon,
     reverseWinding,
 } from '$lib/cam/chain/functions';
-import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
+import {
+    calculatePolygonArea,
+    calculateSignedArea,
+} from '$lib/geometry/polygon/functions';
 
 describe('Chain Winding and Properties', () => {
     // Test shapes with known properties
@@ -56,47 +58,49 @@ describe('Chain Winding and Properties', () => {
 
     describe('calculateSignedArea', () => {
         it('should calculate correct signed area for clockwise square', () => {
-            const area = calculateSignedArea(unitSquareCW);
-            expect(area).toBe(1); // Positive for CW
+            const area = calculateSignedArea({ points: unitSquareCW });
+            expect(area).toBe(-1); // Negative for CW
         });
 
         it('should calculate correct signed area for counter-clockwise square', () => {
-            const area = calculateSignedArea(unitSquareCCW);
-            expect(area).toBe(-1); // Negative for CCW
+            const area = calculateSignedArea({ points: unitSquareCCW });
+            expect(area).toBe(1); // Positive for CCW
         });
 
         it('should calculate correct area for triangle', () => {
-            const area = calculateSignedArea(triangle);
+            const area = calculateSignedArea({ points: triangle });
             expect(Math.abs(area)).toBeCloseTo(2); // Triangle area = 0.5 * base * height = 0.5 * 2 * 2 = 2
         });
 
         it('should return zero for degenerate polygon', () => {
-            const area = calculateSignedArea(degenerate);
+            const area = calculateSignedArea({ points: degenerate });
             expect(Math.abs(area)).toBeLessThan(Number.EPSILON);
         });
 
         it('should handle empty array', () => {
-            const area = calculateSignedArea([]);
+            const area = calculateSignedArea({ points: [] });
             expect(area).toBe(0);
         });
 
         it('should handle single point', () => {
-            const area = calculateSignedArea([{ x: 1, y: 1 }]);
+            const area = calculateSignedArea({ points: [{ x: 1, y: 1 }] });
             expect(area).toBe(0);
         });
 
         it('should handle two points', () => {
-            const area = calculateSignedArea([
-                { x: 0, y: 0 },
-                { x: 1, y: 1 },
-            ]);
+            const area = calculateSignedArea({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 1, y: 1 },
+                ],
+            });
             expect(area).toBe(0);
         });
 
         it('should calculate area for complex polygon', () => {
-            const area = calculateSignedArea(complex);
-            // Complex L-shaped polygon should have positive area
-            expect(area).toBeGreaterThan(0);
+            const area = calculateSignedArea({ points: complex });
+            // Complex L-shaped polygon should have negative area (clockwise winding)
+            expect(area).toBeLessThan(0);
         });
     });
 
@@ -243,7 +247,9 @@ describe('Chain Winding and Properties', () => {
             ];
 
             expect(getWindingDirection(cadRectangle)).toBe('CW');
-            expect(calculatePolygonArea(cadRectangle)).toBeCloseTo(800); // 40 * 20
+            expect(calculatePolygonArea({ points: cadRectangle })).toBeCloseTo(
+                800
+            ); // 40 * 20
         });
 
         it('should handle precision issues in real coordinates', () => {
@@ -255,7 +261,7 @@ describe('Chain Winding and Properties', () => {
                 { x: 0.1, y: 0 },
             ];
 
-            const area = calculatePolygonArea(precisionTest);
+            const area = calculatePolygonArea({ points: precisionTest });
             expect(area).toBeCloseTo(0.01, 6); // Small rectangle area
         });
 
@@ -273,7 +279,7 @@ describe('Chain Winding and Properties', () => {
             expect(getWindingDirection(lBracket)).toBe('CW');
             expect(isSimplePolygon(lBracket)).toBe(true);
 
-            const area = calculatePolygonArea(lBracket);
+            const area = calculatePolygonArea({ points: lBracket });
             const expectedArea = 100 * 20 + 20 * 60; // Two rectangles
             expect(area).toBeCloseTo(expectedArea);
         });
@@ -288,7 +294,7 @@ describe('Chain Winding and Properties', () => {
             ];
 
             // Should not crash, even if area is near machine epsilon
-            const area = calculateSignedArea(tiny);
+            const area = calculateSignedArea({ points: tiny });
             expect(typeof area).toBe('number');
             expect(isFinite(area)).toBe(true);
         });
@@ -301,7 +307,7 @@ describe('Chain Winding and Properties', () => {
                 { x: 1e6, y: 1e6 + 1000 },
             ];
 
-            const area = calculatePolygonArea(large);
+            const area = calculatePolygonArea({ points: large });
             expect(area).toBeCloseTo(1000000); // 1000 * 1000
         });
 
@@ -313,7 +319,7 @@ describe('Chain Winding and Properties', () => {
                 { x: -10, y: -5 },
             ];
 
-            const area = calculatePolygonArea(negative);
+            const area = calculatePolygonArea({ points: negative });
             expect(area).toBeCloseTo(25); // 5 * 5
         });
     });

@@ -22,8 +22,10 @@ import {
     MIN_SPLINE_SAMPLES,
     SPLINE_SAMPLE_COUNT,
     SPLINE_TESSELLATION_TOLERANCE,
+    VALIDATION_SAMPLE_COUNT,
 } from './constants';
 import { createVerbCurveFromSpline } from './nurbs';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 export function getSplineStartPoint(spline: Spline): Point2D {
     // For closed splines, return the first control point directly
@@ -1031,10 +1033,100 @@ export function sampleSpline(spline: Spline, _sampleCount: number): Point2D[] {
 }
 
 /**
+ * Translate a spline by the given offsets
+ */
+export function translateSpline(
+    spline: Spline,
+    dx: number,
+    dy: number
+): Spline {
+    return {
+        ...spline,
+        controlPoints: spline.controlPoints.map((p: Point2D) => ({
+            x: p.x + dx,
+            y: p.y + dy,
+        })),
+        fitPoints: spline.fitPoints
+            ? spline.fitPoints.map((p: Point2D) => ({
+                  x: p.x + dx,
+                  y: p.y + dy,
+              }))
+            : [],
+    };
+}
+
+/**
  * Generate a content hash for a Spline
  * @param spline - The spline to hash
  * @returns A SHA-256 hash as a hex string
  */
 export async function hashSpline(spline: Spline): Promise<string> {
     return hashObject(spline);
+}
+
+export function splineBoundingBox(spline: Spline): BoundingBoxData {
+    if (!spline.controlPoints || spline.controlPoints.length === 0) {
+        throw new Error('Invalid spline: must have control points');
+    }
+
+    let points: Point2D[];
+
+    try {
+        const result = tessellateSpline(spline, {
+            numSamples: VALIDATION_SAMPLE_COUNT,
+        });
+        if (result.success) {
+            points = result.points;
+        } else {
+            throw new Error('Tessellation failed');
+        }
+    } catch {
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+            // Check if ALL fit points have valid finite values
+            const allFitPointsValid = spline.fitPoints.every(
+                (point) => point && isFinite(point.x) && isFinite(point.y)
+            );
+            if (allFitPointsValid) {
+                points = spline.fitPoints;
+            } else {
+                points = spline.controlPoints;
+            }
+        } else {
+            points = spline.controlPoints;
+        }
+    }
+
+    if (points.length === 0) {
+        throw new Error('Invalid spline: no valid points available');
+    }
+
+    let minX: number = Infinity;
+    let maxX: number = -Infinity;
+    let minY: number = Infinity;
+    let maxY: number = -Infinity;
+
+    for (const point of points) {
+        if (!point || !isFinite(point.x) || !isFinite(point.y)) {
+            continue;
+        }
+
+        minX = Math.min(minX, point.x);
+        maxX = Math.max(maxX, point.x);
+        minY = Math.min(minY, point.y);
+        maxY = Math.max(maxY, point.y);
+    }
+
+    if (
+        !isFinite(minX) ||
+        !isFinite(maxX) ||
+        !isFinite(minY) ||
+        !isFinite(maxY)
+    ) {
+        throw new Error('Invalid spline: no finite points found');
+    }
+
+    return {
+        min: { x: minX, y: minY },
+        max: { x: maxX, y: maxY },
+    };
 }

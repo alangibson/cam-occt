@@ -1,4 +1,3 @@
-import type { Point2D } from '$lib/geometry/point/interfaces';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 
 export interface TessellationPoint {
@@ -39,26 +38,4 @@ export interface DrawingOverlay {
 export interface OverlayState {
     currentStage: WorkflowStage;
     overlays: Record<WorkflowStage, DrawingOverlay>;
-}
-
-export interface OverlayStore {
-    subscribe: (run: (value: OverlayState) => void) => () => void;
-    setCurrentStage: (stage: WorkflowStage) => void;
-    getCurrentOverlay: () => DrawingOverlay | null;
-    setShapePoints: (stage: WorkflowStage, points: ShapePoint[]) => void;
-    clearShapePoints: (stage: WorkflowStage) => void;
-    setChainEndpoints: (
-        stage: WorkflowStage,
-        endpoints: ChainEndpoint[]
-    ) => void;
-    clearChainEndpoints: (stage: WorkflowStage) => void;
-    setTessellationPoints: (
-        stage: WorkflowStage,
-        points: TessellationPoint[]
-    ) => void;
-    clearTessellationPoints: (stage: WorkflowStage) => void;
-    setToolHead: (stage: WorkflowStage, position: Point2D) => void;
-    clearToolHead: (stage: WorkflowStage) => void;
-    clearStageOverlay: (stage: WorkflowStage) => void;
-    clearAllOverlays: () => void;
 }

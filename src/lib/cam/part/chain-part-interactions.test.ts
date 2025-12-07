@@ -12,7 +12,7 @@ import { type PartData, type PartVoid } from './interfaces';
 import { Part } from './classes.svelte';
 import { PartType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { selectionStore } from '$lib/stores/selection/store';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
 
 describe('findPartContainingChain', () => {
     // Helper function to create a mock chain
@@ -316,7 +316,7 @@ describe('findPartContainingChain', () => {
 });
 
 // Mock the selection store
-vi.mock('$lib/stores/selection/store', () => ({
+vi.mock('$lib/stores/selection/store.svelte', () => ({
     selectionStore: {
         selectChain: vi.fn(),
         deselectChain: vi.fn(),

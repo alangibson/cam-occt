@@ -13,9 +13,10 @@ import { LeadType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/enums';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Lead Fit Feature', () => {
     // Create a simple test chain (square)
@@ -88,7 +89,7 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart,
+            new Part(testPart),
             { x: 1, y: 0 }
         );
 
@@ -124,7 +125,7 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart,
+            new Part(testPart),
             { x: 1, y: 0 }
         );
 
@@ -159,7 +160,7 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart,
+            new Part(testPart),
             { x: 1, y: 0 }
         );
 
@@ -186,7 +187,7 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart,
+            new Part(testPart),
             { x: 1, y: 0 }
         );
 

@@ -1,19 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import {
-    createPolylineFromVertices,
-    polylineToPoints,
-    polylineToVertices,
-} from '$lib/geometry/polyline/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { translateToPositiveQuadrant } from './translate-to-positive';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
+import { Unit } from '$lib/config/units/units';
 
 describe('Translate to Positive Quadrant Algorithm', () => {
+    // Helper function to create a Drawing from shape data
+    function createDrawing(shapes: ShapeData[]): Drawing {
+        return new Drawing({
+            shapes: shapes,
+            units: Unit.MM,
+            fileName: 'test.dxf',
+        });
+    }
+
     describe('Basic Functionality', () => {
         it('should translate shapes with negative coordinates to positive quadrant', () => {
             const shapes: ShapeData[] = [
@@ -27,8 +32,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 0, y: 0 }); // -10 + 10 = 0, -5 + 5 = 0
@@ -47,10 +54,12 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
-            expect(result[0]).toEqual(shapes[0]); // Should be unchanged
+            expect(result[0].toData()).toEqual(shapes[0]); // Should be unchanged
         });
 
         it('should translate only in X direction when only X is negative', () => {
@@ -65,8 +74,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 0, y: 10 }); // Only X translated
@@ -85,8 +96,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 5, y: 0 }); // Only Y translated
@@ -110,8 +123,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const arc: Arc = result[0].geometry as Arc;
             // Arc spans from (15,10) to (10,15) - already positive
@@ -134,8 +149,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const arc: Arc = result[0].geometry as Arc;
             // Original arc bounds: x from -2 to 3, y from -2 to 3
@@ -162,8 +179,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const arc: Arc = result[0].geometry as Arc;
             // Arc spans from (0,4) to (-4,0) - needs translation by x+4, y+4
@@ -187,8 +206,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const arc: Arc = result[0].geometry as Arc;
             // This arc includes the 0° extreme (rightmost point at x=6)
@@ -211,8 +232,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const circle: Circle = result[0].geometry as Circle;
             // Bounding box: center(-5,-3) ± radius(2) = min(-7,-5), max(-3,-1)
@@ -236,8 +259,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const arc: Arc = result[0].geometry as Arc;
             // Quarter arc from 0° to 90°: spans from (-7,-8) to (-10,-5)
@@ -247,121 +272,6 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             expect(arc.startAngle).toBe(0);
             expect(arc.endAngle).toBe(Math.PI / 2);
             expect(arc.clockwise).toBe(false);
-        });
-
-        it('should translate polylines correctly', () => {
-            // Create polyline using the new segments-based structure
-            const polylineShape = createPolylineFromVertices(
-                [
-                    { x: -5, y: -10 },
-                    { x: 0, y: -5 },
-                    { x: 5, y: 0 },
-                ],
-                false
-            );
-
-            const shapes: ShapeData[] = [polylineShape];
-
-            const result = translateToPositiveQuadrant(shapes);
-
-            expect(result).toHaveLength(1);
-            const polyline: Polyline = result[0].geometry as Polyline;
-            // Min point: (-5, -10), translation: x+5, y+10
-            const translatedPoints = polylineToPoints(polyline);
-            expect(translatedPoints).toEqual([
-                { x: 0, y: 0 }, // -5+5=0, -10+10=0
-                { x: 5, y: 5 }, // 0+5=5, -5+10=5
-                { x: 10, y: 10 }, // 5+5=10, 0+10=10
-            ]);
-            expect(polyline.closed).toBe(false);
-        });
-
-        it('should translate polylines with vertices (bulge data)', () => {
-            // Create polyline using the new segments-based structure
-            const polylineShape = createPolylineFromVertices(
-                [
-                    { x: -5, y: -10, bulge: 0.5 },
-                    { x: 0, y: -5, bulge: 0 },
-                ],
-                false
-            );
-
-            const shapes: ShapeData[] = [polylineShape];
-
-            const result = translateToPositiveQuadrant(shapes);
-
-            expect(result).toHaveLength(1);
-            const polyline: Polyline = result[0].geometry as Polyline;
-            const translatedVertices = polylineToVertices(polyline);
-            expect(translatedVertices).toHaveLength(2);
-
-            // Check that vertices are translated to positive quadrant
-            // Note: Arc curve may extend beyond linear endpoints, so exact zero is not expected
-            expect(translatedVertices[0].x).toBeGreaterThanOrEqual(0);
-            expect(translatedVertices[0].y).toBeGreaterThanOrEqual(0);
-            expect(translatedVertices[0].bulge).toBeCloseTo(0.5);
-
-            // Check second vertex
-            expect(translatedVertices[1].x).toBeGreaterThanOrEqual(0);
-            expect(translatedVertices[1].y).toBeGreaterThanOrEqual(0);
-            expect(translatedVertices[1].bulge).toBeCloseTo(0);
-        });
-
-        it('should properly translate polyline with arc segment that extends beyond endpoints', () => {
-            // Create polyline with a large bulge that creates an arc extending beyond the line segment
-            const polylineShape = createPolylineFromVertices(
-                [
-                    { x: -10, y: 0, bulge: 1.0 }, // Large bulge creates significant arc
-                    { x: -5, y: 0, bulge: 0 },
-                ],
-                false
-            );
-
-            const shapes: ShapeData[] = [polylineShape];
-
-            const result = translateToPositiveQuadrant(shapes);
-
-            expect(result).toHaveLength(1);
-            const polyline: Polyline = result[0].geometry as Polyline;
-
-            // The arc segment should have been properly translated
-            // With bulge=1.0, the arc extends significantly beyond the line endpoints
-            const translatedVertices = polylineToVertices(polyline);
-            expect(translatedVertices[0].x).toBeGreaterThanOrEqual(0);
-            expect(translatedVertices[0].y).toBeGreaterThanOrEqual(0);
-            expect(translatedVertices[1].x).toBeGreaterThanOrEqual(0);
-            expect(translatedVertices[1].y).toBeGreaterThanOrEqual(0);
-        });
-
-        it('should handle polyline with multiple arc segments correctly', () => {
-            // Create polyline with multiple arc segments
-            const polylineShape = createPolylineFromVertices(
-                [
-                    { x: -8, y: -5, bulge: 0.3 }, // First arc segment
-                    { x: -2, y: -8, bulge: -0.5 }, // Second arc segment (negative bulge)
-                    { x: 2, y: -3, bulge: 0 }, // Final line segment
-                ],
-                false
-            );
-
-            const shapes: ShapeData[] = [polylineShape];
-
-            const result = translateToPositiveQuadrant(shapes);
-
-            expect(result).toHaveLength(1);
-            const polyline: Polyline = result[0].geometry as Polyline;
-
-            // All vertices should be translated to positive quadrant
-            const translatedVertices = polylineToVertices(polyline);
-            translatedVertices.forEach((vertex) => {
-                expect(vertex.x).toBeGreaterThanOrEqual(0);
-                expect(vertex.y).toBeGreaterThanOrEqual(0);
-            });
-
-            // Bulge values should be preserved
-            expect(translatedVertices[0].bulge).toBeCloseTo(0.3);
-            expect(translatedVertices[1].bulge).toBeCloseTo(-0.5);
-            expect(translatedVertices[2].bulge).toBeCloseTo(0);
         });
 
         it('should translate ellipses correctly', () => {
@@ -377,8 +287,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const ellipse: Ellipse = result[0].geometry as Ellipse;
             // Major axis length = 4, minor = 2, horizontal major axis
@@ -411,8 +323,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(2);
 
             // Global min: x=-5 (from line), y=-9 (from circle: -8-1=-9)
@@ -429,8 +343,9 @@ describe('Translate to Positive Quadrant Algorithm', () => {
 
     describe('Edge Cases', () => {
         it('should handle empty shape array', () => {
-            const result = translateToPositiveQuadrant([]);
-            expect(result).toHaveLength(0);
+            const drawing = createDrawing([]);
+            translateToPositiveQuadrant(drawing);
+            expect(drawing.shapes).toHaveLength(0);
         });
 
         it('should handle shapes at origin', () => {
@@ -445,10 +360,12 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
-            expect(result[0]).toEqual(shapes[0]); // Should be unchanged
+            expect(result[0].toData()).toEqual(shapes[0]); // Should be unchanged
         });
 
         it('should handle shapes with zero-size bounding box', () => {
@@ -463,8 +380,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 0, y: 0 });
@@ -484,8 +403,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             expect(result[0].id).toBe('line1');
             expect(result[0].type).toBe('line');
@@ -506,8 +427,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 },
             ];
 
-            const result = translateToPositiveQuadrant(shapes);
+            const drawing = createDrawing(shapes);
+            translateToPositiveQuadrant(drawing);
 
+            const result = drawing.shapes;
             expect(result).toHaveLength(1);
             const line: Line = result[0].geometry as Line;
             expect(line.start.x).toBeCloseTo(0, 6); // Should be very close to 0

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { get } from 'svelte/store';
-import { cutStore } from './store';
-import { selectionStore } from '$lib/stores/selection/store';
+import { cutStore } from './store.svelte';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
 
 describe('cutStore - UI state only', () => {
     beforeEach(() => {
@@ -14,7 +13,7 @@ describe('cutStore - UI state only', () => {
         it('should set selected cut id', () => {
             selectionStore.selectCut('cut-123');
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.selected.has('cut-123')).toBe(true);
         });
 
@@ -22,7 +21,7 @@ describe('cutStore - UI state only', () => {
             selectionStore.selectCut('cut-123');
             selectionStore.selectCut(null);
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.selected.size).toBe(0);
         });
 
@@ -30,7 +29,7 @@ describe('cutStore - UI state only', () => {
             selectionStore.selectCut('cut-1', true);
             selectionStore.selectCut('cut-2', true);
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.selected.has('cut-1')).toBe(true);
             expect(state.cuts.selected.has('cut-2')).toBe(true);
         });
@@ -42,7 +41,7 @@ describe('cutStore - UI state only', () => {
             selectionStore.selectCut('cut-2', true);
             selectionStore.deselectCut('cut-1');
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.selected.has('cut-1')).toBe(false);
             expect(state.cuts.selected.has('cut-2')).toBe(true);
         });
@@ -52,7 +51,7 @@ describe('cutStore - UI state only', () => {
         it('should add cut to selection if not selected', () => {
             selectionStore.toggleCutSelection('cut-1');
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.selected.has('cut-1')).toBe(true);
         });
 
@@ -60,7 +59,7 @@ describe('cutStore - UI state only', () => {
             selectionStore.selectCut('cut-1');
             selectionStore.toggleCutSelection('cut-1');
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.selected.has('cut-1')).toBe(false);
         });
     });
@@ -69,7 +68,7 @@ describe('cutStore - UI state only', () => {
         it('should set highlighted cut id', () => {
             selectionStore.highlightCut('cut-123');
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.highlighted).toBe('cut-123');
         });
 
@@ -77,7 +76,7 @@ describe('cutStore - UI state only', () => {
             selectionStore.highlightCut('cut-123');
             selectionStore.highlightCut(null);
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.highlighted).toBeNull();
         });
     });
@@ -87,7 +86,7 @@ describe('cutStore - UI state only', () => {
             selectionStore.highlightCut('cut-123');
             selectionStore.clearCutHighlight();
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.cuts.highlighted).toBeNull();
         });
     });
@@ -95,35 +94,35 @@ describe('cutStore - UI state only', () => {
     describe('visibility flags', () => {
         it('should toggle showCutNormals', () => {
             cutStore.setShowCutNormals(true);
-            expect(get(cutStore).showCutNormals).toBe(true);
+            expect(cutStore.showCutNormals).toBe(true);
 
             cutStore.setShowCutNormals(false);
-            expect(get(cutStore).showCutNormals).toBe(false);
+            expect(cutStore.showCutNormals).toBe(false);
         });
 
         it('should toggle showCutDirections', () => {
             cutStore.setShowCutDirections(true);
-            expect(get(cutStore).showCutDirections).toBe(true);
+            expect(cutStore.showCutDirections).toBe(true);
         });
 
         it('should toggle showCutPaths', () => {
             cutStore.setShowCutPaths(false);
-            expect(get(cutStore).showCutPaths).toBe(false);
+            expect(cutStore.showCutPaths).toBe(false);
         });
 
         it('should toggle showCutStartPoints', () => {
             cutStore.setShowCutStartPoints(true);
-            expect(get(cutStore).showCutStartPoints).toBe(true);
+            expect(cutStore.showCutStartPoints).toBe(true);
         });
 
         it('should toggle showCutEndPoints', () => {
             cutStore.setShowCutEndPoints(true);
-            expect(get(cutStore).showCutEndPoints).toBe(true);
+            expect(cutStore.showCutEndPoints).toBe(true);
         });
 
         it('should toggle showCutTangentLines', () => {
             cutStore.setShowCutTangentLines(true);
-            expect(get(cutStore).showCutTangentLines).toBe(true);
+            expect(cutStore.showCutTangentLines).toBe(true);
         });
     });
 
@@ -133,8 +132,7 @@ describe('cutStore - UI state only', () => {
 
             cutStore.reset();
 
-            const state = get(cutStore);
-            expect(state.showCutNormals).toBe(false);
+            expect(cutStore.showCutNormals).toBe(false);
         });
     });
 
@@ -151,8 +149,18 @@ describe('cutStore - UI state only', () => {
 
             cutStore.restore(savedState);
 
-            const state = get(cutStore);
-            expect(state).toEqual(savedState);
+            expect(cutStore.showCutNormals).toBe(savedState.showCutNormals);
+            expect(cutStore.showCutDirections).toBe(
+                savedState.showCutDirections
+            );
+            expect(cutStore.showCutPaths).toBe(savedState.showCutPaths);
+            expect(cutStore.showCutStartPoints).toBe(
+                savedState.showCutStartPoints
+            );
+            expect(cutStore.showCutEndPoints).toBe(savedState.showCutEndPoints);
+            expect(cutStore.showCutTangentLines).toBe(
+                savedState.showCutTangentLines
+            );
         });
     });
 });

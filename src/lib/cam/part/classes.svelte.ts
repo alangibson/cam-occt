@@ -6,13 +6,15 @@
  */
 
 import type { PartData, PartVoid, PartSlot } from './interfaces';
-import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { PartType } from './enums';
 
 export class Part {
     #data: PartData;
+    #shellChain: Chain | null = null;
+    #voidChains: Map<string, Chain> = new Map();
+    #slotChains: Map<string, Chain> = new Map();
 
     constructor(data: PartData) {
         this.#data = data;
@@ -26,8 +28,11 @@ export class Part {
         return this.#data.name;
     }
 
-    get shell(): ChainData {
-        return this.#data.shell;
+    get shell(): Chain {
+        if (!this.#shellChain) {
+            this.#shellChain = new Chain(this.#data.shell);
+        }
+        return this.#shellChain;
     }
 
     get type(): PartType.SHELL {
@@ -38,8 +43,20 @@ export class Part {
         return this.#data.boundingBox;
     }
 
-    get voids(): PartVoid[] {
-        return this.#data.voids;
+    get voids(): Array<Omit<PartVoid, 'chain'> & { chain: Chain }> {
+        return this.#data.voids.map((voidData) => {
+            let voidChain = this.#voidChains.get(voidData.id);
+            if (!voidChain) {
+                voidChain = new Chain(voidData.chain);
+                this.#voidChains.set(voidData.id, voidChain);
+            }
+            return {
+                id: voidData.id,
+                chain: voidChain,
+                type: voidData.type,
+                boundingBox: voidData.boundingBox,
+            };
+        });
     }
 
     /**
@@ -48,13 +65,25 @@ export class Part {
      */
     getChainStructure(): { shell: Chain; voids: { chain: Chain }[] } {
         return {
-            shell: new Chain(this.#data.shell),
-            voids: this.#data.voids.map((v) => ({ chain: new Chain(v.chain) })),
+            shell: this.shell,
+            voids: this.voids,
         };
     }
 
-    get slots(): PartSlot[] {
-        return this.#data.slots;
+    get slots(): Array<Omit<PartSlot, 'chain'> & { chain: Chain }> {
+        return this.#data.slots.map((slotData) => {
+            let slotChain = this.#slotChains.get(slotData.id);
+            if (!slotChain) {
+                slotChain = new Chain(slotData.chain);
+                this.#slotChains.set(slotData.id, slotChain);
+            }
+            return {
+                id: slotData.id,
+                chain: slotChain,
+                type: slotData.type,
+                boundingBox: slotData.boundingBox,
+            };
+        });
     }
 
     get layerName(): string {
@@ -68,6 +97,44 @@ export class Part {
         return {
             ...this.#data,
             name: this.name,
+        };
+    }
+
+    /**
+     * Translate the part by the given offset
+     * Translates shell chain and all void chains
+     * @param dx X offset to translate by
+     * @param dy Y offset to translate by
+     */
+    translate(dx: number, dy: number): void {
+        // Translate shell
+        this.shell.translate(dx, dy);
+        this.#data.shell = this.shell.toData();
+
+        // Translate voids
+        const voids = this.voids;
+        for (let i = 0; i < voids.length; i++) {
+            voids[i].chain.translate(dx, dy);
+            this.#data.voids[i].chain = voids[i].chain.toData();
+        }
+
+        // Translate slots
+        const slots = this.slots;
+        for (let i = 0; i < slots.length; i++) {
+            slots[i].chain.translate(dx, dy);
+            this.#data.slots[i].chain = slots[i].chain.toData();
+        }
+
+        // Update bounding box
+        this.#data.boundingBox = {
+            min: {
+                x: this.#data.boundingBox.min.x + dx,
+                y: this.#data.boundingBox.min.y + dy,
+            },
+            max: {
+                x: this.#data.boundingBox.max.x + dx,
+                y: this.#data.boundingBox.max.y + dy,
+            },
         };
     }
 }

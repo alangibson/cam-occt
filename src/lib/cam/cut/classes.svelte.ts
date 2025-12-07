@@ -5,11 +5,19 @@ import type { CacheableLead, LeadConfig } from '$lib/cam/lead/interfaces';
 import type { NormalSide } from './enums';
 import type { OffsetDirection } from '$lib/cam/offset/types';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
-import type { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Offset } from '$lib/cam/offset/classes';
+import { Shape } from '$lib/cam/shape/classes';
+import { shapesBoundingBox, translateShape } from '$lib/cam/shape/functions';
+import { arcBoundingBox, translateArc } from '$lib/geometry/arc/functions';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
+import { EMPTY_BOUNDS } from '$lib/geometry/bounding-box/constants';
+import { combineBoundingBoxes } from '$lib/geometry/bounding-box/functions';
 
 export class Cut {
     #data: CutData;
+    #chain?: Chain;
 
     constructor(data: CutData) {
         // Validate required fields
@@ -18,6 +26,11 @@ export class Cut {
             throw new Error('Cut data must have an id field');
         }
         this.#data = data;
+
+        // Cache chain instance if it exists
+        if (data.chain) {
+            this.#chain = new Chain(data.chain);
+        }
     }
 
     get id(): string {
@@ -36,16 +49,16 @@ export class Cut {
         return this.#data.order;
     }
 
-    get operationId(): string {
-        return this.#data.operationId;
+    get sourceOperationId(): string {
+        return this.#data.sourceOperationId;
     }
 
-    get chainId(): string {
-        return this.#data.chainId;
+    get sourceChainId(): string {
+        return this.#data.sourceChainId;
     }
 
-    get toolId(): string | null {
-        return this.#data.toolId;
+    get sourceToolId(): string | null {
+        return this.#data.sourceToolId;
     }
 
     get feedRate(): number | undefined {
@@ -72,16 +85,17 @@ export class Cut {
         return this.#data.overcutLength;
     }
 
-    get cutDirection(): CutDirection {
-        return this.#data.cutDirection;
+    get direction(): CutDirection {
+        return this.#data.direction;
     }
 
-    get cutChain(): Chain | undefined {
-        return this.#data.cutChain;
+    get chain(): Chain | undefined {
+        return this.#chain;
     }
 
-    set cutChain(cutChain: Chain | undefined) {
-        this.#data.cutChain = cutChain;
+    set chain(chain: Chain | undefined) {
+        this.#chain = chain;
+        // this.#data.chain = chain ? chain.toData() : undefined;
     }
 
     get executionClockwise(): boolean | null | undefined {
@@ -169,6 +183,138 @@ export class Cut {
     }
 
     toData(): CutData {
+        // Sync cached chain back to data before returning
+        if (this.#chain) {
+            this.#data.chain = this.#chain.toData();
+        }
         return this.#data;
+    }
+
+    /**
+     * Get the bounding box for this cut including offset shapes (if present) and leads
+     * Priority: offset shapes > chain shapes
+     * Also includes lead-in and lead-out arc bounds if they exist
+     */
+    get bounds(): BoundingBoxData {
+        const boundingBoxes: BoundingBoxData[] = [];
+
+        // 1. Get bounds from offset shapes (if present) or chain shapes
+        if (
+            this.#data.offset?.offsetShapes &&
+            this.#data.offset.offsetShapes.length > 0
+        ) {
+            // Use offset shapes (kerf-compensated paths)
+            try {
+                boundingBoxes.push(
+                    shapesBoundingBox(this.#data.offset.offsetShapes)
+                );
+            } catch (error) {
+                console.warn(
+                    'Failed to calculate offset shapes bounds:',
+                    error
+                );
+            }
+        } else if (this.chain?.shapes && this.chain.shapes.length > 0) {
+            // Fallback to chain shapes
+            try {
+                boundingBoxes.push(this.chain.boundary);
+            } catch (error) {
+                console.warn('Failed to get chain boundary:', error);
+            }
+        }
+
+        // 2. Add lead-in bounds if it exists
+        if (this.#data.leadIn?.geometry) {
+            try {
+                boundingBoxes.push(
+                    arcBoundingBox(this.#data.leadIn.geometry as Arc)
+                );
+            } catch (error) {
+                console.warn('Failed to calculate lead-in bounds:', error);
+            }
+        }
+
+        // 3. Add lead-out bounds if it exists
+        if (this.#data.leadOut?.geometry) {
+            try {
+                boundingBoxes.push(
+                    arcBoundingBox(this.#data.leadOut.geometry as Arc)
+                );
+            } catch (error) {
+                console.warn('Failed to calculate lead-out bounds:', error);
+            }
+        }
+
+        // Combine all bounding boxes or return empty bounds
+        if (boundingBoxes.length === 0) {
+            return EMPTY_BOUNDS;
+        }
+
+        try {
+            return combineBoundingBoxes(boundingBoxes);
+        } catch (error) {
+            console.warn('Failed to combine bounding boxes:', error);
+            return EMPTY_BOUNDS;
+        }
+    }
+
+    /**
+     * Translate this cut by the given offset
+     * Translates the chain, offset shapes, leads, normal, and normalConnectionPoint
+     * @param dx X offset to translate by
+     * @param dy Y offset to translate by
+     */
+    translate(dx: number, dy: number): void {
+        // Translate the chain if it exists
+        if (this.chain) {
+            this.chain.translate(dx, dy);
+        }
+
+        // Translate offset shapes if they exist
+        if (this.#data.offset?.offsetShapes) {
+            for (const shape of this.#data.offset.offsetShapes) {
+                translateShape(new Shape(shape), dx, dy);
+            }
+        }
+
+        // Translate lead-in if it exists
+        if (this.#data.leadIn) {
+            this.#data.leadIn.geometry = translateArc(
+                this.#data.leadIn.geometry as Arc,
+                dx,
+                dy
+            );
+            // Normal is a unit vector, doesn't change with translation
+            if (this.#data.leadIn.connectionPoint) {
+                this.#data.leadIn.connectionPoint = {
+                    x: this.#data.leadIn.connectionPoint.x + dx,
+                    y: this.#data.leadIn.connectionPoint.y + dy,
+                };
+            }
+        }
+
+        // Translate lead-out if it exists
+        if (this.#data.leadOut) {
+            this.#data.leadOut.geometry = translateArc(
+                this.#data.leadOut.geometry as Arc,
+                dx,
+                dy
+            );
+            // Normal is a unit vector, doesn't change with translation
+            if (this.#data.leadOut.connectionPoint) {
+                this.#data.leadOut.connectionPoint = {
+                    x: this.#data.leadOut.connectionPoint.x + dx,
+                    y: this.#data.leadOut.connectionPoint.y + dy,
+                };
+            }
+        }
+
+        // Normal is a unit vector (direction), doesn't change with translation
+
+        // Translate the normalConnectionPoint (position)
+        this.#data.normalConnectionPoint = {
+            x: this.#data.normalConnectionPoint.x + dx,
+            y: this.#data.normalConnectionPoint.y + dy,
+        };
     }
 }

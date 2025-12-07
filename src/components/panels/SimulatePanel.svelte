@@ -1,14 +1,18 @@
 <script lang="ts">
     import AccordionPanel from './AccordionPanel.svelte';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { MeasurementSystem } from '$lib/config/settings/enums';
 
     // Get rapid rate from settings store (stored in measurement system units)
-    $: rapidRate = $settingsStore.settings.camSettings.rapidRate;
-    $: measurementSystem = $settingsStore.settings.measurementSystem;
+    const rapidRate = $derived(settingsStore.settings.camSettings.rapidRate);
+    const measurementSystem = $derived(
+        settingsStore.settings.measurementSystem
+    );
 
     // Display unit based on measurement system
-    $: unit = measurementSystem === MeasurementSystem.Metric ? 'mm' : 'in';
+    const unit = $derived(
+        measurementSystem === MeasurementSystem.Metric ? 'mm' : 'in'
+    );
 
     function handleRapidRateChange(event: Event) {
         const target = event.target as HTMLInputElement;

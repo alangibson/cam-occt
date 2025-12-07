@@ -8,10 +8,8 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ChainData } from './interfaces';
-import { Chain } from './classes';
+import { Chain } from './classes.svelte';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     getShapeEndPoint,
@@ -22,6 +20,7 @@ import {
     getShapePointAt,
     getShapeLength,
     sampleShapes,
+    shapeBoundingBox,
 } from '$lib/cam/shape/functions';
 import {
     AREA_RATIO_THRESHOLD,
@@ -38,18 +37,18 @@ import {
     roundToDecimalPlaces,
 } from '$lib/geometry/math/functions';
 import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import { combineBoundingBoxes } from '$lib/geometry/bounding-box/functions';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
+    calculateSignedArea,
     isPolygonContained,
     removeDuplicatePoints,
 } from '$lib/geometry/polygon/functions';
 import { getArcTangent } from '$lib/geometry/arc/functions';
 import { getCircleTangent } from '$lib/geometry/circle/functions';
 import { getLineTangent } from '$lib/geometry/line/functions';
-import { getPolylineTangent } from '$lib/geometry/polyline/functions';
 import { getSplineTangent } from '$lib/geometry/spline/functions';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
@@ -58,6 +57,8 @@ import {
     toClipper2Paths,
     calculateClipper2PathsArea,
 } from '$lib/cam/offset/convert';
+import type { ChainData } from './interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -68,38 +69,18 @@ import {
  * @returns A new chain with reversed direction
  */
 export function reverseChain(chain: Chain): Chain {
-    const chainData = chain.toData();
+    // Clone and reverse the shapes array
+    const reversedShapes = chain.shapes.slice().reverse();
+    // Reverse each shape in-place
+    reversedShapes.forEach((shape) => reverseShape(shape));
+
     return new Chain({
-        ...chainData,
-        shapes: chain.shapes
-            .slice()
-            .reverse()
-            .map((shape) => reverseShape(shape).toData()),
+        id: chain.id,
+        name: chain.name,
+        shapes: reversedShapes,
+        clockwise: chain.clockwise,
+        originalChainId: chain.originalChainId,
     });
-}
-
-/**
- * Calculate the signed area of a polygon using the shoelace formula
- *
- * The signed area indicates the winding direction:
- * - Positive area: Clockwise (CW) winding
- * - Negative area: Counter-clockwise (CCW) winding
- * - Zero area: Degenerate polygon (collinear points or self-intersecting)
- *
- * @param points Array of polygon vertices in order
- * @returns Signed area of the polygon (positive for CW, negative for CCW)
- */
-export function calculateSignedArea(points: Point2D[]): number {
-    if (points.length < POLYGON_POINTS_MIN) {
-        return 0; // Need at least 3 points to form a polygon
-    }
-
-    let area: number = 0;
-    for (let i: number = 0; i < points.length; i++) {
-        const j: number = (i + 1) % points.length;
-        area += (points[j].x - points[i].x) * (points[j].y + points[i].y);
-    }
-    return area / 2;
 }
 
 /**
@@ -109,13 +90,13 @@ export function calculateSignedArea(points: Point2D[]): number {
  * @returns 'CW' for clockwise, 'CCW' for counter-clockwise, 'degenerate' for zero area
  */
 export function getWindingDirection(points: Point2D[]): WindingDirection {
-    const signedArea: number = calculateSignedArea(points);
+    const signedArea: number = calculateSignedArea({ points });
 
     if (Math.abs(signedArea) < Number.EPSILON) {
         return WindingDirection.degenerate;
     }
 
-    return signedArea > 0 ? WindingDirection.CW : WindingDirection.CCW;
+    return signedArea < 0 ? WindingDirection.CW : WindingDirection.CCW;
 }
 
 /**
@@ -125,17 +106,17 @@ export function getWindingDirection(points: Point2D[]): WindingDirection {
  * @returns True if clockwise, false if counter-clockwise or degenerate
  */
 export function isClockwise(points: Point2D[]): boolean {
-    return calculateSignedArea(points) > 0;
+    return calculateSignedArea({ points }) < 0;
 }
 
 /**
  * Check if a polygon is wound counter-clockwise
  *
  * @param points Array of polygon vertices in order
- * @returns True if counter-clockwise, false if counter-clockwise or degenerate
+ * @returns True if counter-clockwise, false if clockwise or degenerate
  */
 export function isCounterClockwise(points: Point2D[]): boolean {
-    return calculateSignedArea(points) < 0;
+    return calculateSignedArea({ points }) > 0;
 }
 
 /**
@@ -179,7 +160,7 @@ export function calculatePolygonCentroid(points: Point2D[]): Point2D {
         return { x: 0, y: 0 };
     }
 
-    const area: number = calculateSignedArea(points);
+    const area: number = calculateSignedArea({ points });
     if (Math.abs(area) < Number.EPSILON) {
         // Degenerate polygon - return arithmetic mean of points
         const sum: Point2D = points.reduce(
@@ -203,12 +184,11 @@ export function calculatePolygonCentroid(points: Point2D[]): Point2D {
         cy += (points[i].y + points[j].y) * cross;
     }
 
-    // calculateSignedArea uses trapezoidal formula which has opposite sign from shoelace
-    // Trapezoidal: positive for CW, negative for CCW
-    // Shoelace: negative for CW, positive for CCW
-    // Centroid formula uses shoelace convention, so negate the trapezoidal area
+    // calculateSignedArea uses shoelace formula (positive for CCW, negative for CW)
+    // The cross product calculation above also uses shoelace convention
+    // So they have matching signs and no negation is needed
     // eslint-disable-next-line no-magic-numbers
-    const factor: number = 1 / (6 * -area);
+    const factor: number = 1 / (6 * area);
     return { x: cx * factor, y: cy * factor };
 }
 
@@ -363,17 +343,6 @@ export function isChainClosed(
             const ellipse: Ellipse = shape.geometry as Ellipse;
             // Use the centralized ellipse closed detection logic
             return isEllipseClosed(ellipse, CONTAINMENT_AREA_TOLERANCE);
-        }
-        if (shape.type === 'polyline') {
-            // Check the explicit closed flag from DXF parsing
-            const polyline: Polyline = shape.geometry as Polyline;
-            if (
-                typeof polyline.closed === 'boolean' &&
-                polyline.closed === true
-            ) {
-                return true; // Explicitly closed polylines are definitely closed
-            }
-            // If closed is false or undefined, fall through to geometric check
         }
     }
 
@@ -555,8 +524,8 @@ export function isChainContainedInChain(
                 // This handles cases where JSTS fails due to complex tessellation but logical containment exists
                 if (areaRatio < AREA_RATIO_THRESHOLD) {
                     // Calculate bounding boxes for fallback check
-                    const innerBounds = calculateChainBoundingBox(innerChain);
-                    const outerBounds = calculateChainBoundingBox(outerChain);
+                    const innerBounds = chainBoundingBox(innerChain);
+                    const outerBounds = chainBoundingBox(outerChain);
 
                     const boundingBoxContained =
                         innerBounds.min.x >= outerBounds.min.x &&
@@ -691,7 +660,10 @@ export function isChainGeometricallyContained(
     }
 
     // Check if all points of inner polygon are inside outer polygon
-    return isPolygonContained(innerPolygon, outerPolygon);
+    return isPolygonContained(
+        { points: innerPolygon },
+        { points: outerPolygon }
+    );
 }
 /**
  * Extracts a polygon representation from a chain for geometric operations
@@ -731,8 +703,10 @@ function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     }
 
     // Remove duplicate points and ensure we have enough for a polygon
-    const cleanedPoints: Point2D[] = removeDuplicatePoints(points);
-    return cleanedPoints.length >= POLYGON_POINTS_MIN ? cleanedPoints : null;
+    const cleanedPolygon = removeDuplicatePoints({ points });
+    return cleanedPolygon.points.length >= POLYGON_POINTS_MIN
+        ? cleanedPolygon.points
+        : null;
 }
 
 /**
@@ -796,9 +770,6 @@ export function getChainTangent(
 
         case GeometryType.CIRCLE:
             return getCircleTangent(shape.geometry as Circle, point);
-
-        case GeometryType.POLYLINE:
-            return getPolylineTangent(shape.geometry as Polyline, isStart);
 
         case GeometryType.SPLINE:
             return getSplineTangent(shape.geometry as Spline, isStart);
@@ -910,9 +881,7 @@ export function sampleChain(
  * @param chain - The chain to analyze
  * @returns The cut direction based on the chain's clockwise property
  */
-export function getChainCutDirection(
-    chain: ChainData | Chain | undefined
-): CutDirection {
+export function getChainCutDirection(chain: Chain | undefined): CutDirection {
     if (!chain) return CutDirection.NONE;
 
     return chain.clockwise === true
@@ -920,4 +889,12 @@ export function getChainCutDirection(
         : chain.clockwise === false
           ? CutDirection.COUNTERCLOCKWISE
           : CutDirection.NONE;
+}
+
+/**
+ * Calculates the bounding box of a chain by aggregating bounds of all shapes
+ */
+export function chainBoundingBox(chain: ChainData): BoundingBoxData {
+    const shapeBounds = chain.shapes.map((shape) => shapeBoundingBox(shape));
+    return combineBoundingBoxes(shapeBounds);
 }

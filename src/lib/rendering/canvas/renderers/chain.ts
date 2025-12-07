@@ -22,7 +22,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import { getChainTangent, tessellateChain } from '$lib/cam/chain/functions';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { PartVoid, PartSlot } from '$lib/cam/part/interfaces';
 import {
     getShapeStartPoint,

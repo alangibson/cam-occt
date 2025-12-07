@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { selectionStore } from '$lib/stores/selection/store';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
     import type { ShapeData } from '$lib/cam/shape/interfaces';
     import { Shape } from '$lib/cam/shape/classes';
     import { GeometryType } from '$lib/geometry/enums';
@@ -8,34 +8,36 @@
     import type { Line } from '$lib/geometry/line/interfaces';
     import type { Arc } from '$lib/geometry/arc/interfaces';
     import type { Circle } from '$lib/geometry/circle/interfaces';
-    import type { Polyline } from '$lib/geometry/polyline/interfaces';
+    import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
     import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
     import type { Spline } from '$lib/geometry/spline/interfaces';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
     } from '$lib/cam/shape/functions';
-    import { polylineToPoints } from '$lib/geometry/polyline/functions';
+    import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
     import InspectProperties from './InspectProperties.svelte';
 
-    $: drawing = $drawingStore.drawing;
-    $: selection = $selectionStore;
-    $: selectedShapes = selection.shapes.selected;
-    $: hoveredShape = selection.shapes.hovered;
-    $: selectedOffsetShape = selection.shapes.selectedOffset;
+    let drawing = $derived(drawingStore.drawing);
+    let selectedShapes = $derived(selectionStore.shapes.selected);
+    let hoveredShape = $derived(selectionStore.shapes.hovered);
+    let selectedOffsetShape = $derived(selectionStore.shapes.selectedOffset);
 
     // Get the shape to display - prioritize offset shape, then selected shape, then hovered
-    $: displayShape = selectedOffsetShape
-        ? selectedOffsetShape
-        : drawing && selectedShapes.size > 0
-          ? drawing.shapes.find((shape) => selectedShapes.has(shape.id))
-          : drawing && hoveredShape
-            ? drawing.shapes.find((shape) => shape.id === hoveredShape)
-            : null;
+    let displayShape = $derived(
+        selectedOffsetShape
+            ? selectedOffsetShape
+            : drawing && selectedShapes.size > 0
+              ? drawing.shapes.find((shape) => selectedShapes.has(shape.id))
+              : drawing && hoveredShape
+                ? drawing.shapes.find((shape) => shape.id === hoveredShape)
+                : null
+    );
 
     // Determine display type
-    $: isShowingOffset =
-        displayShape === selectedOffsetShape && selectedOffsetShape !== null;
+    let isShowingOffset = $derived(
+        displayShape === selectedOffsetShape && selectedOffsetShape !== null
+    );
 
     function getShapeOrigin(shape: ShapeData): Point2D {
         switch (shape.type) {
@@ -49,7 +51,7 @@
                 return circle.center; // Origin is the center
 
             case GeometryType.POLYLINE:
-                const polyline = shape.geometry as Polyline;
+                const polyline = shape.geometry as DxfPolyline;
                 const points = polylineToPoints(polyline);
                 return points.length > 0 ? points[0] : { x: 0, y: 0 }; // Origin is the first point
 
@@ -71,169 +73,181 @@
     }
 
     // Build properties array for the grid
-    $: properties = displayShape
-        ? (() => {
-              const props: Array<{ property: string; value: string }> = [];
+    let properties = $derived(
+        displayShape
+            ? (() => {
+                  const props: Array<{ property: string; value: string }> = [];
 
-              // Type is always first
-              props.push({
-                  property: 'Type',
-                  value: getShapeTypeDisplay(displayShape),
-              });
-
-              props.push({
-                  property: 'Name',
-                  value: displayShape.id,
-              });
-
-              if (displayShape.layer) {
+                  // Type is always first
                   props.push({
-                      property: 'Layer',
-                      value: displayShape.layer,
-                  });
-              }
-
-              props.push({
-                  property: 'Origin',
-                  value: formatPoint(getShapeOrigin(new Shape(displayShape))),
-              });
-
-              props.push({
-                  property: 'Start',
-                  value: formatPoint(
-                      getShapeStartPoint(new Shape(displayShape))
-                  ),
-              });
-
-              props.push({
-                  property: 'End',
-                  value: formatPoint(getShapeEndPoint(new Shape(displayShape))),
-              });
-
-              // Add type-specific properties
-              if (
-                  displayShape.type === GeometryType.CIRCLE ||
-                  displayShape.type === GeometryType.ARC
-              ) {
-                  const geometry = displayShape.geometry as Circle | Arc;
-                  props.push({
-                      property: 'Radius',
-                      value: geometry.radius.toFixed(2),
+                      property: 'Type',
+                      value: getShapeTypeDisplay(displayShape),
                   });
 
-                  if (displayShape.type === GeometryType.ARC) {
-                      const arcGeometry = displayShape.geometry as Arc;
+                  props.push({
+                      property: 'Name',
+                      value: displayShape.id,
+                  });
+
+                  if (displayShape.layer) {
                       props.push({
-                          property: 'Start Angle',
-                          value:
-                              (
-                                  (arcGeometry.startAngle * 180) /
-                                  Math.PI
-                              ).toFixed(1) + '°',
-                      });
-                      props.push({
-                          property: 'End Angle',
-                          value:
-                              ((arcGeometry.endAngle * 180) / Math.PI).toFixed(
-                                  1
-                              ) + '°',
-                      });
-                      props.push({
-                          property: 'Direction',
-                          value: arcGeometry.clockwise
-                              ? 'Clockwise'
-                              : 'Counter-clockwise',
+                          property: 'Layer',
+                          value: displayShape.layer,
                       });
                   }
-              }
 
-              if (displayShape.type === GeometryType.ELLIPSE) {
-                  const ellipseGeometry = displayShape.geometry as Ellipse;
                   props.push({
-                      property: 'Center',
-                      value: formatPoint(ellipseGeometry.center),
-                  });
-                  props.push({
-                      property: 'Major Axis End',
-                      value: formatPoint(ellipseGeometry.majorAxisEndpoint),
-                  });
-                  props.push({
-                      property: 'Minor/Major Ratio',
-                      value: ellipseGeometry.minorToMajorRatio.toFixed(3),
+                      property: 'Origin',
+                      value: formatPoint(
+                          getShapeOrigin(new Shape(displayShape))
+                      ),
                   });
 
+                  props.push({
+                      property: 'Start',
+                      value: formatPoint(
+                          getShapeStartPoint(new Shape(displayShape))
+                      ),
+                  });
+
+                  props.push({
+                      property: 'End',
+                      value: formatPoint(
+                          getShapeEndPoint(new Shape(displayShape))
+                      ),
+                  });
+
+                  // Add type-specific properties
                   if (
-                      ellipseGeometry.startParam !== undefined &&
-                      ellipseGeometry.endParam !== undefined
+                      displayShape.type === GeometryType.CIRCLE ||
+                      displayShape.type === GeometryType.ARC
                   ) {
+                      const geometry = displayShape.geometry as Circle | Arc;
                       props.push({
-                          property: 'Start Param',
-                          value: ellipseGeometry.startParam.toFixed(3),
+                          property: 'Radius',
+                          value: geometry.radius.toFixed(2),
                       });
-                      props.push({
-                          property: 'End Param',
-                          value: ellipseGeometry.endParam.toFixed(3),
-                      });
-                      props.push({
-                          property: 'Direction',
-                          value: 'Counter-clockwise',
-                      });
-                  }
-              }
 
-              if (displayShape.type === GeometryType.SPLINE) {
-                  const splineGeometry = displayShape.geometry as Spline;
-                  props.push({
-                      property: 'Degree',
-                      value: String(splineGeometry.degree),
-                  });
-
-                  if (
-                      splineGeometry.controlPoints &&
-                      splineGeometry.controlPoints.length > 0
-                  ) {
-                      props.push({
-                          property: 'Control Points',
-                          value: String(splineGeometry.controlPoints.length),
-                      });
-                  }
-
-                  if (splineGeometry.knots && splineGeometry.knots.length > 0) {
-                      props.push({
-                          property: 'Knots',
-                          value: String(splineGeometry.knots.length),
-                      });
+                      if (displayShape.type === GeometryType.ARC) {
+                          const arcGeometry = displayShape.geometry as Arc;
+                          props.push({
+                              property: 'Start Angle',
+                              value:
+                                  (
+                                      (arcGeometry.startAngle * 180) /
+                                      Math.PI
+                                  ).toFixed(1) + '°',
+                          });
+                          props.push({
+                              property: 'End Angle',
+                              value:
+                                  (
+                                      (arcGeometry.endAngle * 180) /
+                                      Math.PI
+                                  ).toFixed(1) + '°',
+                          });
+                          props.push({
+                              property: 'Direction',
+                              value: arcGeometry.clockwise
+                                  ? 'Clockwise'
+                                  : 'Counter-clockwise',
+                          });
+                      }
                   }
 
-                  if (
-                      splineGeometry.weights &&
-                      splineGeometry.weights.length > 0
-                  ) {
+                  if (displayShape.type === GeometryType.ELLIPSE) {
+                      const ellipseGeometry = displayShape.geometry as Ellipse;
                       props.push({
-                          property: 'Weights',
-                          value: String(splineGeometry.weights.length),
+                          property: 'Center',
+                          value: formatPoint(ellipseGeometry.center),
+                      });
+                      props.push({
+                          property: 'Major Axis End',
+                          value: formatPoint(ellipseGeometry.majorAxisEndpoint),
+                      });
+                      props.push({
+                          property: 'Minor/Major Ratio',
+                          value: ellipseGeometry.minorToMajorRatio.toFixed(3),
+                      });
+
+                      if (
+                          ellipseGeometry.startParam !== undefined &&
+                          ellipseGeometry.endParam !== undefined
+                      ) {
+                          props.push({
+                              property: 'Start Param',
+                              value: ellipseGeometry.startParam.toFixed(3),
+                          });
+                          props.push({
+                              property: 'End Param',
+                              value: ellipseGeometry.endParam.toFixed(3),
+                          });
+                          props.push({
+                              property: 'Direction',
+                              value: 'Counter-clockwise',
+                          });
+                      }
+                  }
+
+                  if (displayShape.type === GeometryType.SPLINE) {
+                      const splineGeometry = displayShape.geometry as Spline;
+                      props.push({
+                          property: 'Degree',
+                          value: String(splineGeometry.degree),
+                      });
+
+                      if (
+                          splineGeometry.controlPoints &&
+                          splineGeometry.controlPoints.length > 0
+                      ) {
+                          props.push({
+                              property: 'Control Points',
+                              value: String(
+                                  splineGeometry.controlPoints.length
+                              ),
+                          });
+                      }
+
+                      if (
+                          splineGeometry.knots &&
+                          splineGeometry.knots.length > 0
+                      ) {
+                          props.push({
+                              property: 'Knots',
+                              value: String(splineGeometry.knots.length),
+                          });
+                      }
+
+                      if (
+                          splineGeometry.weights &&
+                          splineGeometry.weights.length > 0
+                      ) {
+                          props.push({
+                              property: 'Weights',
+                              value: String(splineGeometry.weights.length),
+                          });
+                      }
+
+                      if (
+                          splineGeometry.fitPoints &&
+                          splineGeometry.fitPoints.length > 0
+                      ) {
+                          props.push({
+                              property: 'Fit Points',
+                              value: String(splineGeometry.fitPoints.length),
+                          });
+                      }
+
+                      props.push({
+                          property: 'Closed',
+                          value: splineGeometry.closed ? 'Yes' : 'No',
                       });
                   }
 
-                  if (
-                      splineGeometry.fitPoints &&
-                      splineGeometry.fitPoints.length > 0
-                  ) {
-                      props.push({
-                          property: 'Fit Points',
-                          value: String(splineGeometry.fitPoints.length),
-                      });
-                  }
-
-                  props.push({
-                      property: 'Closed',
-                      value: splineGeometry.closed ? 'Yes' : 'No',
-                  });
-              }
-
-              return props;
-          })()
-        : [];
+                  return props;
+              })()
+            : []
+    );
 
     async function copyShapeToClipboard() {
         if (!displayShape) return;

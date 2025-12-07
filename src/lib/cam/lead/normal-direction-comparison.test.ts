@@ -9,7 +9,7 @@ import { GeometryType } from '$lib/geometry/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { getChainTangent } from '$lib/cam/chain/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Test to isolate the bug where normal directions are calculated correctly on original chains

@@ -2,14 +2,14 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { describe, expect, it } from 'vitest';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,
     detectPolygonContainment,
     identifyShells,
 } from '$lib/cam/part/geometric-containment';
-import { isPointInPolygon } from './constants';
+import { isPointInPolygon } from '$lib/geometry/polygon/functions';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 
 // Helper function to create test chains
@@ -73,7 +73,9 @@ describe('isPointInPolygon', () => {
             { x: 0, y: 10 },
         ];
 
-        expect(isPointInPolygon({ x: 5, y: 5 }, polygon)).toBe(true);
+        expect(isPointInPolygon({ x: 5, y: 5 }, { points: polygon })).toBe(
+            true
+        );
     });
 
     it('should detect point outside polygon', () => {
@@ -84,7 +86,9 @@ describe('isPointInPolygon', () => {
             { x: 0, y: 10 },
         ];
 
-        expect(isPointInPolygon({ x: 15, y: 5 }, polygon)).toBe(false);
+        expect(isPointInPolygon({ x: 15, y: 5 }, { points: polygon })).toBe(
+            false
+        );
     });
 
     it('should handle point on polygon boundary', () => {
@@ -96,7 +100,9 @@ describe('isPointInPolygon', () => {
         ];
 
         // Point on edge should be considered inside
-        expect(isPointInPolygon({ x: 5, y: 0 }, polygon)).toBe(true);
+        expect(isPointInPolygon({ x: 5, y: 0 }, { points: polygon })).toBe(
+            true
+        );
     });
 });
 

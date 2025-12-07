@@ -6,6 +6,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import { readFileSync } from 'fs';
 import path from 'path';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Polyline Decomposition', () => {
     it('should decompose polylines with bulges into lines and arcs', async () => {
@@ -17,7 +18,9 @@ describe('Polyline Decomposition', () => {
         const drawingOriginal = await parseDXF(dxfContent);
 
         // Decompose polylines separately
-        const decomposed = decomposePolylines(drawingOriginal.shapes);
+        const decomposed = decomposePolylines(
+            drawingOriginal.shapes.map((s) => new Shape(s))
+        );
 
         // Should have more shapes when decomposed
         expect(decomposed.length).toBeGreaterThan(
@@ -42,7 +45,9 @@ describe('Polyline Decomposition', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const decomposed = decomposePolylines(drawing.shapes);
+        const decomposed = decomposePolylines(
+            drawing.shapes.map((s) => new Shape(s))
+        );
 
         // All decomposed shapes should have layer information
         decomposed.forEach((shape) => {
@@ -55,7 +60,9 @@ describe('Polyline Decomposition', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const decomposed = decomposePolylines(drawing.shapes);
+        const decomposed = decomposePolylines(
+            drawing.shapes.map((s) => new Shape(s))
+        );
 
         // Should have at least one line (straight segment)
         const lines = decomposed.filter((s) => s.type === 'line');
@@ -78,7 +85,9 @@ describe('Polyline Decomposition', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const decomposed = decomposePolylines(drawing.shapes);
+        const decomposed = decomposePolylines(
+            drawing.shapes.map((s) => new Shape(s))
+        );
 
         // Note: Current implementation converts bulges to lines, not arcs
         // This test is kept for future arc implementation from bulge data

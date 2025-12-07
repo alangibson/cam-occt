@@ -2,7 +2,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
@@ -218,7 +218,7 @@ export class SVGBuilder {
     }
 
     private addPolyline(
-        polyline: Polyline,
+        polyline: DxfPolyline,
         color: string,
         strokeWidth: number,
         dashArray?: string,
@@ -410,7 +410,7 @@ export class SVGBuilder {
                 break;
             case GeometryType.POLYLINE:
                 this.addPolyline(
-                    shape.geometry as Polyline,
+                    shape.geometry as DxfPolyline,
                     color,
                     strokeWidth,
                     dashArray,

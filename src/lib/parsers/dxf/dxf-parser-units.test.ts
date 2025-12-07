@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './functions';
 import { Unit } from '$lib/config/units/units';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
+import { shapesBoundingBox } from '$lib/cam/shape/functions';
 
 describe('DXF Parser Units', () => {
     describe('$INSUNITS header parsing', () => {
@@ -377,7 +377,7 @@ EOF`;
             const result = await parseDXF(dxfContent);
 
             expect(result.shapes).toHaveLength(0);
-            // Empty shapes array - getBoundingBoxForShapes throws for empty arrays
+            // Empty shapes array - shapesBoundingBox throws for empty arrays
             // so we just verify shapes is empty
         });
 
@@ -403,7 +403,7 @@ ENDSEC
 EOF`;
 
             const result = await parseDXF(dxfContent);
-            const bounds = getBoundingBoxForShapes(result.shapes);
+            const bounds = shapesBoundingBox(result.shapes);
 
             expect(bounds.min.x).toBe(0);
             expect(bounds.min.y).toBe(0);

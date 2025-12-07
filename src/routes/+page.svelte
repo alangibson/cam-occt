@@ -5,28 +5,104 @@
     import Footer from '$components/layout/Footer.svelte';
     import ToolTable from '$components/pages/tool-table/ToolTable.svelte';
     import Settings from '$components/pages/settings/Settings.svelte';
-    import { workflowStore } from '$lib/stores/workflow/store';
-    import { uiStore } from '$lib/stores/ui/store';
-    import { drawingStore } from '$lib/stores/drawing/store';
+    import { workflowStore } from '$lib/stores/workflow/store.svelte';
+    import { uiStore } from '$lib/stores/ui/store.svelte';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { chainStore } from '$lib/stores/chains/store.svelte';
     import {
         restoreApplicationState,
         setupAutoSave,
         saveApplicationState,
         clearApplicationState,
     } from '$lib/stores/storage/store';
-    import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { ImportUnitSetting } from '$lib/config/settings/enums';
-    import { kerfStore } from '$lib/stores/kerfs/store';
-    import { operationsStore } from '$lib/stores/operations/store';
-    import { planStore } from '$lib/stores/plan/store';
-    import { cutStore } from '$lib/stores/cuts/store';
-    import { rapidStore } from '$lib/stores/rapids/store';
-    import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
-    import { get } from 'svelte/store';
+    import { kerfStore } from '$lib/stores/kerfs/store.svelte';
+    import { operationsStore } from '$lib/stores/operations/store.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
+    import { cutStore } from '$lib/stores/cuts/store.svelte';
+    import { rapidStore } from '$lib/stores/rapids/store.svelte';
+    import {
+        toolStore,
+        createDefaultTool,
+    } from '$lib/stores/tools/store.svelte';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
+    import { autoSaveApplicationState } from '$lib/stores/storage/store';
 
     let cleanupAutoSave: (() => void) | null = null;
-    let isMenuOpen = false;
+    let isMenuOpen = $state(false);
+
+    // Auto-save when drawingStore changes (Svelte 5 reactive store)
+    $effect(() => {
+        // Access all reactive properties to track them
+        void drawingStore.drawing;
+        void drawingStore.scale;
+        void drawingStore.offset;
+        void drawingStore.displayUnit;
+        void drawingStore.layerVisibility;
+
+        // Trigger auto-save
+        autoSaveApplicationState();
+    });
+
+    // Auto-save when chainStore changes (Svelte 5 reactive store)
+    $effect(() => {
+        // Access all reactive properties to track them
+        void chainStore.tolerance;
+        void chainStore.showChainPaths;
+        void chainStore.showChainStartPoints;
+        void chainStore.showChainEndPoints;
+        void chainStore.showChainTangentLines;
+        void chainStore.showChainNormals;
+        void chainStore.showChainDirections;
+        void chainStore.showChainTessellation;
+
+        // Trigger auto-save
+        autoSaveApplicationState();
+    });
+
+    // Auto-save when operationsStore changes (Svelte 5 reactive store)
+    $effect(() => {
+        // Access the operations array to track changes
+        void operationsStore.operations;
+
+        // Trigger auto-save
+        autoSaveApplicationState();
+    });
+
+    // Auto-save when workflowStore changes (Svelte 5 reactive store)
+    $effect(() => {
+        // Access reactive properties to track them
+        void workflowStore.currentStage;
+        void workflowStore.completedStages;
+
+        // Trigger auto-save
+        autoSaveApplicationState();
+    });
+
+    // Auto-save when toolStore changes (Svelte 5 reactive store)
+    $effect(() => {
+        // Access reactive properties to track them
+        void toolStore.tools;
+
+        // Trigger auto-save
+        autoSaveApplicationState();
+    });
+
+    // Auto-save when selectionStore changes (Svelte 5 reactive store)
+    $effect(() => {
+        // Access reactive properties to track them
+        void selectionStore.shapes;
+        void selectionStore.chains;
+        void selectionStore.parts;
+        void selectionStore.cuts;
+        void selectionStore.rapids;
+        void selectionStore.leads;
+        void selectionStore.kerfs;
+
+        // Trigger auto-save
+        autoSaveApplicationState();
+    });
 
     function toggleMenu() {
         isMenuOpen = !isMenuOpen;
@@ -46,7 +122,6 @@
         drawingStore.reset();
 
         // Clear downstream stores (chains are auto-generated from drawing layers)
-        prepareStageStore.reset();
         operationsStore.reset(); // Clear operations
         planStore.reset(); // Clear cuts (which contain rapids as cut.rapidIn)
         cutStore.reset(); // Clear cut UI state (selection, highlighting)
@@ -70,7 +145,7 @@
         }
 
         // Ensure at least one tool exists (required for operations)
-        const tools = get(toolStore);
+        const tools = toolStore.tools;
         if (tools.length === 0) {
             toolStore.addTool(createDefaultTool(1));
             console.log('Created default tool - no tools found in storage');
@@ -146,7 +221,7 @@
                         class="menu-item tools-menu-item"
                         onclick={() => {
                             closeMenu();
-                            $uiStore.showToolTable
+                            uiStore.toolTableVisible
                                 ? uiStore.hideToolTable()
                                 : uiStore.showToolTable();
                         }}
@@ -157,7 +232,7 @@
                         class="menu-item settings-menu-item"
                         onclick={() => {
                             closeMenu();
-                            $uiStore.showSettings
+                            uiStore.settingsVisible
                                 ? uiStore.hideSettings()
                                 : uiStore.showSettings();
                         }}
@@ -173,9 +248,9 @@
 
     <!-- Body -->
     <main class="app-body">
-        {#if $uiStore.showSettings}
+        {#if uiStore.settingsVisible}
             <Settings />
-        {:else if $uiStore.showToolTable}
+        {:else if uiStore.toolTableVisible}
             <ToolTable />
         {:else}
             <WorkflowContainer />

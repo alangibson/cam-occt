@@ -7,7 +7,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
@@ -330,7 +330,7 @@ export class HitTestUtils {
                 );
 
             case GeometryType.POLYLINE:
-                const polyline = shape.geometry as Polyline;
+                const polyline = shape.geometry as DxfPolyline;
                 if (!polyline.shapes || polyline.shapes.length === 0)
                     return false;
 

@@ -31,6 +31,7 @@ import {
     extractLeadNormalAndConnection,
 } from '$lib/cam/lead/functions';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 // Constants for lead rendering
 const HIT_TEST_TOLERANCE = 5; // Same as chains for consistent hit detection
@@ -62,7 +63,7 @@ export class LeadRenderer extends BaseRenderer {
         state.cuts.forEach((cut) => {
             // Skip disabled cuts or cuts with disabled operations
             const operation = state.operations.find(
-                (op) => op.id === cut.operationId
+                (op) => op.id === cut.sourceOperationId
             );
             if (!operation || !operation.enabled || !cut.enabled) return;
 
@@ -181,17 +182,17 @@ export class LeadRenderer extends BaseRenderer {
 
             // Fall back to dynamic calculation if no valid cache
             // Get the chain for this cut - prefer cut chain if available
-            let chain = cut.cutChain;
+            let chain = cut.chain;
 
             // Fallback to original chain lookup for backward compatibility
             if (!chain) {
-                chain = state.chains.find((c) => c.id === cut.chainId);
+                chain = state.chains.find((c) => c.id === cut.sourceChainId);
                 if (!chain || chain.shapes.length === 0) {
                     return { warnings: [] };
                 }
 
                 // Apply cut direction ordering if using fallback chain
-                if (cut.cutDirection === 'counterclockwise') {
+                if (cut.direction === 'counterclockwise') {
                     chain?.shapes.reverse();
                 }
             }
@@ -201,7 +202,7 @@ export class LeadRenderer extends BaseRenderer {
             // Get the part if the cut is part of a part
             let part = null;
             if (operation.targetType === 'parts') {
-                part = findPartContainingChain(cut.chainId, state.parts);
+                part = findPartContainingChain(cut.sourceChainId, state.parts);
             }
 
             // Get lead configurations with proper defaults
@@ -221,10 +222,10 @@ export class LeadRenderer extends BaseRenderer {
 
             // Calculate leads using correct signature
             const leadResult: LeadResult = calculateLeads(
-                chain,
+                new Chain(chain),
                 leadInConfig,
                 leadOutConfig,
-                cut.cutDirection,
+                cut.direction,
                 part || undefined,
                 cut.normal
             );
@@ -311,7 +312,7 @@ export class LeadRenderer extends BaseRenderer {
         // Test for hits on lead geometry
         for (const cut of state.cuts) {
             const operation = state.operations.find(
-                (op) => op.id === cut.operationId
+                (op) => op.id === cut.sourceOperationId
             );
             if (!operation || !operation.enabled || !cut.enabled) continue;
 

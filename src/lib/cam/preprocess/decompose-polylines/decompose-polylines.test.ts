@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { createPolylineFromVertices } from '$lib/geometry/dxf-polyline/functions';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { decomposePolylines } from './decompose-polylines';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Decompose Polylines Algorithm', () => {
     describe('Basic Functionality', () => {
@@ -19,7 +20,7 @@ describe('Decompose Polylines Algorithm', () => {
             );
             const shapes: ShapeData[] = [polylineShape];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             // Should create 2 line segments from 3 points
             expect(result).toHaveLength(2);
@@ -50,7 +51,7 @@ describe('Decompose Polylines Algorithm', () => {
             );
             const shapes: ShapeData[] = [polylineShape];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             // Should create 4 line segments: 3 from consecutive points + 1 closing segment
             expect(result).toHaveLength(4);
@@ -81,11 +82,11 @@ describe('Decompose Polylines Algorithm', () => {
                 },
             ];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             expect(result).toHaveLength(2);
-            expect(result[0]).toEqual(shapes[0]);
-            expect(result[1]).toEqual(shapes[1]);
+            expect(result[0].toData()).toEqual(shapes[0]);
+            expect(result[1].toData()).toEqual(shapes[1]);
         });
 
         it('should preserve layer information on decomposed segments', () => {
@@ -99,7 +100,7 @@ describe('Decompose Polylines Algorithm', () => {
             );
             const shapes: ShapeData[] = [polylineShape];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             expect(result).toHaveLength(1);
             expect(result[0].layer).toBe('construction');
@@ -123,7 +124,7 @@ describe('Decompose Polylines Algorithm', () => {
             );
             const shapes: ShapeData[] = [polylineShape];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             expect(result).toHaveLength(1);
             expect(result[0].type).toBe('line');
@@ -139,7 +140,7 @@ describe('Decompose Polylines Algorithm', () => {
             );
             const shapes: ShapeData[] = [polylineShape];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             // Single point polyline produces no line segments
             expect(result).toHaveLength(0);
@@ -156,7 +157,7 @@ describe('Decompose Polylines Algorithm', () => {
             );
             const shapes: ShapeData[] = [polylineShape];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             // Should create 2 segments: forward (0,0)→(10,0) and backward (10,0)→(0,0)
             expect(result).toHaveLength(2);
@@ -197,7 +198,7 @@ describe('Decompose Polylines Algorithm', () => {
                 },
             ];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             // Should have: 1 original line + 2 decomposed lines + 1 original circle = 4 shapes
             expect(result).toHaveLength(4);
@@ -229,7 +230,7 @@ describe('Decompose Polylines Algorithm', () => {
             );
             const shapes: ShapeData[] = [polylineShape];
 
-            const result = decomposePolylines(shapes);
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
 
             expect(result).toHaveLength(2);
             expect(result[0].id).toBeDefined();

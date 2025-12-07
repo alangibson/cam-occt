@@ -6,6 +6,7 @@ import {
     SMALL_ANGLE_INCREMENT_DEG,
 } from '$lib/geometry/constants';
 import { hashObject } from '$lib/geometry/hash/functions';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 export function getCircleStartPoint(circle: Circle): Point2D {
     return { x: circle.center.x + circle.radius, y: circle.center.y };
@@ -89,10 +90,49 @@ export function tessellateCircle(circle: Circle, numPoints: number): Point2D[] {
 }
 
 /**
+ * Translate a circle by the given offsets
+ */
+export function translateCircle(
+    circle: Circle,
+    dx: number,
+    dy: number
+): Circle {
+    return {
+        center: { x: circle.center.x + dx, y: circle.center.y + dy },
+        radius: circle.radius,
+    };
+}
+
+/**
  * Generate a content hash for a Circle
  * @param circle - The circle to hash
  * @returns A SHA-256 hash as a hex string
  */
 export async function hashCircle(circle: Circle): Promise<string> {
     return hashObject(circle);
+}
+
+export function circleBoundingBox(circle: Circle): BoundingBoxData {
+    if (
+        !circle.center ||
+        !isFinite(circle.center.x) ||
+        !isFinite(circle.center.y) ||
+        !isFinite(circle.radius) ||
+        circle.radius <= 0
+    ) {
+        throw new Error(
+            'Invalid circle: center must be finite and radius must be positive'
+        );
+    }
+
+    return {
+        min: {
+            x: circle.center.x - circle.radius,
+            y: circle.center.y - circle.radius,
+        },
+        max: {
+            x: circle.center.x + circle.radius,
+            y: circle.center.y + circle.radius,
+        },
+    };
 }

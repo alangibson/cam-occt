@@ -8,6 +8,6 @@ import type { BoundingBoxData } from './interfaces';
 export const THREE_HALVES_PI = (3 * Math.PI) / 2;
 
 export const EMPTY_BOUNDS: BoundingBoxData = {
-    min: { x: 0, y: 0 },
-    max: { x: 0, y: 0 },
+    min: { x: Infinity, y: Infinity },
+    max: { x: -Infinity, y: -Infinity },
 };

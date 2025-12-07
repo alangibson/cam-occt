@@ -4,7 +4,7 @@ import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { isChainGeometricallyContained } from '$lib/cam/chain/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 // Helper function to create ellipse shapes for testing
 function createEllipseShape(

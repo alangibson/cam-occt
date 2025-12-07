@@ -10,7 +10,8 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { convertLeadGeometryToPoints } from './functions';
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 
 describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     it('should properly detect solid areas using point-in-polygon for ADLER.dxf Part 5', async () => {
@@ -20,10 +21,14 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
 
         // Parse with decompose polylines enabled (matching UI behavior)
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
 
         // Detect chains with tolerance 0.1 (standard default)
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         // Detect parts
@@ -74,8 +79,12 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -126,8 +135,12 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];

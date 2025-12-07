@@ -1,8 +1,7 @@
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { JoinColinearLinesParameters } from '$lib/cam/preprocess/algorithm-parameters';
 
@@ -11,9 +10,9 @@ import type { JoinColinearLinesParameters } from '$lib/cam/preprocess/algorithm-
  * This is the main entry point that should be used by the UI
  */
 export function joinColinearLines(
-    chains: ChainData[],
+    chains: Chain[],
     parameters: JoinColinearLinesParameters
-): ChainData[] {
+): Chain[] {
     return joinColinearLinesInChains(chains, parameters.tolerance);
 }
 
@@ -146,74 +145,23 @@ function collectCollinearLines(
 }
 
 /**
- * Join consecutive collinear line segments within a polyline
- */
-export function joinColinearLinesInPolyline(
-    polyline: Polyline,
-    tolerance: number = MACHINE_TOLERANCE
-): Polyline {
-    if (!polyline.shapes || polyline.shapes.length === 0) {
-        return polyline;
-    }
-
-    const newShapes: ShapeData[] = [];
-    let i = 0;
-
-    while (i < polyline.shapes.length) {
-        const currentShape = polyline.shapes[i];
-
-        // If not a line, just add it and continue
-        if (currentShape.type !== 'line') {
-            newShapes.push(currentShape);
-            i++;
-            continue;
-        }
-
-        // Use shared function to collect collinear lines
-        const { collinearLines, nextIndex } = collectCollinearLines(
-            polyline.shapes,
-            i,
-            tolerance
-        );
-
-        // If we found multiple collinear lines, join them
-        if (collinearLines.length > 1) {
-            const joinedLine = createJoinedLine(collinearLines);
-            newShapes.push({
-                ...currentShape, // Preserve id, layer, etc. from first shape
-                geometry: joinedLine,
-            });
-        } else {
-            // Single line, just add it
-            newShapes.push(currentShape);
-        }
-
-        // Move to next unprocessed shape
-        i = nextIndex;
-    }
-
-    return {
-        ...polyline,
-        shapes: newShapes,
-    };
-}
-
-/**
  * Join consecutive collinear lines within each chain
  */
 export function joinColinearLinesInChains(
-    chains: ChainData[],
+    chains: Chain[],
     tolerance: number = MACHINE_TOLERANCE
-): ChainData[] {
-    return chains.map((chain) => ({
-        ...chain,
-        shapes: joinColinearLinesInShapes(chain.shapes, tolerance),
-    }));
+): Chain[] {
+    return chains.map((chain) => {
+        const chainData = chain.toData();
+        return new Chain({
+            ...chainData,
+            shapes: joinColinearLinesInShapes(chainData.shapes, tolerance),
+        });
+    });
 }
 
 /**
  * Join consecutive collinear lines in an array of shapes
- * This handles both regular shapes and polylines containing line segments
  */
 function joinColinearLinesInShapes(
     shapes: ShapeData[],
@@ -223,22 +171,6 @@ function joinColinearLinesInShapes(
     let i = 0;
 
     while (i < shapes.length) {
-        const currentShape = shapes[i];
-
-        // Handle polylines specially
-        if (currentShape.type === 'polyline') {
-            const joinedPolyline = joinColinearLinesInPolyline(
-                currentShape.geometry as Polyline,
-                tolerance
-            );
-            newShapes.push({
-                ...currentShape,
-                geometry: joinedPolyline,
-            });
-            i++;
-            continue;
-        }
-
         const result = processConsecutiveLines(shapes, i, tolerance);
         newShapes.push(...result.shapes);
         i = result.nextIndex;

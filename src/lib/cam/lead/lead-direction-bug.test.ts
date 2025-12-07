@@ -19,7 +19,7 @@ import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     let outputDir: string;
@@ -418,7 +418,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 // Add shell (rectangle) chain shapes for CCW (offset)
                 shellChain.shapes.forEach((shape) => {
                     const offsetShape = {
-                        ...shape,
+                        id: shape.id,
+                        type: shape.type,
                         geometry:
                             shape.type === GeometryType.LINE
                                 ? {
@@ -454,7 +455,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 // Add hole (circle) chain for CCW (offset)
                 holeChain.shapes.forEach((shape) => {
                     const offsetShape = {
-                        ...shape,
+                        id: shape.id,
+                        type: shape.type,
                         geometry: {
                             ...(shape.geometry as Circle),
                             center: {
@@ -1426,7 +1428,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 // Add original chain shapes for CCW (offset)
                 shellChain.shapes.forEach((shape) => {
                     const offsetShape = {
-                        ...shape,
+                        id: shape.id,
+                        type: shape.type,
                         geometry: {
                             ...(shape.geometry as Circle),
                             center: {

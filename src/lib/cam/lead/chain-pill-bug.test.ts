@@ -17,7 +17,7 @@ import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Chain-Pill DXF Lead Direction Bug', () => {
     let chains: ChainData[];

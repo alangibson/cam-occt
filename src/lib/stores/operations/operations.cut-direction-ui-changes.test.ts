@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { get } from 'svelte/store';
-import { operationsStore } from './store';
-import { planStore } from '$lib/stores/plan/store';
-import { cutStore } from '$lib/stores/cuts/store';
-import { drawingStore } from '$lib/stores/drawing/store';
-import { toolStore } from '$lib/stores/tools/store';
+import { operationsStore } from './store.svelte';
+import { planStore } from '$lib/stores/plan/store.svelte';
+import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
+import { toolStore } from '$lib/stores/tools/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
@@ -20,7 +19,7 @@ async function waitForCuts(expectedCount: number, timeout = 200) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const cuts = get(planStore).plan.cuts;
+            const cuts = planStore.plan.cuts;
             if (cuts.length === expectedCount) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
@@ -45,13 +44,13 @@ async function waitForCutWithDirection(
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const cuts = get(planStore).plan.cuts;
-            if (cuts.length > 0 && cuts[0].cutDirection === expectedDirection) {
+            const cuts = planStore.plan.cuts;
+            if (cuts.length > 0 && cuts[0].direction === expectedDirection) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected cut with direction ${expectedDirection}, got ${cuts[0]?.cutDirection} after ${timeout}ms`
+                        `Expected cut with direction ${expectedDirection}, got ${cuts[0]?.direction} after ${timeout}ms`
                     )
                 );
             } else {
@@ -189,7 +188,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         operationsStore.addOperation(operation);
 
         // Get the operation ID for updates
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         const operationId = operations[0].id;
 
         // Apply the operation to generate cuts
@@ -198,10 +197,10 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
 
         // Test 1: Initial clockwise direction
         // Natural = clockwise, desired = clockwise → no reversal
-        let cuts = get(planStore).plan.cuts;
+        let cuts = planStore.plan.cuts;
         expect(cuts).toHaveLength(1);
-        expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
+        expect(cuts[0].direction).toBe(CutDirection.CLOCKWISE);
+        expect(cuts[0].chain!.shapes[0].id).toBe('line1'); // Original order
 
         // Test 2: Change to counterclockwise
         // Natural = clockwise, desired = counterclockwise → reversal needed
@@ -211,9 +210,9 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         await operationsStore.applyOperation(operationId);
         await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].direction).toBe(CutDirection.COUNTERCLOCKWISE);
+        expect(cuts[0].chain!.shapes[0].id).toBe('line4'); // Reversed order
 
         // Test 3: Change back to clockwise
         // Natural = clockwise, desired = clockwise → no reversal (should be back to original)
@@ -223,10 +222,10 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         await operationsStore.applyOperation(operationId);
         await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].direction).toBe(CutDirection.CLOCKWISE);
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].chain!.shapes[0].id).toBe('line1'); // Back to original order
 
         // Test 4: Change to counterclockwise again
         // Natural = clockwise, desired = counterclockwise → reversal needed (should be consistent)
@@ -236,10 +235,10 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         await operationsStore.applyOperation(operationId);
         await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order again
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].direction).toBe(CutDirection.COUNTERCLOCKWISE);
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].chain!.shapes[0].id).toBe('line4'); // Reversed order again
 
         // Test 5: Final change back to clockwise
         // Natural = clockwise, desired = clockwise → no reversal (should be consistent)
@@ -249,10 +248,10 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         await operationsStore.applyOperation(operationId);
         await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].direction).toBe(CutDirection.CLOCKWISE);
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].chain!.shapes[0].id).toBe('line1'); // Back to original order
     });
 
     it('should work correctly with counterclockwise natural chains', async () => {
@@ -321,7 +320,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         operationsStore.addOperation(operation);
 
         // Get the operation ID for updates
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         const operationId = operations[0].id;
 
         // Apply the operation to generate cuts
@@ -331,12 +330,12 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         // Test 1: Initial counterclockwise direction
         // Natural = counterclockwise, desired = counterclockwise → no reversal
         // After normalization, chain goes: line1 → line2 → line3 → line4 (counterclockwise)
-        let cuts = get(planStore).plan.cuts;
+        let cuts = planStore.plan.cuts;
         expect(cuts).toHaveLength(1);
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Normalized order
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].direction).toBe(CutDirection.COUNTERCLOCKWISE);
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].chain!.shapes[0].id).toBe('line1'); // Normalized order
 
         // Test 2: Change to clockwise
         // Natural = counterclockwise, desired = clockwise → reversal needed
@@ -346,10 +345,10 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         await operationsStore.applyOperation(operationId);
         await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order (backward: line4 → line3 → line2 → line1)
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].direction).toBe(CutDirection.CLOCKWISE);
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].chain!.shapes[0].id).toBe('line4'); // Reversed order (backward: line4 → line3 → line2 → line1)
 
         // Test 3: Change back to counterclockwise
         // Natural = counterclockwise, desired = counterclockwise → no reversal (should be back to normalized order)
@@ -359,10 +358,10 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         await operationsStore.applyOperation(operationId);
         await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
-        cuts = get(planStore).plan.cuts;
-        expect(cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to normalized order (line1 → line2 → line3 → line4)
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].direction).toBe(CutDirection.COUNTERCLOCKWISE);
+        cuts = planStore.plan.cuts;
+        expect(cuts[0].chain!.shapes[0].id).toBe('line1'); // Back to normalized order (line1 → line2 → line3 → line4)
     });
 
     it('should work correctly with multiple rapid direction changes', async () => {
@@ -426,7 +425,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
 
         operationsStore.addOperation(operation);
 
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         const operationId = operations[0].id;
 
         // Apply the operation to generate cuts
@@ -450,17 +449,17 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
             await operationsStore.applyOperation(operationId);
             await waitForCutWithDirection(direction);
 
-            let cuts = get(planStore).plan.cuts;
-            expect(cuts[0].cutDirection).toBe(direction);
+            let cuts = planStore.plan.cuts;
+            expect(cuts[0].direction).toBe(direction);
 
             if (direction === CutDirection.CLOCKWISE) {
                 // Natural = clockwise, desired = clockwise → original order
-                cuts = get(planStore).plan.cuts;
-                expect(cuts[0].cutChain!.shapes[0].id).toBe('line1');
+                cuts = planStore.plan.cuts;
+                expect(cuts[0].chain!.shapes[0].id).toBe('line1');
             } else {
                 // Natural = clockwise, desired = counterclockwise → reversed order
-                cuts = get(planStore).plan.cuts;
-                expect(cuts[0].cutChain!.shapes[0].id).toBe('line4');
+                cuts = planStore.plan.cuts;
+                expect(cuts[0].chain!.shapes[0].id).toBe('line4');
             }
         }
     });

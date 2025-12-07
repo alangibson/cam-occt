@@ -10,7 +10,7 @@
  * - Shapes with coincident points that break traversal order
  */
 
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Shape } from '$lib/cam/shape/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -45,7 +45,7 @@ interface ChainTraversalIssue {
     description: string;
 }
 
-export interface ChainNormalizationResult {
+interface ChainNormalizationResult {
     chainId: string;
     issues: ChainTraversalIssue[];
     canTraverse: boolean;
@@ -78,7 +78,7 @@ export function normalizeChain(
     const normalizedChain = new Chain({
         id: chain.id,
         name: chain.name,
-        shapes: normalizedShapes.map((s) => s.toData()),
+        shapes: normalizedShapes,
         clockwise: chain.clockwise,
         originalChainId: chain.originalChainId,
     });
@@ -89,7 +89,7 @@ export function normalizeChain(
     return new Chain({
         id: normalizedChain.id,
         name: normalizedChain.name,
-        shapes: normalizedChain.shapes.map((s) => s.toData()),
+        shapes: normalizedChain.shapes,
         clockwise:
             direction === CutDirection.CLOCKWISE
                 ? true
@@ -512,6 +512,7 @@ function buildChainFromStartingShape(
             index: number;
             shape: Shape;
             distance: number;
+            needsReverse?: boolean;
         } | null = null;
 
         // Look for a shape that can connect to the end of our current chain
@@ -547,12 +548,12 @@ function buildChainFromStartingShape(
                 );
 
                 if (distance < tolerance) {
-                    const reversedShape: Shape = reverseShape(candidateShape);
                     if (!bestCandidate || distance < bestCandidate.distance) {
                         bestCandidate = {
                             index: i,
-                            shape: reversedShape,
+                            shape: candidateShape,
                             distance,
+                            needsReverse: true,
                         };
                     }
                 }
@@ -561,6 +562,10 @@ function buildChainFromStartingShape(
 
         // Use the best connection found
         if (bestCandidate) {
+            // Reverse the shape in-place if needed
+            if (bestCandidate.needsReverse) {
+                reverseShape(bestCandidate.shape);
+            }
             result.push(bestCandidate.shape);
             usedIndices.add(bestCandidate.index);
             foundConnection = true;

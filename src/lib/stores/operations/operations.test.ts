@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { get } from 'svelte/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
-
-// Now import the modules we need
-import { operationsStore } from './store';
+import { operationsStore } from './store.svelte';
 import type { OperationData } from '$lib/cam/operation/interface';
+
+// Helper to compare Set-like objects by their values
+function expectSetEqual<T>(actual: Set<T> | Iterable<T>, expected: Set<T>) {
+    const actualArray = [...actual].sort();
+    const expectedArray = [...expected].sort();
+    expect(actualArray).toEqual(expectedArray);
+}
 
 // Mock the stores before importing the module under test
 vi.mock('../cuts/store', () => ({
@@ -117,7 +121,7 @@ describe('operationsStore', () => {
             const operation = createTestOperation();
             operationsStore.addOperation(operation);
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations).toHaveLength(1);
             expect(operations[0].toData()).toEqual({
                 ...operation,
@@ -154,7 +158,7 @@ describe('operationsStore', () => {
                 action: OperationAction.CUT,
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].name).toBe('Updated Operation');
         });
 
@@ -168,7 +172,7 @@ describe('operationsStore', () => {
             });
 
             // Verify operation was updated (warning stores removed)
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].name).toBe('Updated');
         });
 
@@ -178,7 +182,7 @@ describe('operationsStore', () => {
                 action: OperationAction.CUT,
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations).toHaveLength(0);
         });
     });
@@ -190,7 +194,7 @@ describe('operationsStore', () => {
 
             operationsStore.deleteOperation('mock-uuid-123');
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations).toHaveLength(0);
             // Note: plan.remove(operation) is called to remove cuts, but we don't mock planStore here
         });
@@ -205,12 +209,12 @@ describe('operationsStore', () => {
             mockUUID.mockReturnValue('mock-uuid-456');
             operationsStore.addOperation(op2);
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             const reordered = [operations[1], operations[0]]; // Reverse order
 
             operationsStore.reorderOperations(reordered);
 
-            const newOrder = get(operationsStore);
+            const newOrder = operationsStore.operations;
             expect(newOrder[0].name).toBe('Second Operation');
             expect(newOrder[1].name).toBe('Test Operation');
         });
@@ -224,7 +228,7 @@ describe('operationsStore', () => {
             mockUUID.mockReturnValue('duplicate-uuid-789');
             operationsStore.duplicateOperation('mock-uuid-123');
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations).toHaveLength(2);
             expect(operations[1].toData()).toEqual({
                 ...operation,
@@ -238,7 +242,7 @@ describe('operationsStore', () => {
         it('should not duplicate non-existent operation', () => {
             operationsStore.duplicateOperation('non-existent');
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations).toHaveLength(0);
         });
 
@@ -311,8 +315,8 @@ describe('operationsStore', () => {
 
             const assigned = operationsStore.getAssignedTargets();
 
-            expect(assigned.chains).toEqual(new Set(['chain-1', 'chain-2']));
-            expect(assigned.parts).toEqual(new Set(['part-1']));
+            expectSetEqual(assigned.chains, new Set(['chain-1', 'chain-2']));
+            expectSetEqual(assigned.parts, new Set(['part-1']));
         });
 
         it('should exclude specified operation', () => {
@@ -346,7 +350,7 @@ describe('operationsStore', () => {
 
             operationsStore.reset();
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations).toHaveLength(0);
         });
     });

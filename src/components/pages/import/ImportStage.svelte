@@ -1,12 +1,12 @@
 <script lang="ts">
     import FileImport from './FileImport.svelte';
-    import { workflowStore } from '$lib/stores/workflow/store';
+    import { workflowStore } from '$lib/stores/workflow/store.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { partStore } from '$lib/stores/parts/store';
-    import { overlayStore } from '$lib/stores/overlay/store';
-    import { tessellationStore } from '$lib/stores/tessellation/store';
-    import { settingsStore } from '$lib/stores/settings/store';
-    import { drawingStore } from '$lib/stores/drawing/store';
+    import { partStore } from '$lib/stores/parts/store.svelte';
+    import { overlayStore } from '$lib/stores/overlay/store.svelte';
+    import { tessellationStore } from '$lib/stores/tessellation/store.svelte';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
     import {
         MeasurementSystem,
         ImportUnitSetting,
@@ -16,7 +16,7 @@
     import { applyAutoPreprocessing } from '$lib/cam/preprocess/auto-preprocess';
 
     // Get current settings
-    let settings = $derived($settingsStore.settings);
+    let settings = $derived(settingsStore.settings);
 
     async function handleFileImported(detail: {
         drawing: DrawingData;
@@ -70,7 +70,7 @@
     async function handleImportAdvance() {
         console.log('[ImportStage] handleImportAdvance started');
         // Ensure units are never 'none' beyond import stage
-        const drawing = $drawingStore.drawing;
+        const drawing = drawingStore.drawing;
         if (drawing && drawing.units === Unit.NONE) {
             // Convert 'none' units to concrete units based on application measurement system
             const targetUnit =
@@ -87,6 +87,9 @@
         console.log('[ImportStage] Applying auto-preprocessing...');
         await applyAutoPreprocessing();
         console.log('[ImportStage] Auto-preprocessing complete');
+
+        // Mark import stage as complete before advancing
+        workflowStore.completeStage(WorkflowStage.IMPORT);
 
         // Advance to next enabled stage when user clicks "Import >"
         const nextStage = workflowStore.getNextStage();

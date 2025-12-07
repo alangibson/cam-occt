@@ -8,47 +8,15 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { polylineToPoints } from '$lib/geometry/polyline/functions';
-import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { Circle } from '$lib/geometry/circle/interfaces';
-import type { Line } from '$lib/geometry/line/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
+import { isPointInPolygon } from '$lib/geometry/polygon/functions';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
+import { getShapePoints } from '$lib/cam/shape/functions';
 
 describe('Lead Hole Placement Fix', () => {
-    // Helper to check if a point is inside a polygon using ray casting
-    function isPointInPolygon(
-        point: { x: number; y: number },
-        polygon: { x: number; y: number }[]
-    ): boolean {
-        let inside = false;
-        const x: number = point.x;
-        const y: number = point.y;
-
-        for (
-            let i: number = 0, j = polygon.length - 1;
-            i < polygon.length;
-            j = i++
-        ) {
-            const xi = polygon[i].x;
-            const yi = polygon[i].y;
-            const xj = polygon[j].x;
-            const yj = polygon[j].y;
-
-            if (
-                yi > y !== yj > y &&
-                x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
-            ) {
-                inside = !inside;
-            }
-        }
-
-        return inside;
-    }
-
     // Helper to get polygon points from a chain
     function getPolygonFromChain(chain: {
         shapes: ShapeData[];
@@ -56,44 +24,10 @@ describe('Lead Hole Placement Fix', () => {
         const points: { x: number; y: number }[] = [];
 
         for (const shape of chain.shapes) {
-            if (shape.type === 'line') {
-                points.push((shape.geometry as Line).start);
-            } else if (shape.type === 'polyline') {
-                points.push(...polylineToPoints(shape.geometry as Polyline));
-            } else if (shape.type === 'arc') {
-                // Sample points along the arc
-                const arc = shape.geometry as Arc;
-                const segments = Math.max(
-                    8,
-                    Math.ceil(
-                        (Math.abs(arc.endAngle - arc.startAngle) * arc.radius) /
-                            2
-                    )
-                );
-                for (let i: number = 0; i < segments; i++) {
-                    const t: number = i / segments;
-                    const angle: number =
-                        arc.startAngle + (arc.endAngle - arc.startAngle) * t;
-                    points.push({
-                        x: arc.center.x + arc.radius * Math.cos(angle),
-                        y: arc.center.y + arc.radius * Math.sin(angle),
-                    });
-                }
-            } else if (shape.type === 'circle') {
-                // Sample points around the circle
-                const circle = shape.geometry as Circle;
-                const segments = Math.max(
-                    16,
-                    Math.ceil((2 * Math.PI * circle.radius) / 2)
-                );
-                for (let i: number = 0; i < segments; i++) {
-                    const angle: number = (2 * Math.PI * i) / segments;
-                    points.push({
-                        x: circle.center.x + circle.radius * Math.cos(angle),
-                        y: circle.center.y + circle.radius * Math.sin(angle),
-                    });
-                }
-            }
+            const shapePoints = getShapePoints(new Shape(shape), {
+                mode: 'TESSELLATION',
+            });
+            points.push(...shapePoints);
         }
 
         return points;
@@ -106,7 +40,7 @@ describe('Lead Hole Placement Fix', () => {
     ): boolean {
         for (const voidItem of part.voids) {
             const voidPolygon = getPolygonFromChain(voidItem.chain);
-            if (isPointInPolygon(point, voidPolygon)) {
+            if (isPointInPolygon(point, { points: voidPolygon })) {
                 return true; // Inside void
             }
         }
@@ -124,14 +58,14 @@ describe('Lead Hole Placement Fix', () => {
         const shellPolygon = getPolygonFromChain(part.shell);
 
         // First check if point is inside the shell
-        if (!isPointInPolygon(point, shellPolygon)) {
+        if (!isPointInPolygon(point, { points: shellPolygon })) {
             return false; // Not inside shell, definitely not in solid area
         }
 
         // Check if point is inside any void
         for (const voidItem of part.voids) {
             const voidPolygon = getPolygonFromChain(voidItem.chain);
-            if (isPointInPolygon(point, voidPolygon)) {
+            if (isPointInPolygon(point, { points: voidPolygon })) {
                 return false; // Inside void, not solid area
             }
         }
@@ -144,8 +78,12 @@ describe('Lead Hole Placement Fix', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -192,10 +130,9 @@ describe('Lead Hole Placement Fix', () => {
 
             const inSolid = isPointInSolidArea(point, part5);
             const inVoid = isPointInVoid(point, part5);
-            const outside = !isPointInPolygon(
-                point,
-                getPolygonFromChain(part5.shell)
-            );
+            const outside = !isPointInPolygon(point, {
+                points: getPolygonFromChain(part5.shell),
+            });
 
             if (inSolid) {
                 // Point in solid area detected
@@ -233,8 +170,12 @@ describe('Lead Hole Placement Fix', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -280,8 +221,12 @@ describe('Lead Hole Placement Fix', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -290,10 +235,10 @@ describe('Lead Hole Placement Fix', () => {
 
         // Get connection point (start of shell chain)
         const shellShape = part5.shell.shapes[0];
-        const connectionPoint =
-            shellShape.type === 'polyline'
-                ? polylineToPoints(shellShape.geometry as Polyline)[0]
-                : { x: 0, y: 0 }; // fallback
+        const shapePoints = getShapePoints(new Shape(shellShape), {
+            mode: 'TESSELLATION',
+        });
+        const connectionPoint = shapePoints[0] || { x: 0, y: 0 }; // fallback
 
         // Get hole center
         const holePolygon = getPolygonFromChain(part5.voids[0].chain);

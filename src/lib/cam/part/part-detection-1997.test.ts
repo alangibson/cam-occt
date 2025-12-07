@@ -17,7 +17,9 @@ describe('1997.dxf Part Detection', () => {
         const parsed = await parseDXF(dxfContent);
 
         // Decompose polylines separately
-        const decomposed = decomposePolylines(parsed.shapes);
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
 
         // Verify we have the expected number of shapes after decomposition
         expect(decomposed.length).toBeGreaterThan(400); // Should have ~454 line segments
@@ -67,7 +69,9 @@ describe('1997.dxf Part Detection', () => {
         expect(parsed.shapes).toBeDefined();
 
         // Polyline decomposition should not throw
-        const decomposed = decomposePolylines(parsed.shapes);
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         expect(decomposed).toBeDefined();
         expect(Array.isArray(decomposed)).toBe(true);
 

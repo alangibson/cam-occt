@@ -1,4 +1,4 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 /**
  * Tests for adjustCutStartPointForLeadKerfOverlap function
  */
@@ -102,11 +102,11 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
             enabled: true,
             order: 1,
             action: OperationAction.CUT,
-            operationId: 'test-op',
-            chainId: cutChain.id,
-            toolId,
-            cutDirection: CutDirection.CLOCKWISE,
-            cutChain,
+            sourceOperationId: 'test-op',
+            sourceChainId: cutChain.id,
+            sourceToolId: toolId,
+            direction: CutDirection.CLOCKWISE,
+            chain: cutChain,
             executionClockwise: true,
             normal: { x: -1, y: 0 }, // Normal pointing left
             normalConnectionPoint: { x: 0, y: 0 },
@@ -130,7 +130,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
             createSquareChain('square', 10),
             'test-tool'
         );
-        delete cut.cutChain;
+        delete cut.chain;
 
         const tool = createTool(2);
 
@@ -198,7 +198,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         const cutData = createCut(squareChain, 'test-tool', 5);
         const cut = new Cut(cutData);
         const originalCutId = cut.id;
-        const originalChainLength = cut.cutChain!.shapes.length;
+        const originalChainLength = cut.chain!.shapes.length;
         const tool = createTool(2);
 
         const result = await adjustCutStartPointForLeadKerfOverlap(
@@ -216,8 +216,8 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
             expect(cut.name).toBe('Test Cut');
 
             // Verify cutChain was rotated
-            expect(cut.cutChain).toBeDefined();
-            expect(cut.cutChain!.shapes.length).toBe(originalChainLength);
+            expect(cut.chain).toBeDefined();
+            expect(cut.chain!.shapes.length).toBe(originalChainLength);
 
             // Verify normal was recalculated
             expect(cut.normal).toBeDefined();

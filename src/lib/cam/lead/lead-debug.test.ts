@@ -3,11 +3,14 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { createPolylineFromVertices } from '$lib/geometry/dxf-polyline/functions';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { convertLeadGeometryToPoints } from './functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Lead Direction Debug', () => {
     it('should debug cut direction logic', () => {
@@ -20,10 +23,13 @@ describe('Lead Direction Debug', () => {
             { x: 0, y: 0, bulge: 0 },
         ];
 
+        const polyline = createPolylineFromVertices(squareVertices, true);
+        const decomposed = decomposePolylines([new Shape(polyline)]);
+
         const squareChain = new Chain({
             id: 'test-square',
             name: 'test-square',
-            shapes: [createPolylineFromVertices(squareVertices, true)],
+            shapes: decomposed,
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
@@ -46,7 +52,7 @@ describe('Lead Direction Debug', () => {
             leadConfig,
             noLeadOut,
             CutDirection.NONE,
-            simplePart,
+            new Part(simplePart),
             { x: 1, y: 0 }
         );
         if (noneResult.leadIn) {
@@ -60,7 +66,7 @@ describe('Lead Direction Debug', () => {
             leadConfig,
             noLeadOut,
             CutDirection.CLOCKWISE,
-            simplePart,
+            new Part(simplePart),
             { x: 1, y: 0 }
         );
         if (clockwiseResult.leadIn) {
@@ -74,7 +80,7 @@ describe('Lead Direction Debug', () => {
             leadConfig,
             noLeadOut,
             CutDirection.COUNTERCLOCKWISE,
-            simplePart,
+            new Part(simplePart),
             { x: 1, y: 0 }
         );
         if (counterclockwiseResult.leadIn) {
@@ -114,10 +120,13 @@ describe('Lead Direction Debug', () => {
             { x: 0, y: 0, bulge: 0 },
         ];
 
+        const polyline = createPolylineFromVertices(squareVertices, true);
+        const decomposed = decomposePolylines([new Shape(polyline)]);
+
         const squareChain = new Chain({
             id: 'test-square',
             name: 'test-square',
-            shapes: [createPolylineFromVertices(squareVertices, true)],
+            shapes: decomposed,
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
@@ -183,14 +192,15 @@ describe('Lead Direction Debug', () => {
             { x: 0, y: 0, bulge: 0 },
         ];
 
+        const polyline = createPolylineFromVertices(squareVertices, true, {
+            id: 'square-1',
+        });
+        const decomposed = decomposePolylines([new Shape(polyline)]);
+
         const originalChain = new Chain({
             id: 'test-square',
             name: 'test-square',
-            shapes: [
-                createPolylineFromVertices(squareVertices, true, {
-                    id: 'square-1',
-                }),
-            ],
+            shapes: decomposed,
         });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 2 }; // Shorter length to avoid validation warnings

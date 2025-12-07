@@ -17,44 +17,28 @@
     import AccordionPanel from '$components/panels/AccordionPanel.svelte';
     import SimulatePanel from '$components/panels/SimulatePanel.svelte';
     import ThreeColumnLayout from '$components/layout/ThreeColumnLayout.svelte';
-    import { workflowStore } from '$lib/stores/workflow/store';
+    import { workflowStore } from '$lib/stores/workflow/store.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { planStore } from '$lib/stores/plan/store';
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { toolStore } from '$lib/stores/tools/store';
-    import { overlayStore } from '$lib/stores/overlay/store';
-    import { settingsStore } from '$lib/stores/settings/store';
-    import { onMount, onDestroy } from 'svelte';
-    import type { ShapeData } from '$lib/cam/shape/interfaces';
-    import { GeometryType } from '$lib/geometry/enums';
+    import { planStore } from '$lib/stores/plan/store.svelte';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { toolStore } from '$lib/stores/tools/store.svelte';
+    import { overlayStore } from '$lib/stores/overlay/store.svelte';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
+    import { onMount, onDestroy, untrack } from 'svelte';
     import type { Point2D } from '$lib/geometry/point/interfaces';
     import type { Line } from '$lib/geometry/line/interfaces';
-    import type { Arc } from '$lib/geometry/arc/interfaces';
-    import type { Circle } from '$lib/geometry/circle/interfaces';
-    import type { Polyline } from '$lib/geometry/polyline/interfaces';
-    import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-    import type { Spline } from '$lib/geometry/spline/interfaces';
+    import type { ShapeData } from '$lib/cam/shape/interfaces';
     import type { ChainData } from '$lib/cam/chain/interfaces';
     import type { CutData } from '$lib/cam/cut/interfaces';
+    import { Cut } from '$lib/cam/cut/classes.svelte';
     import type { Rapid } from '$lib/cam/rapid/interfaces';
-    import type { Tool } from '$lib/cam/tool/interfaces';
-    import type { DrawingState } from '$lib/stores/drawing/interfaces';
-    import {
-        getSplinePointAt,
-        tessellateSpline,
-    } from '$lib/geometry/spline/functions';
-    import { polylineToPoints } from '$lib/geometry/polyline/functions';
-    import { getShapePointAt } from '$lib/cam/shape/functions';
     import { calculateLeads } from '$lib/cam/lead/lead-calculation';
     import { type LeadConfig } from '$lib/cam/lead/interfaces';
     import { MeasurementSystem } from '$lib/config/settings/enums';
-    import { type SettingsState } from '$lib/config/settings/interfaces';
-    import type { PartData } from '$lib/cam/part/interfaces';
+    import { Part } from '$lib/cam/part/classes.svelte';
     import { LeadType } from '$lib/cam/lead/enums';
-    import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
-    import { getToolFeedRate } from '$lib/config/units/tool-units';
     import { Unit } from '$lib/config/units/units';
     import { OperationAction } from '$lib/cam/operation/enums';
     import { DEFAULT_SPOT_DURATION } from '$lib/config/defaults/operation-defaults';
@@ -62,8 +46,20 @@
         getCachedLeadGeometry,
         hasValidCachedLeads,
     } from '$lib/cam/cut/lead-persistence';
-    import { Chain } from '$lib/cam/chain/classes';
+    import { Chain } from '$lib/cam/chain/classes.svelte';
     import { Shape } from '$lib/cam/shape/classes';
+    import {
+        convertDistanceToDisplayUnit,
+        getFeedRateForCut,
+        calculatePolylineLength,
+        getPositionOnPolyline,
+        getShapeLength,
+        getChainDistance,
+        getPositionOnChain,
+        findPartForChain,
+        formatTime,
+        formatDistance,
+    } from './functions';
 
     // Props from WorkflowContainer for shared canvas
     let {
@@ -113,16 +109,16 @@
         rapidRate?: number; // For rapid movements
     }> = [];
 
-    // Store subscriptions
-    let planStoreState = $state<{ plan: { cuts: CutData[] } } | null>(null);
-    let drawingState = $state<DrawingState | null>(null);
-    let toolStoreState: Tool[] | null = null;
-    let settingsStoreState: SettingsState | null = null;
+    // Store state
+    const toolStoreState = $derived(toolStore.tools);
+    const settingsStoreState = $derived(
+        settingsStore.settings ? { settings: settingsStore.settings } : null
+    );
 
     // Chains derived from drawing layers
     const chains = $derived(
-        drawingState?.drawing
-            ? Object.values(drawingState.drawing.layers).flatMap(
+        drawingStore.drawing
+            ? Object.values(drawingStore.drawing.layers).flatMap(
                   (layer) => layer.chains
               )
             : []
@@ -134,65 +130,16 @@
     let pierceCount = $state(0);
     let estimatedCutTime = $state(0);
 
-    // Helper function to convert distance from drawing units to display units
-    function convertDistanceToDisplayUnit(distance: number): number {
-        if (!drawingState?.drawing) return distance;
-
-        const drawingUnit =
-            drawingState.drawing.units === 'mm' ? Unit.MM : Unit.INCH;
-        const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
-
-        // If units match, no conversion needed
-        if (drawingUnit === displayUnitEnum) {
-            return distance;
-        }
-
-        // Convert between mm and inch
-        if (drawingUnit === Unit.MM && displayUnitEnum === Unit.INCH) {
-            return distance / 25.4;
-        } else if (drawingUnit === Unit.INCH && displayUnitEnum === Unit.MM) {
-            return distance * 25.4;
-        }
-
-        return distance;
-    }
-
-    // Helper function to get feedRate from tool or use default, accounting for hole underspeed
-    function getFeedRateForCut(cut: CutData): number {
-        let baseFeedRate = 1000; // Default feed rate
-        const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
-
-        if (cut.toolId && toolStoreState) {
-            const tool = toolStoreState.find((t: Tool) => t.id === cut.toolId);
-            if (tool) {
-                // Use helper function to get the correct feed rate based on display unit
-                baseFeedRate = getToolFeedRate(tool, displayUnitEnum);
-            }
-        }
-
-        // Apply hole underspeed if applicable
-        if (
-            cut.isHole &&
-            cut.holeUnderspeedPercent !== undefined &&
-            cut.holeUnderspeedPercent < 100
-        ) {
-            return baseFeedRate * (cut.holeUnderspeedPercent / 100);
-        }
-
-        return baseFeedRate;
-    }
-
-    // Reactive formatted statistics for display - updates when drawingState or values change
+    // Reactive formatted statistics for display - updates when drawingStore or values change
     const formattedCutDistance = $derived(
-        drawingState ? formatDistance(totalCutDistance) : '0.0'
+        drawingStore.drawing ? formatDistance(totalCutDistance) : '0.0'
     );
     const formattedRapidDistance = $derived(
-        drawingState ? formatDistance(totalRapidDistance) : '0.0'
+        drawingStore.drawing ? formatDistance(totalRapidDistance) : '0.0'
     );
-    const displayUnit = $derived(drawingState?.displayUnit || 'mm');
-
-    // Unsubscribe functions
-    let unsubscribers: Array<() => void> = [];
+    const displayUnit = $derived(
+        (drawingStore.displayUnit || 'mm') as 'mm' | 'inch'
+    );
 
     function handleNext() {
         workflowStore.completeStage(WorkflowStage.SIMULATE);
@@ -202,61 +149,32 @@
     // Update tool head overlay when position changes
     $effect(() => {
         if (toolHeadPosition) {
-            overlayStore.setToolHead(WorkflowStage.SIMULATE, toolHeadPosition);
+            untrack(() =>
+                overlayStore.setToolHead(
+                    WorkflowStage.SIMULATE,
+                    toolHeadPosition
+                )
+            );
         }
     });
 
     // Auto-complete simulate stage when simulation data is available
     $effect(() => {
-        if (planStoreState?.plan.cuts && planStoreState.plan.cuts.length > 0) {
-            workflowStore.completeStage(WorkflowStage.SIMULATE);
+        if (planStore.plan.cuts && planStore.plan.cuts.length > 0) {
+            untrack(() => workflowStore.completeStage(WorkflowStage.SIMULATE));
         }
     });
 
     // Rebuild animation steps when rapid rate changes
     $effect(() => {
-        if (
-            settingsStoreState?.settings.camSettings.rapidRate &&
-            planStoreState
-        ) {
-            buildAnimationSteps();
+        if (settingsStoreState?.settings.camSettings.rapidRate && planStore) {
+            untrack(() => buildAnimationSteps());
         }
     });
 
-    // Setup store subscriptions
-    function setupStoreSubscriptions() {
-        // Clear any existing subscriptions
-        unsubscribers.forEach((fn) => fn());
-        unsubscribers = [];
-
-        unsubscribers.push(
-            planStore.subscribe((state) => {
-                planStoreState = state;
-            })
-        );
-
-        unsubscribers.push(
-            drawingStore.subscribe((state) => {
-                drawingState = state;
-            })
-        );
-
-        unsubscribers.push(
-            toolStore.subscribe((state) => {
-                toolStoreState = state;
-            })
-        );
-
-        unsubscribers.push(
-            settingsStore.subscribe((state) => {
-                settingsStoreState = state;
-            })
-        );
-    }
-
     // Initialize simulation data
     function initializeSimulation() {
-        if (!planStoreState) return;
+        if (!planStore.plan.cuts) return;
 
         buildAnimationSteps();
         resetSimulation();
@@ -274,8 +192,8 @@
         estimatedCutTime = 0;
 
         // Get ordered cuts and extract rapids from them
-        const orderedCuts = planStoreState
-            ? [...planStoreState.plan.cuts].sort((a, b) => a.order - b.order)
+        const orderedCuts = planStore.plan.cuts
+            ? [...planStore.plan.cuts].sort((a, b) => a.order - b.order)
             : [];
         const rapids = orderedCuts
             .map((cut) => cut.rapidIn)
@@ -308,8 +226,15 @@
                 const rapidRate = getRapidRateForCut(cut); // Get rapid rate from cut's tool
 
                 // Convert rapid distance to display units for time calculation
+                const drawingUnits = drawingStore.drawing?.units;
                 const rapidDistanceInDisplayUnits =
-                    convertDistanceToDisplayUnit(rapidDistance);
+                    convertDistanceToDisplayUnit(
+                        rapidDistance,
+                        drawingUnits === 'mm' || drawingUnits === 'inch'
+                            ? drawingUnits
+                            : 'mm',
+                        displayUnit
+                    );
                 const rapidTime =
                     (rapidDistanceInDisplayUnits / rapidRate) * 60; // Convert to seconds
 
@@ -346,11 +271,21 @@
             } else {
                 // For regular cuts, calculate time from distance and feed rate
                 cutDistance = getCutDistance(cut);
-                const feedRate = getFeedRateForCut(cut); // Get feed rate from tool
+                const feedRate = getFeedRateForCut(
+                    cut,
+                    displayUnit,
+                    toolStoreState
+                ); // Get feed rate from tool
 
                 // Convert cut distance to display units for time calculation
-                cutDistanceInDisplayUnits =
-                    convertDistanceToDisplayUnit(cutDistance);
+                const drawingUnitsForCut = drawingStore.drawing?.units;
+                cutDistanceInDisplayUnits = convertDistanceToDisplayUnit(
+                    cutDistance,
+                    drawingUnitsForCut === 'mm' || drawingUnitsForCut === 'inch'
+                        ? drawingUnitsForCut
+                        : 'mm',
+                    displayUnit
+                );
                 cutTime = (cutDistanceInDisplayUnits / feedRate) * 60; // Convert to seconds (feedRate is units/min)
             }
 
@@ -382,7 +317,7 @@
             settingsStoreState.settings.camSettings.rapidRate;
         const measurementSystem = settingsStoreState.settings.measurementSystem;
 
-        if (!drawingState?.drawing) return rapidRateInMeasurementSystemUnits;
+        if (!drawingStore.drawing) return rapidRateInMeasurementSystemUnits;
 
         const measurementSystemUnit =
             measurementSystem === MeasurementSystem.Metric
@@ -421,13 +356,13 @@
      */
     function getCutStartPoint(cut: CutData): Point2D {
         // Use execution chain if available (contains shapes in correct execution order)
-        let shapes = cut.cutChain?.shapes;
+        let shapes = cut.chain?.shapes;
 
         // Fallback to offset shapes or original chain for backward compatibility
         if (!shapes) {
             const offsetShapes = cut.offset?.offsetShapes;
             const chainShapes = chains.find(
-                (c: ChainData) => c.id === cut.chainId
+                (c: ChainData) => c.id === cut.sourceChainId
             )?.shapes;
             if (offsetShapes) {
                 shapes = offsetShapes.map((s) => new Shape(s.toData()));
@@ -446,8 +381,8 @@
             cut.leadInConfig.length > 0
         ) {
             // First try to use cached lead geometry
-            if (hasValidCachedLeads(cut)) {
-                const cached = getCachedLeadGeometry(cut);
+            if (hasValidCachedLeads(new Cut(cut))) {
+                const cached = getCachedLeadGeometry(new Cut(cut));
                 if (cached.leadIn) {
                     const cachedLeadInPoints = convertLeadGeometryToPoints(
                         cached.leadIn
@@ -462,11 +397,17 @@
             // Fallback to calculating if no valid cache
             try {
                 // Find the part that contains this chain
-                const part = findPartForChain(cut.chainId);
+                const drawing = drawingStore.drawing;
+                const parts = drawing
+                    ? Object.values(drawing.layers).flatMap(
+                          (layer) => layer.parts
+                      )
+                    : [];
+                const part = findPartForChain(cut.sourceChainId, parts);
 
                 // Use offset shapes if available
                 const chain = chains.find(
-                    (c: ChainData) => c.id === cut.chainId
+                    (c: ChainData) => c.id === cut.sourceChainId
                 );
                 if (!chain) return { x: 0, y: 0 };
 
@@ -496,8 +437,8 @@
                     chainForLeads,
                     leadInConfig,
                     leadOutConfig,
-                    cut.cutDirection,
-                    part,
+                    cut.direction,
+                    part ? new Part(part) : undefined,
                     cut.normal
                 );
 
@@ -526,16 +467,6 @@
         return line.start || { x: 0, y: 0 };
     }
 
-    // Helper function to find the part that contains a given chain
-    function findPartForChain(chainId: string): PartData | undefined {
-        // Get parts from all layers in the drawing
-        const drawing = $drawingStore.drawing;
-        const parts = drawing
-            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
-            : [];
-        return findPartContainingChain(chainId, parts);
-    }
-
     /**
      * Calculate total distance of a cut, including lead-in and lead-out.
      * Uses offset shapes when available (from kerf compensation),
@@ -545,8 +476,8 @@
      */
     function getCutDistance(cut: CutData): number {
         // Use execution chain if available
-        let shapes = cut.cutChain?.shapes;
-        const chain = chains.find((c: ChainData) => c.id === cut.chainId);
+        let shapes = cut.chain?.shapes;
+        const chain = chains.find((c: ChainData) => c.id === cut.sourceChainId);
 
         // Fallback for backward compatibility
         if (!shapes) {
@@ -583,8 +514,8 @@
                     cut.leadOutConfig.length > 0)
             ) {
                 // First try to use cached lead geometry
-                if (hasValidCachedLeads(cut)) {
-                    const cached = getCachedLeadGeometry(cut);
+                if (hasValidCachedLeads(new Cut(cut))) {
+                    const cached = getCachedLeadGeometry(new Cut(cut));
                     if (cached.leadIn) {
                         const cachedLeadInPoints = convertLeadGeometryToPoints(
                             cached.leadIn
@@ -605,7 +536,13 @@
                     }
                 } else {
                     // Fallback to calculating if no valid cache
-                    const part = findPartForChain(cut.chainId);
+                    const drawing = drawingStore.drawing;
+                    const parts = drawing
+                        ? Object.values(drawing.layers).flatMap(
+                              (layer) => layer.parts
+                          )
+                        : [];
+                    const part = findPartForChain(cut.sourceChainId, parts);
 
                     const leadInConfig: LeadConfig = cut.leadInConfig || {
                         type: LeadType.NONE,
@@ -635,8 +572,8 @@
                             chainForLeads,
                             leadInConfig,
                             leadOutConfig,
-                            cut.cutDirection,
-                            part,
+                            cut.direction,
+                            part ? new Part(part) : undefined,
                             cut.normal
                         );
 
@@ -670,128 +607,6 @@
         }
 
         return leadInDistance + chainDistance + leadOutDistance;
-    }
-
-    // Calculate length of a shape (simplified but functional)
-    function getShapeLength(shape: ShapeData): number {
-        switch (shape.type) {
-            case GeometryType.LINE:
-                const line = shape.geometry as Line;
-                return Math.sqrt(
-                    Math.pow(line.end.x - line.start.x, 2) +
-                        Math.pow(line.end.y - line.start.y, 2)
-                );
-            case GeometryType.CIRCLE:
-                const circle = shape.geometry as Circle;
-                return 2 * Math.PI * circle.radius;
-            case GeometryType.ARC:
-                const arc = shape.geometry as Arc;
-                const angleRange = Math.abs(arc.endAngle - arc.startAngle); // Angles are in radians
-                return angleRange * arc.radius; // Arc length = radius * angle (in radians)
-            case GeometryType.POLYLINE:
-                const polyline = shape.geometry as Polyline;
-                const polylinePoints = polylineToPoints(polyline);
-                let polylineDistance = 0;
-                for (let i = 0; i < polylinePoints.length - 1; i++) {
-                    const p1 = polylinePoints[i];
-                    const p2 = polylinePoints[i + 1];
-                    polylineDistance += Math.sqrt(
-                        Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
-                    );
-                }
-                return polylineDistance;
-            case GeometryType.SPLINE:
-                const spline = shape.geometry as Spline;
-                try {
-                    // Calculate arc length by sampling the NURBS curve
-                    const samples = tessellateSpline(spline, {
-                        numSamples: 100,
-                    }).points; // Use 100 samples for accurate length
-                    let splineLength = 0;
-                    for (let i = 0; i < samples.length - 1; i++) {
-                        const p1 = samples[i];
-                        const p2 = samples[i + 1];
-                        splineLength += Math.sqrt(
-                            Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
-                        );
-                    }
-                    return splineLength;
-                } catch {
-                    // Fallback: calculate distance between fit points or control points
-                    if (spline.fitPoints && spline.fitPoints.length > 1) {
-                        let fallbackLength = 0;
-                        for (let i = 0; i < spline.fitPoints.length - 1; i++) {
-                            const p1 = spline.fitPoints[i];
-                            const p2 = spline.fitPoints[i + 1];
-                            fallbackLength += Math.sqrt(
-                                Math.pow(p2.x - p1.x, 2) +
-                                    Math.pow(p2.y - p1.y, 2)
-                            );
-                        }
-                        return fallbackLength;
-                    } else if (
-                        spline.controlPoints &&
-                        spline.controlPoints.length > 1
-                    ) {
-                        let fallbackLength = 0;
-                        for (
-                            let i = 0;
-                            i < spline.controlPoints.length - 1;
-                            i++
-                        ) {
-                            const p1 = spline.controlPoints[i];
-                            const p2 = spline.controlPoints[i + 1];
-                            fallbackLength += Math.sqrt(
-                                Math.pow(p2.x - p1.x, 2) +
-                                    Math.pow(p2.y - p1.y, 2)
-                            );
-                        }
-                        return fallbackLength;
-                    }
-                    return 100; // Final fallback
-                }
-            case GeometryType.ELLIPSE:
-                const ellipse = shape.geometry as Ellipse;
-                // Calculate major and minor axis lengths
-                const majorAxisLength = Math.sqrt(
-                    ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
-                        ellipse.majorAxisEndpoint.y *
-                            ellipse.majorAxisEndpoint.y
-                );
-                const minorAxisLength =
-                    majorAxisLength * ellipse.minorToMajorRatio;
-
-                // Check if it's a full ellipse or elliptical arc
-                if (
-                    typeof ellipse.startParam === 'number' &&
-                    typeof ellipse.endParam === 'number'
-                ) {
-                    // It's an elliptical arc - use Ramanujan's approximation for the arc portion
-                    const paramSpan = Math.abs(
-                        ellipse.endParam - ellipse.startParam
-                    );
-                    const fullEllipsePerimeter =
-                        Math.PI *
-                        (3 * (majorAxisLength + minorAxisLength) -
-                            Math.sqrt(
-                                (3 * majorAxisLength + minorAxisLength) *
-                                    (majorAxisLength + 3 * minorAxisLength)
-                            ));
-                    return fullEllipsePerimeter * (paramSpan / (2 * Math.PI));
-                } else {
-                    // It's a full ellipse - use Ramanujan's approximation for ellipse perimeter
-                    return (
-                        Math.PI *
-                        (3 * (majorAxisLength + minorAxisLength) -
-                            Math.sqrt(
-                                (3 * majorAxisLength + minorAxisLength) *
-                                    (majorAxisLength + 3 * minorAxisLength)
-                            ))
-                    );
-                }
-            default:
-                return 100; // Default fallback
-        }
     }
 
     // Reset simulation to beginning
@@ -915,7 +730,7 @@
                     currentStep.cut.spotDuration || DEFAULT_SPOT_DURATION;
                 currentOperation = `Spot (${spotDuration}ms)`;
             } else {
-                currentOperation = `Cutting (${getFeedRateForCut(currentStep.cut)} ${displayUnit}/min)`;
+                currentOperation = `Cutting (${getFeedRateForCut(currentStep.cut, displayUnit, toolStoreState)} ${displayUnit}/min)`;
             }
             isTorchOn = true; // Torch is on during cutting/spotting
             updateToolHeadOnCut(currentStep.cut, stepProgress);
@@ -942,18 +757,23 @@
         }
 
         // Use execution chain if available
-        let shapes = cut.cutChain?.shapes;
-        let chain = cut.cutChain;
+        let chain: Chain | undefined = cut.chain
+            ? new Chain(cut.chain)
+            : undefined;
+        let shapes = chain?.shapes;
 
         // Fallback for backward compatibility
         if (!shapes) {
-            chain = chains.find((c: ChainData) => c.id === cut.chainId);
-            if (!chain) return;
+            const chainData = chains.find(
+                (c: ChainData) => c.id === cut.sourceChainId
+            );
+            if (!chainData) return;
+            chain = new Chain(chainData);
             const offsetShapes = cut.offset?.offsetShapes;
             if (offsetShapes) {
                 shapes = offsetShapes.map((s) => new Shape(s.toData()));
             } else {
-                shapes = chain.shapes.map((s) => new Shape(s));
+                shapes = chainData.shapes.map((s) => new Shape(s));
             }
         }
 
@@ -975,8 +795,8 @@
                     cut.leadOutConfig.length > 0)
             ) {
                 // First try to use cached lead geometry
-                if (hasValidCachedLeads(cut)) {
-                    const cached = getCachedLeadGeometry(cut);
+                if (hasValidCachedLeads(new Cut(cut))) {
+                    const cached = getCachedLeadGeometry(new Cut(cut));
                     if (cached.leadIn) {
                         const cachedLeadInPoints = convertLeadGeometryToPoints(
                             cached.leadIn
@@ -995,7 +815,13 @@
                     }
                 } else {
                     // Fallback to calculating if no valid cache
-                    const part = findPartForChain(cut.chainId);
+                    const drawing = drawingStore.drawing;
+                    const parts = drawing
+                        ? Object.values(drawing.layers).flatMap(
+                              (layer) => layer.parts
+                          )
+                        : [];
+                    const part = findPartForChain(cut.sourceChainId, parts);
 
                     const leadInConfig: LeadConfig = cut.leadInConfig || {
                         type: LeadType.NONE,
@@ -1025,8 +851,8 @@
                             chainForLeads,
                             leadInConfig,
                             leadOutConfig,
-                            cut.cutDirection,
-                            part,
+                            cut.direction,
+                            part ? new Part(part) : undefined,
                             cut.normal
                         );
 
@@ -1113,279 +939,8 @@
         }
     }
 
-    // Calculate the length of a polyline (for leads)
-    function calculatePolylineLength(points: Point2D[]): number {
-        if (points.length < 2) return 0;
-
-        let length = 0;
-        for (let i = 0; i < points.length - 1; i++) {
-            const p1 = points[i];
-            const p2 = points[i + 1];
-            length += Math.sqrt(
-                Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
-            );
-        }
-        return length;
-    }
-
-    // Get position along a polyline (for leads)
-    function getPositionOnPolyline(
-        points: Point2D[],
-        progress: number
-    ): Point2D {
-        if (points.length === 0) return { x: 0, y: 0 };
-        if (points.length === 1) return points[0];
-
-        progress = Math.max(0, Math.min(1, progress));
-
-        const totalLength = calculatePolylineLength(points);
-        const targetDistance = totalLength * progress;
-
-        let currentDistance = 0;
-        for (let i = 0; i < points.length - 1; i++) {
-            const p1 = points[i];
-            const p2 = points[i + 1];
-            const segmentLength = Math.sqrt(
-                Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
-            );
-
-            if (currentDistance + segmentLength >= targetDistance) {
-                const segmentProgress =
-                    segmentLength > 0
-                        ? (targetDistance - currentDistance) / segmentLength
-                        : 0;
-                return {
-                    x: p1.x + (p2.x - p1.x) * segmentProgress,
-                    y: p1.y + (p2.y - p1.y) * segmentProgress,
-                };
-            }
-            currentDistance += segmentLength;
-        }
-
-        return points[points.length - 1];
-    }
-
-    // Get position along a chain (original chain geometry)
-    function getPositionOnChain(chain: ChainData, progress: number): Point2D {
-        const totalLength = getChainDistance(chain);
-        const targetDistance = totalLength * progress;
-
-        // Use shapes in the order they appear in the chain (already correct for execution chains)
-        const shapes = chain.shapes;
-
-        let currentDistance = 0;
-        for (const shape of shapes) {
-            const shapeLength = getShapeLength(shape);
-            if (currentDistance + shapeLength >= targetDistance) {
-                // Tool head is on this shape
-                const shapeProgress =
-                    shapeLength > 0
-                        ? (targetDistance - currentDistance) / shapeLength
-                        : 0;
-                return getPositionOnShape(shape, shapeProgress);
-            }
-            currentDistance += shapeLength;
-        }
-
-        // Fallback to last shape end
-        if (shapes.length > 0) {
-            const lastShape = shapes[shapes.length - 1];
-            return getPositionOnShape(lastShape, 1.0);
-        }
-
-        return { x: 0, y: 0 };
-    }
-
-    // Calculate total distance of a chain
-    function getChainDistance(chain: ChainData): number {
-        let totalDistance = 0;
-        for (const shape of chain.shapes) {
-            totalDistance += getShapeLength(shape);
-        }
-        return totalDistance;
-    }
-
-    // Get position along a shape at given progress (0-1) - simplified
-    function getPositionOnShape(shape: ShapeData, progress: number): Point2D {
-        progress = Math.max(0, Math.min(1, progress)); // Clamp to 0-1
-
-        switch (shape.type) {
-            case GeometryType.LINE:
-                const line = shape.geometry as Line;
-                // Natural direction: go from start to end
-                return {
-                    x: line.start.x + (line.end.x - line.start.x) * progress,
-                    y: line.start.y + (line.end.y - line.start.y) * progress,
-                };
-            case GeometryType.CIRCLE:
-                // Use natural direction
-                return getShapePointAt(new Shape(shape), progress);
-            case GeometryType.ARC:
-                // Use natural direction
-                return getShapePointAt(new Shape(shape), progress);
-            case GeometryType.POLYLINE:
-                const polyline = shape.geometry as Polyline;
-                const polylinePoints = polylineToPoints(polyline);
-                if (polylinePoints.length < 2)
-                    return polylinePoints[0] || { x: 0, y: 0 };
-
-                // Use natural direction for polylines
-                const points = polylinePoints;
-
-                // Find which segment we're on
-                const totalLength = getShapeLength(shape);
-                const targetDistance = totalLength * progress;
-
-                let currentDistance = 0;
-                for (let i = 0; i < points.length - 1; i++) {
-                    const p1 = points[i];
-                    const p2 = points[i + 1];
-                    const segmentLength = Math.sqrt(
-                        Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
-                    );
-
-                    if (currentDistance + segmentLength >= targetDistance) {
-                        const segmentProgress =
-                            (targetDistance - currentDistance) / segmentLength;
-                        return {
-                            x: p1.x + (p2.x - p1.x) * segmentProgress,
-                            y: p1.y + (p2.y - p1.y) * segmentProgress,
-                        };
-                    }
-                    currentDistance += segmentLength;
-                }
-                return points[points.length - 1];
-            case GeometryType.SPLINE:
-                const splineGeom = shape.geometry as Spline;
-                try {
-                    // Use NURBS evaluation to get position at progress along curve
-                    return getSplinePointAt(splineGeom, progress);
-                } catch {
-                    // Fallback: interpolate between fit points or control points
-                    if (
-                        splineGeom.fitPoints &&
-                        splineGeom.fitPoints.length > 1
-                    ) {
-                        const totalLength = getShapeLength(shape);
-                        const targetDistance = totalLength * progress;
-
-                        let currentDistance = 0;
-                        for (
-                            let i = 0;
-                            i < splineGeom.fitPoints.length - 1;
-                            i++
-                        ) {
-                            const p1 = splineGeom.fitPoints[i];
-                            const p2 = splineGeom.fitPoints[i + 1];
-                            const segmentLength = Math.sqrt(
-                                Math.pow(p2.x - p1.x, 2) +
-                                    Math.pow(p2.y - p1.y, 2)
-                            );
-
-                            if (
-                                currentDistance + segmentLength >=
-                                targetDistance
-                            ) {
-                                const segmentProgress =
-                                    (targetDistance - currentDistance) /
-                                    segmentLength;
-                                return {
-                                    x: p1.x + (p2.x - p1.x) * segmentProgress,
-                                    y: p1.y + (p2.y - p1.y) * segmentProgress,
-                                };
-                            }
-                            currentDistance += segmentLength;
-                        }
-                        return splineGeom.fitPoints[
-                            splineGeom.fitPoints.length - 1
-                        ];
-                    } else if (
-                        splineGeom.controlPoints &&
-                        splineGeom.controlPoints.length > 1
-                    ) {
-                        // Simple linear interpolation through control points as final fallback
-                        const index = Math.floor(
-                            progress * (splineGeom.controlPoints.length - 1)
-                        );
-                        const localProgress =
-                            progress * (splineGeom.controlPoints.length - 1) -
-                            index;
-                        const p1 = splineGeom.controlPoints[index];
-                        const p2 =
-                            splineGeom.controlPoints[
-                                Math.min(
-                                    index + 1,
-                                    splineGeom.controlPoints.length - 1
-                                )
-                            ];
-                        return {
-                            x: p1.x + (p2.x - p1.x) * localProgress,
-                            y: p1.y + (p2.y - p1.y) * localProgress,
-                        };
-                    }
-                    return { x: 0, y: 0 }; // Final fallback
-                }
-            case GeometryType.ELLIPSE:
-                const ellipse = shape.geometry as Ellipse;
-                // Calculate major and minor axis lengths
-                const majorAxisLength = Math.sqrt(
-                    ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
-                        ellipse.majorAxisEndpoint.y *
-                            ellipse.majorAxisEndpoint.y
-                );
-                const minorAxisLength =
-                    majorAxisLength * ellipse.minorToMajorRatio;
-                const majorAxisAngle = Math.atan2(
-                    ellipse.majorAxisEndpoint.y,
-                    ellipse.majorAxisEndpoint.x
-                );
-
-                let param: number;
-                if (
-                    typeof ellipse.startParam === 'number' &&
-                    typeof ellipse.endParam === 'number'
-                ) {
-                    // It's an elliptical arc - use natural direction
-                    param =
-                        ellipse.startParam +
-                        (ellipse.endParam - ellipse.startParam) * progress;
-                } else {
-                    // It's a full ellipse - use natural direction
-                    param = progress * 2 * Math.PI;
-                }
-
-                // Calculate point on canonical ellipse (axes aligned)
-                const canonicalX = majorAxisLength * Math.cos(param);
-                const canonicalY = minorAxisLength * Math.sin(param);
-
-                // Rotate by major axis angle and translate to center
-                const cos = Math.cos(majorAxisAngle);
-                const sin = Math.sin(majorAxisAngle);
-
-                return {
-                    x: ellipse.center.x + canonicalX * cos - canonicalY * sin,
-                    y: ellipse.center.y + canonicalX * sin + canonicalY * cos,
-                };
-            default:
-                return { x: 0, y: 0 };
-        }
-    }
-
     // Tool head drawing will be added as an overlay to the shared canvas
     // This removes the need for custom drawing functions
-
-    // Format time in MM:SS format
-    function formatTime(seconds: number): string {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-
-    // Format distance with units
-    // Note: Statistics are already in display units after the fix
-    function formatDistance(distance: number): string {
-        return distance.toFixed(1);
-    }
 
     // Load column widths from localStorage on mount
     onMount(() => {
@@ -1398,7 +953,6 @@
         }
 
         // Initialize simulation
-        setupStoreSubscriptions();
         initializeSimulation();
     });
 
@@ -1410,10 +964,6 @@
         if (animationFrame) {
             cancelAnimationFrame(animationFrame);
         }
-
-        // Unsubscribe from all stores
-        unsubscribers.forEach((fn) => fn());
-        unsubscribers = [];
     });
 
     // Save column widths to localStorage

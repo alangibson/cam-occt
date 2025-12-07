@@ -2,16 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle/constants';
 import { parseDXF } from './functions';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
-import { polylineToVertices } from '$lib/geometry/polyline/functions';
+import { polylineToVertices } from '$lib/geometry/dxf-polyline/functions';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type {
-    Polyline,
-    PolylineVertex,
-} from '$lib/geometry/polyline/interfaces';
+    DxfPolyline,
+    DxfPolylineVertex,
+} from '$lib/geometry/dxf-polyline/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Bulge Rendering Fixes', () => {
     describe('Polylinie.dxf', () => {
@@ -31,10 +32,10 @@ describe('Bulge Rendering Fixes', () => {
             // Check if vertices with bulges are preserved
             let totalBulgedVertices = 0;
             polylines.forEach((polyline: ShapeData) => {
-                const geometry = polyline.geometry as Polyline;
+                const geometry = polyline.geometry as DxfPolyline;
                 const vertices = polylineToVertices(geometry);
                 const bulgedVertices = vertices.filter(
-                    (v: PolylineVertex) => Math.abs(v.bulge || 0) > EPSILON
+                    (v: DxfPolylineVertex) => Math.abs(v.bulge || 0) > EPSILON
                 );
                 totalBulgedVertices += bulgedVertices.length;
             });
@@ -50,7 +51,9 @@ describe('Bulge Rendering Fixes', () => {
             const parsed = await parseDXF(dxfContent);
 
             // Apply decomposition separately
-            const decomposed = decomposePolylines(parsed.shapes);
+            const decomposed = decomposePolylines(
+                parsed.shapes.map((s) => new Shape(s))
+            );
 
             // Create decomposed drawing
             const drawing = {
@@ -135,7 +138,9 @@ describe('Bulge Rendering Fixes', () => {
             const withBulges = await parseDXF(dxfContent);
 
             // Apply decomposition separately
-            const decomposedShapes = decomposePolylines(withBulges.shapes);
+            const decomposedShapes = decomposePolylines(
+                withBulges.shapes.map((s) => new Shape(s))
+            );
             const decomposed = {
                 ...withBulges,
                 shapes: decomposedShapes,

@@ -11,7 +11,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { convertLeadGeometryToPoints } from './functions';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('calculateLeads', () => {
     // Helper to create a simple line chain
@@ -254,7 +254,7 @@ describe('calculateLeads', () => {
                 leadIn,
                 leadOut,
                 CutDirection.COUNTERCLOCKWISE,
-                part,
+                new Part(part),
                 cutNormalResult.normal
             );
 
@@ -306,7 +306,7 @@ describe('calculateLeads', () => {
                 leadIn,
                 leadOut,
                 CutDirection.CLOCKWISE,
-                part,
+                new Part(part),
                 cutNormalResult.normal
             );
 

@@ -8,16 +8,14 @@
     import LeadProperties from './LeadProperties.svelte';
     import KerfProperties from './KerfProperties.svelte';
     import RapidProperties from './RapidProperties.svelte';
-    import { selectionStore } from '$lib/stores/selection/store';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
     import { layerStore } from '$lib/stores/layers/store.svelte';
 
-    const selection = $derived($selectionStore);
-
-    const selectedChainIds = $derived(selection.chains.selected);
+    const selectedChainIds = $derived(selectionStore.chains.selected);
     const selectedChainId = $derived(
         selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null
     );
-    const highlightedChainId = $derived(selection.chains.highlighted);
+    const highlightedChainId = $derived(selectionStore.chains.highlighted);
     const hasChainSelection = $derived(
         !!(selectedChainId || highlightedChainId)
     );
@@ -32,44 +30,44 @@
         });
     });
 
-    const selectedPartIds = $derived(selection.parts.selected);
+    const selectedPartIds = $derived(selectionStore.parts.selected);
     const selectedPartId = $derived(
         selectedPartIds.size === 1 ? Array.from(selectedPartIds)[0] : null
     );
-    const highlightedPartId = $derived(selection.parts.highlighted);
-    const hoveredPartId = $derived(selection.parts.hovered);
+    const highlightedPartId = $derived(selectionStore.parts.highlighted);
+    const hoveredPartId = $derived(selectionStore.parts.hovered);
     const hasPartSelection = $derived(
         !!(selectedPartId || highlightedPartId || hoveredPartId)
     );
 
-    const selectedCutIds = $derived(selection.cuts.selected);
+    const selectedCutIds = $derived(selectionStore.cuts.selected);
     const selectedCutId = $derived(
         selectedCutIds.size === 1 ? Array.from(selectedCutIds)[0] : null
     );
-    const highlightedCutId = $derived(selection.cuts.highlighted);
+    const highlightedCutId = $derived(selectionStore.cuts.highlighted);
     const hasCutSelection = $derived(!!(selectedCutId || highlightedCutId));
 
-    const selectedLeadIds = $derived(selection.leads.selected);
+    const selectedLeadIds = $derived(selectionStore.leads.selected);
     const selectedLeadId = $derived(
         selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null
     );
-    const highlightedLeadId = $derived(selection.leads.highlighted);
+    const highlightedLeadId = $derived(selectionStore.leads.highlighted);
     const hasLeadSelection = $derived(!!(selectedLeadId || highlightedLeadId));
 
-    const selectedKerfId = $derived(selection.kerfs.selected);
+    const selectedKerfId = $derived(selectionStore.kerfs.selected);
 
-    const selectedRapidIds = $derived(selection.rapids.selected);
+    const selectedRapidIds = $derived(selectionStore.rapids.selected);
     const selectedRapidId = $derived(
         selectedRapidIds.size === 1 ? Array.from(selectedRapidIds)[0] : null
     );
-    const highlightedRapidId = $derived(selection.rapids.highlighted);
+    const highlightedRapidId = $derived(selectionStore.rapids.highlighted);
     const hasRapidSelection = $derived(
         !!(selectedRapidId || highlightedRapidId)
     );
 
-    const selectedShapes = $derived(selection.shapes.selected);
-    const hoveredShape = $derived(selection.shapes.hovered);
-    const selectedOffsetShape = $derived(selection.shapes.selectedOffset);
+    const selectedShapes = $derived(selectionStore.shapes.selected);
+    const hoveredShape = $derived(selectionStore.shapes.hovered);
+    const selectedOffsetShape = $derived(selectionStore.shapes.selectedOffset);
     const hasShapeSelection = $derived(
         !!(selectedShapes.size > 0 || hoveredShape || selectedOffsetShape)
     );

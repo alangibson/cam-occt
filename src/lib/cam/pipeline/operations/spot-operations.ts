@@ -2,7 +2,7 @@
  * Spot operations module - handles spot cut generation for cyclic chains
  */
 
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import type { CutGenerationResult } from './interfaces';
@@ -57,16 +57,16 @@ export async function generateSpotsForChainsWithOperation(
     const spotCut = new Cut({
         id: crypto.randomUUID(),
         name: `${operation.name} - ${chain.name} (Spot)`,
-        operationId: operation.id,
-        chainId: targetId,
-        toolId: tool.id,
+        sourceOperationId: operation.id,
+        sourceChainId: targetId,
+        sourceToolId: tool.id,
         enabled: true,
         order: index + 1,
         action: operation.action,
         spotDuration: operation.spotDuration,
-        cutDirection: CutDirection.NONE, // Spots have no direction
+        direction: CutDirection.NONE, // Spots have no direction
         executionClockwise: null, // Spots have no direction
-        cutChain: spotChain,
+        chain: spotChain.clone(),
         normal: { x: 0, y: 0 }, // Spots don't need normals
         normalConnectionPoint: centroid,
         normalSide: NormalSide.LEFT, // Arbitrary for spots

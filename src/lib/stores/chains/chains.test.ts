@@ -1,9 +1,8 @@
 import { GeometryType } from '$lib/geometry/enums';
-import { get } from 'svelte/store';
 import { describe, expect, it } from 'vitest';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { chainStore } from './store';
-import { selectionStore } from '$lib/stores/selection/store';
+import { chainStore } from './store.svelte';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
 import { getChainById, getChainShapeIds, getShapeChainId } from './functions';
 
 describe('Chain Store', () => {
@@ -46,8 +45,7 @@ describe('Chain Store', () => {
     ];
 
     it('should initialize with default tolerance', () => {
-        const state = get(chainStore);
-        expect(state.tolerance).toBe(0.1);
+        expect(chainStore.tolerance).toBe(0.1);
     });
 
     it.skip('should set chains correctly', () => {
@@ -60,8 +58,7 @@ describe('Chain Store', () => {
 
     it('should set tolerance', () => {
         chainStore.setTolerance(0.1);
-        const state = get(chainStore);
-        expect(state.tolerance).toBe(0.1);
+        expect(chainStore.tolerance).toBe(0.1);
     });
 
     it('should get shape chain ID correctly', () => {
@@ -94,7 +91,7 @@ describe('Chain Store', () => {
 
             selectionStore.highlightChain(testChainId);
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.chains.highlighted).toBe(testChainId);
             expect(state.chains.selected.size).toBe(0); // Should not affect selection
         });
@@ -104,11 +101,13 @@ describe('Chain Store', () => {
 
             // First highlight a chain
             selectionStore.highlightChain(testChainId);
-            expect(get(selectionStore).chains.highlighted).toBe(testChainId);
+            expect(selectionStore.getState().chains.highlighted).toBe(
+                testChainId
+            );
 
             // Then clear the highlight
             selectionStore.clearChainHighlight();
-            expect(get(selectionStore).chains.highlighted).toBeNull();
+            expect(selectionStore.getState().chains.highlighted).toBeNull();
         });
 
         it('should allow highlighting and selection to coexist', () => {
@@ -119,7 +118,7 @@ describe('Chain Store', () => {
             selectionStore.selectChain(selectedChainId);
             selectionStore.highlightChain(highlightedChainId);
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.chains.selected.has(selectedChainId)).toBe(true);
             expect(state.chains.highlighted).toBe(highlightedChainId);
         });
@@ -127,7 +126,7 @@ describe('Chain Store', () => {
         it('should handle null chain highlighting', () => {
             selectionStore.highlightChain(null);
 
-            const state = get(selectionStore);
+            const state = selectionStore.getState();
             expect(state.chains.highlighted).toBeNull();
         });
     });

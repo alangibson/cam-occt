@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
-import { get } from 'svelte/store';
 import ToolTable from './ToolTable.svelte';
-import { toolStore } from '$lib/stores/tools/store';
+import { toolStore } from '$lib/stores/tools/store.svelte';
 
 // Mock localStorage
 const localStorageMock = {
@@ -58,7 +57,7 @@ describe('ToolTable Component - Function Coverage', () => {
             expect(addButton).toBeTruthy();
             await fireEvent.click(addButton!);
 
-            const tools = get(toolStore);
+            const tools = toolStore.tools;
             expect(tools.length).toBe(1);
             expect(tools[0].toolNumber).toBe(1);
             expect(tools[0].toolName).toBe('Tool 1');
@@ -72,12 +71,12 @@ describe('ToolTable Component - Function Coverage', () => {
             expect(addButton).toBeTruthy();
 
             await fireEvent.click(addButton!);
-            let tools = get(toolStore);
+            let tools = toolStore.tools;
             expect(tools.length).toBe(1);
             expect(tools[0].toolNumber).toBe(1);
 
             await fireEvent.click(addButton!);
-            tools = get(toolStore);
+            tools = toolStore.tools;
             expect(tools.length).toBe(2);
             expect(tools[1].toolNumber).toBe(2);
             expect(tools[1].toolName).toBe('Tool 2');
@@ -93,7 +92,7 @@ describe('ToolTable Component - Function Coverage', () => {
                 await fireEvent.click(addButton);
             }
 
-            const tools = get(toolStore);
+            const tools = toolStore.tools;
             const newTool = tools[tools.length - 1];
 
             expect(newTool.feedRate).toBe(1000);
@@ -175,14 +174,14 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             // Should have 2 existing tools
-            let tools = get(toolStore);
+            let tools = toolStore.tools;
             expect(tools.length).toBe(2);
 
             const addButton = container.querySelector('.btn-primary');
             expect(addButton).toBeTruthy();
             await fireEvent.click(addButton!);
 
-            tools = get(toolStore);
+            tools = toolStore.tools;
             const newTool = tools[tools.length - 1];
             expect(newTool.toolNumber).toBe(11); // Should be max + 1
         });
@@ -237,7 +236,7 @@ describe('ToolTable Component - Function Coverage', () => {
             expect(deleteButton).toBeTruthy();
             await fireEvent.click(deleteButton!);
 
-            const tools = get(toolStore);
+            const tools = toolStore.tools;
             expect(tools.length).toBe(0);
         });
 
@@ -250,7 +249,7 @@ describe('ToolTable Component - Function Coverage', () => {
             expect(duplicateButton).toBeTruthy();
             await fireEvent.click(duplicateButton!);
 
-            const tools = get(toolStore);
+            const tools = toolStore.tools;
             expect(tools.length).toBe(2);
             expect(tools[1].toolNumber).toBe(2);
             expect(tools[1].toolName).toBe('Test Tool (Copy)');
@@ -269,7 +268,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: 'Updated Tool Name' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].toolName).toBe('Updated Tool Name');
             }
         });
@@ -285,7 +284,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '5' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].toolNumber).toBe(5);
             }
         });
@@ -304,7 +303,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '150.5' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].feedRateMetric).toBe(150.5);
             }
         });
@@ -320,7 +319,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '4.2' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].pierceHeightMetric).toBe(4.2);
             }
         });
@@ -336,7 +335,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '2.0' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].cutHeightMetric).toBe(2.0);
             }
         });
@@ -352,7 +351,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '0.8' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].pierceDelay).toBe(0.8);
             }
         });
@@ -368,7 +367,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '135' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].arcVoltage).toBe(135);
             }
         });
@@ -384,7 +383,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '1.8' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].kerfWidthMetric).toBe(1.8);
             }
         });
@@ -400,7 +399,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { checked: false },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].thcEnable).toBe(false);
             }
         });
@@ -416,7 +415,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '5.2' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].gasPressure).toBe(5.2);
             }
         });
@@ -432,7 +431,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '1.5' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].pauseAtEnd).toBe(1.5);
             }
         });
@@ -448,7 +447,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '75' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].puddleJumpHeightMetric).toBe(75);
             }
         });
@@ -464,7 +463,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '0.3' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].puddleJumpDelay).toBe(0.3);
             }
         });
@@ -480,7 +479,7 @@ describe('ToolTable Component - Function Coverage', () => {
                     target: { value: '700' },
                 });
 
-                const tools = get(toolStore);
+                const tools = toolStore.tools;
                 expect(tools[0].plungeRateMetric).toBe(700);
             }
         });

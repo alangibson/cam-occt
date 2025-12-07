@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, it, expect } from 'vitest';
 import { cutToKerf } from './functions';
 import type { CutData } from '$lib/cam/cut/interfaces';
@@ -11,7 +11,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import { chainBoundingBox } from '$lib/cam/chain/functions';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('cutToKerf', () => {
@@ -69,11 +69,11 @@ describe('cutToKerf', () => {
             enabled: true,
             order: 1,
             action: OperationAction.CUT,
-            operationId: crypto.randomUUID(),
-            chainId: chain.id,
-            toolId: crypto.randomUUID(),
-            cutDirection: CutDirection.CLOCKWISE,
-            cutChain: new Chain(chain),
+            sourceOperationId: crypto.randomUUID(),
+            sourceChainId: chain.id,
+            sourceToolId: crypto.randomUUID(),
+            direction: CutDirection.CLOCKWISE,
+            chain: new Chain(chain),
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x, y },
             normalSide: NormalSide.RIGHT,
@@ -109,11 +109,11 @@ describe('cutToKerf', () => {
             enabled: true,
             order: 1,
             action: OperationAction.CUT,
-            operationId: crypto.randomUUID(),
-            chainId: chain.id,
-            toolId: crypto.randomUUID(),
-            cutDirection: CutDirection.CLOCKWISE,
-            cutChain: new Chain(chain),
+            sourceOperationId: crypto.randomUUID(),
+            sourceChainId: chain.id,
+            sourceToolId: crypto.randomUUID(),
+            direction: CutDirection.CLOCKWISE,
+            chain: new Chain(chain),
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: cx + radius, y: cy },
             normalSide: NormalSide.RIGHT,
@@ -177,8 +177,8 @@ describe('cutToKerf', () => {
         const kerf = await cutToKerf(new Cut(cut), tool);
 
         // Calculate bounding boxes to verify offset distances
-        const innerBBox = calculateChainBoundingBox(kerf.innerChain);
-        const outerBBox = calculateChainBoundingBox(kerf.outerChain);
+        const innerBBox = chainBoundingBox(kerf.innerChain);
+        const outerBBox = chainBoundingBox(kerf.outerChain);
 
         // Inner should be smaller (offset inward by 2mm)
         // Outer should be larger (offset outward by 2mm)
@@ -221,8 +221,8 @@ describe('cutToKerf', () => {
 
         // For a circle, the inner radius should be ~radius - kerfWidth/2
         // and outer radius should be ~radius + kerfWidth/2
-        const innerBBox = calculateChainBoundingBox(kerf.innerChain);
-        const outerBBox = calculateChainBoundingBox(kerf.outerChain);
+        const innerBBox = chainBoundingBox(kerf.innerChain);
+        const outerBBox = chainBoundingBox(kerf.outerChain);
 
         // Calculate approximate radii from bounding boxes
         const innerRadius = (innerBBox.max.x - innerBBox.min.x) / 2;
@@ -236,7 +236,7 @@ describe('cutToKerf', () => {
 
     it('should throw error if cut has no cutChain', async () => {
         const cut = createRectangularCut(0, 0, 100, 50);
-        cut.cutChain = undefined;
+        cut.chain = undefined;
         const tool = createTool(2.0);
 
         await expect(cutToKerf(new Cut(cut), tool)).rejects.toThrow(
@@ -292,8 +292,8 @@ describe('cutToKerf', () => {
             expect(kerf.kerfWidth).toBe(kerfWidth);
 
             // Verify offset distance is half the kerf width
-            const innerBBox = calculateChainBoundingBox(kerf.innerChain);
-            const outerBBox = calculateChainBoundingBox(kerf.outerChain);
+            const innerBBox = chainBoundingBox(kerf.innerChain);
+            const outerBBox = chainBoundingBox(kerf.outerChain);
 
             const tolerance = 1.0;
             const halfKerf = kerfWidth / 2;
@@ -461,11 +461,11 @@ describe('cutToKerf', () => {
             enabled: true,
             order: 0,
             action: OperationAction.CUT,
-            operationId: 'op-1',
-            chainId: 'chain-14',
-            toolId: 'tool-1',
-            cutDirection: CutDirection.CLOCKWISE,
-            cutChain: new Chain(originalChain),
+            sourceOperationId: 'op-1',
+            sourceChainId: 'chain-14',
+            sourceToolId: 'tool-1',
+            direction: CutDirection.CLOCKWISE,
+            chain: new Chain(originalChain),
             normal: { x: -0.21847234485073125, y: 0.9758431403332317 },
             normalConnectionPoint: { x: 7.6655, y: 10.9635 },
             normalSide: NormalSide.LEFT,
@@ -553,7 +553,7 @@ describe('cutToKerf', () => {
             }),
         ];
         cut.offset = {
-            originalShapes: cut.cutChain!.shapes, // Original rectangle at (0,0) to (100,100)
+            originalShapes: cut.chain!.shapes.map((s) => new Shape(s)), // Original rectangle at (0,0) to (100,100)
             offsetShapes,
             direction: 'inset' as any,
             kerfWidth: 10.0,
@@ -562,9 +562,9 @@ describe('cutToKerf', () => {
         };
 
         // Update cutChain to use the offset shapes
-        cut.cutChain = new Chain({
-            id: cut.cutChain!.id,
-            name: cut.cutChain!.name || cut.cutChain!.id,
+        cut.chain = new Chain({
+            id: cut.chain!.id,
+            name: cut.chain!.name || cut.chain!.id,
             shapes: cut.offset!.offsetShapes.map((s) => s.toData()),
         });
 

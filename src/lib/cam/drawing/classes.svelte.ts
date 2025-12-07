@@ -1,9 +1,9 @@
 import type { DrawingData } from './interfaces';
 import type { LayerData } from '$lib/cam/layer/interfaces';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
+import { shapesBoundingBox } from '$lib/cam/shape/functions';
 import { Layer } from '$lib/cam/layer/classes.svelte';
+import { Shape } from '$lib/cam/shape/classes';
 import { Unit } from '$lib/config/units/units';
 import { EMPTY_BOUNDS } from '$lib/geometry/bounding-box/constants';
 
@@ -23,22 +23,20 @@ export class Drawing implements DrawingData {
         this.#data.fileName = value;
     }
 
-    get shapes() {
-        return this.#data?.shapes ?? [];
-    }
-
-    set shapes(value: ShapeData[]) {
-        this.#data.shapes = value;
-        // Clear cached layers when shapes change
-        this.#layers = undefined;
+    // Read-only: Returns flat map of all shapes from all layers.
+    // To modify shapes, use layer.shapes setter (e.g., drawing.layers[layerName].shapes = newShapes)
+    get shapes(): Shape[] {
+        // Flatten shapes from all layers
+        const layers = this.layers;
+        return Object.values(layers).flatMap((layer) => layer.shapes);
     }
 
     get bounds(): BoundingBoxData {
-        const shapes = this.#data?.shapes ?? [];
+        const shapes = this.shapes ?? [];
         if (shapes.length === 0) {
             return EMPTY_BOUNDS;
         }
-        return getBoundingBoxForShapes(shapes);
+        return shapesBoundingBox(shapes);
     }
 
     get units() {
@@ -98,9 +96,23 @@ export class Drawing implements DrawingData {
      */
     toData(): DrawingData {
         return {
-            shapes: this.#data.shapes,
+            shapes: this.shapes.map((shape) => shape.toData()),
             units: this.#data.units,
             fileName: this.fileName,
         };
+    }
+
+    /**
+     * Translate all layers in this drawing by the given offset
+     * Recursively calls translate on all layers
+     * @param dx X offset to translate by
+     * @param dy Y offset to translate by
+     */
+    translate(dx: number, dy: number): void {
+        if (this.#layers) {
+            for (const layer of Object.values(this.#layers)) {
+                layer.translate(dx, dy);
+            }
+        }
     }
 }

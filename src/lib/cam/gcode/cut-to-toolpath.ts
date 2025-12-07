@@ -14,7 +14,7 @@ import {
     hasValidCachedLeads,
 } from '$lib/cam/cut/lead-persistence';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Part } from '$lib/cam/part/classes.svelte';
 import {
     CAM_CALCULATION_TOLERANCE_MM,
@@ -55,8 +55,8 @@ export async function cutToToolPath(
     let shapesToUse: Shape[];
 
     // First priority: Use execution chain if available (contains shapes in correct execution order)
-    if (cut.cutChain && cut.cutChain.shapes.length > 0) {
-        shapesToUse = cut.cutChain.shapes;
+    if (cut.chain && cut.chain.shapes.length > 0) {
+        shapesToUse = cut.chain.shapes;
     } else if (
         cutterCompensation === CutterCompensation.SOFTWARE &&
         cut.offset?.offsetShapes
@@ -286,7 +286,9 @@ export async function cutToToolPath(
     }
 
     // Build cutting parameters from tool settings
-    const tool = cut.toolId ? tools.find((t) => t.id === cut.toolId) : null;
+    const tool = cut.sourceToolId
+        ? tools.find((t) => t.id === cut.sourceToolId)
+        : null;
 
     // Use the correct unit-specific values based on displayUnit
     const unitToUse = displayUnit || Unit.MM; // Default to mm if not specified
@@ -316,7 +318,7 @@ export async function cutToToolPath(
 
     return {
         id: cut.id,
-        shapeId: cut.chainId, // Use chainId as the shape reference
+        shapeId: cut.sourceChainId, // Use chainId as the shape reference
         points,
         leadIn,
         leadOut,
@@ -354,7 +356,7 @@ export async function cutsToToolPaths(
         if (!cut.enabled) continue;
 
         const originalShapes: Shape[] | undefined = chainShapes.get(
-            cut.chainId
+            cut.sourceChainId
         );
         if (!originalShapes) continue;
 

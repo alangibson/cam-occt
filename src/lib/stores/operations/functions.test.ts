@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
 import { generateCutsForChainsWithOperation } from '$lib/cam/pipeline/operations/chain-operations';
@@ -163,13 +163,13 @@ describe('Operations Functions', () => {
     const mockCut: CutData = {
         id: 'cut-1',
         name: 'Test Cut',
-        operationId: 'op-1',
-        chainId: 'chain-1',
-        toolId: 'tool-1',
+        sourceOperationId: 'op-1',
+        sourceChainId: 'chain-1',
+        sourceToolId: 'tool-1',
         enabled: true,
         order: 1,
         action: OperationAction.CUT,
-        cutDirection: CutDirection.CLOCKWISE,
+        direction: CutDirection.CLOCKWISE,
         leadInConfig: {
             type: LeadType.ARC,
             length: 5,
@@ -1228,7 +1228,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateCutLeads(
                 new Cut(cutNoLeads),
-                mockOperation,
+                new Operation(mockOperation),
                 mockChain,
                 [mockPart]
             );
@@ -1263,7 +1263,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateCutLeads(
                 new Cut(cutWithOffset),
-                operationParts,
+                new Operation(operationParts),
                 mockChain,
                 [mockPart]
             );
@@ -1284,7 +1284,7 @@ describe('Operations Functions', () => {
                     angle: 90,
                     fit: false,
                 }),
-                mockCut.cutDirection,
+                mockCut.direction,
                 mockPart,
                 expect.any(Object) // cutNormal
             );
@@ -1308,7 +1308,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateCutLeads(
                 new Cut(cutWithEmptyOffset),
-                mockOperation,
+                new Operation(mockOperation),
                 mockChain,
                 [mockPart]
             );
@@ -1317,7 +1317,7 @@ describe('Operations Functions', () => {
                 expect.any(Chain),
                 expect.anything(),
                 expect.anything(),
-                mockCut.cutDirection,
+                mockCut.direction,
                 undefined,
                 expect.any(Object) // cutNormal
             );
@@ -1353,7 +1353,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateCutLeads(
                 new Cut(mockCut),
-                mockOperation,
+                new Operation(mockOperation),
                 mockChain,
                 [mockPart]
             );
@@ -1369,7 +1369,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateCutLeads(
                 new Cut(mockCut),
-                mockOperation,
+                new Operation(mockOperation),
                 mockChain,
                 [mockPart]
             );
@@ -1386,7 +1386,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateCutLeads(
                 new Cut(mockCut),
-                mockOperation,
+                new Operation(mockOperation),
                 mockChain,
                 [mockPart]
             );
@@ -1448,7 +1448,7 @@ describe('Operations Functions', () => {
             });
 
             const result = await calculateOperationLeads(
-                mockOperation,
+                new Operation(mockOperation),
                 cuts.map((c) => new Cut(c)),
                 _chains,
                 [mockPart]
@@ -1465,7 +1465,7 @@ describe('Operations Functions', () => {
             });
 
             const result = await calculateOperationLeads(
-                mockOperation,
+                new Operation(mockOperation),
                 [new Cut(mockCut)],
                 [mockChain],
                 [mockPart]

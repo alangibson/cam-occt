@@ -2,7 +2,8 @@
  * Chain operations module - handles cut generation for individual chains
  */
 
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
@@ -32,14 +33,15 @@ export async function generateCutsForChainsWithOperation(
     tolerance: number
 ): Promise<CutGenerationResult> {
     // Get chain from operation targets
-    const chain = operation.targets[index] as Chain;
+    const chainData = operation.targets[index] as ChainData;
     const tool = operation.tool;
 
     // Return empty arrays if chain not found or tool missing
-    if (!chain || !tool) {
+    if (!chainData || !tool) {
         return { cuts: [], warnings: [] };
     }
 
+    const chain = new Chain(chainData);
     const targetId = chain.id;
 
     // Get all parts from operation targets (for finding part containing chain)
@@ -110,7 +112,7 @@ export async function generateCutsForChainsWithOperation(
     let executionClockwise: boolean | null = null;
     if (chain) {
         const cutChainResult = createCutChain(
-            new Chain(chain),
+            chain,
             cutDirection,
             calculatedOffset?.offsetShapes
         );
@@ -143,20 +145,20 @@ export async function generateCutsForChainsWithOperation(
     const cutToReturn = new Cut({
         id: crypto.randomUUID(),
         name: `${operation.name} - ${chain.name}`,
-        operationId: operation.id,
-        chainId: targetId,
-        toolId: tool.id,
+        sourceOperationId: operation.id,
+        sourceChainId: targetId,
+        sourceToolId: tool.id,
         enabled: true,
         order: index + 1,
         action: operation.action,
-        cutDirection: cutDirection,
+        direction: cutDirection,
         executionClockwise: executionClockwise,
         leadInConfig: operation.leadInConfig,
         leadOutConfig: operation.leadOutConfig,
         kerfCompensation: kerfCompensation,
         kerfWidth: kerfWidth,
         offset: calculatedOffset,
-        cutChain: cutChain,
+        chain: cutChain.clone().toData(),
         isHole: false,
         holeUnderspeedPercent: undefined,
         normal: cutNormalResult.normal,
@@ -177,7 +179,7 @@ export async function generateCutsForChainsWithOperation(
         if (wasOptimized) {
             // Recalculate normal with the new start point
             const newCutNormalResult = calculateCutNormal(
-                cutToReturn.cutChain!,
+                cutToReturn.chain!,
                 cutDirection,
                 part,
                 kerfCompensation
@@ -188,8 +190,8 @@ export async function generateCutsForChainsWithOperation(
             cutToReturn.normalSide = newCutNormalResult.normalSide;
 
             // Update offset shapes to match optimized cutChain
-            if (cutToReturn.offset && cutToReturn.cutChain) {
-                cutToReturn.offset!.offsetShapes = cutToReturn.cutChain.shapes;
+            if (cutToReturn.offset && cutToReturn.chain) {
+                cutToReturn.offset!.offsetShapes = cutToReturn.chain.shapes;
             }
         }
     }
@@ -197,7 +199,7 @@ export async function generateCutsForChainsWithOperation(
     // Calculate leads for the cut (uses the updated normal if optimization was applied)
     const leadResult = await calculateCutLeads(
         cutToReturn,
-        operation.toData(),
+        operation,
         chain,
         parts
     );

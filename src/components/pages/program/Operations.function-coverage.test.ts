@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
-import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
-import { operationsStore } from '$lib/stores/operations/store';
-import { toolStore } from '$lib/stores/tools/store';
-import { selectionStore } from '$lib/stores/selection/store';
-import { partStore } from '$lib/stores/parts/store';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
+import { toolStore } from '$lib/stores/tools/store.svelte';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
+import { partStore } from '$lib/stores/parts/store.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
@@ -102,7 +101,7 @@ describe('Operations Component - Function Coverage', () => {
             // Call addNewOperation function
             comp.addNewOperation();
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations.length).toBe(1);
             expect(operations[0].targetType).toBe('parts');
             expect(operations[0].targetIds).toEqual(['part-1']);
@@ -135,7 +134,7 @@ describe('Operations Component - Function Coverage', () => {
 
             comp.addNewOperation();
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations.length).toBe(1);
             expect(operations[0].targetType).toBe('chains');
             expect(operations[0].targetIds).toEqual(['chain-1']);
@@ -147,7 +146,7 @@ describe('Operations Component - Function Coverage', () => {
 
             comp.addNewOperation();
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations.length).toBe(1);
             const operation = operations[0];
             expect(operation.name).toBe('Operation 1');
@@ -166,7 +165,7 @@ describe('Operations Component - Function Coverage', () => {
             comp.addNewOperation();
             comp.addNewOperation();
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations.length).toBe(2);
             expect(operations[0].name).toBe('Operation 1');
             expect(operations[1].name).toBe('Operation 2');
@@ -208,7 +207,7 @@ describe('Operations Component - Function Coverage', () => {
             const duplicateButton = getByTitle('Duplicate operation');
             await fireEvent.click(duplicateButton);
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations.length).toBe(2);
             expect(operations[1].name).toBe('Test Operation (Copy)');
             expect(operations[1].targetIds).toEqual(['part-1']);
@@ -224,16 +223,16 @@ describe('Operations Component - Function Coverage', () => {
             if (deleteButton) {
                 await fireEvent.click(deleteButton);
 
-                const operations = get(operationsStore);
+                const operations = operationsStore.operations;
                 expect(operations.length).toBe(0);
             } else {
                 // If button not found, test the function directly
-                const initialOps = get(operationsStore);
+                const initialOps = operationsStore.operations;
                 expect(initialOps.length).toBe(1);
 
                 // Verify the operation exists before deletion
                 operationsStore.deleteOperation('test-op-1');
-                const afterDelete = get(operationsStore);
+                const afterDelete = operationsStore.operations;
                 expect(afterDelete.length).toBe(0);
             }
         });
@@ -434,7 +433,7 @@ describe('Operations Component - Function Coverage', () => {
             if (toolOption) {
                 await fireEvent.click(toolOption);
 
-                const operations = get(operationsStore);
+                const operations = operationsStore.operations;
                 expect(operations[0].toolId).toBeTruthy();
             }
         });
@@ -551,7 +550,7 @@ describe('Operations Component - Function Coverage', () => {
             if (partCheckbox) {
                 await fireEvent.click(partCheckbox);
 
-                const operations = get(operationsStore);
+                const operations = operationsStore.operations;
                 expect(operations[0].targetIds).toContain('part-1');
             }
         });
@@ -597,7 +596,7 @@ describe('Operations Component - Function Coverage', () => {
                 await fireEvent.mouseEnter(partLabel);
 
                 // Verify part is highlighted
-                const selectionState = get(selectionStore);
+                const selectionState = selectionStore.getState();
                 expect(selectionState.parts.highlighted).toBe('part-1');
             }
         });
@@ -644,7 +643,7 @@ describe('Operations Component - Function Coverage', () => {
                 await fireEvent.mouseEnter(chainLabel);
 
                 // Verify chain is selected
-                const selectionState = get(selectionStore);
+                const selectionState = selectionStore.getState();
                 expect(selectionState.chains.selected.has('chain-1')).toBe(
                     true
                 );
@@ -694,7 +693,7 @@ describe('Operations Component - Function Coverage', () => {
             });
             await fireEvent.change(nameInput);
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].name).toBe('Updated Name');
         });
 
@@ -708,7 +707,7 @@ describe('Operations Component - Function Coverage', () => {
 
             await fireEvent.click(enabledCheckbox);
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].enabled).toBe(false);
         });
     });
@@ -804,7 +803,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: 'Updated Operation Name' },
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].name).toBe('Updated Operation Name');
         });
 
@@ -812,7 +811,7 @@ describe('Operations Component - Function Coverage', () => {
             const { container } = render(Operations);
 
             const kerfSelect = container.querySelector(
-                '#kerf-compensation-' + get(operationsStore)[0].id
+                '#kerf-compensation-' + operationsStore.operations[0].id
             ) as HTMLSelectElement;
             expect(kerfSelect).toBeTruthy();
 
@@ -820,7 +819,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: KerfCompensation.PART },
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].kerfCompensation).toBe(KerfCompensation.PART);
         });
 
@@ -836,7 +835,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { checked: true },
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].holeUnderspeedEnabled).toBe(true);
         });
 
@@ -844,7 +843,7 @@ describe('Operations Component - Function Coverage', () => {
             render(Operations);
 
             // First enable hole underspeed to make the percent input visible
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             operationsStore.updateOperation(operations[0].id, {
                 holeUnderspeedEnabled: true,
             });
@@ -861,7 +860,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: '85' },
             });
 
-            const updatedOperations = get(operationsStore);
+            const updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].holeUnderspeedPercent).toBe(85);
         });
 
@@ -869,7 +868,7 @@ describe('Operations Component - Function Coverage', () => {
             render(Operations);
 
             // First enable hole underspeed
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             operationsStore.updateOperation(operations[0].id, {
                 holeUnderspeedEnabled: true,
             });
@@ -886,7 +885,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: '150' },
             });
 
-            let updatedOperations = get(operationsStore);
+            let updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].holeUnderspeedPercent).toBe(100);
 
             // Test value too low
@@ -894,7 +893,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: '5' },
             });
 
-            updatedOperations = get(operationsStore);
+            updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].holeUnderspeedPercent).toBe(10);
         });
 
@@ -902,7 +901,7 @@ describe('Operations Component - Function Coverage', () => {
             render(Operations);
 
             // First enable hole underspeed
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             operationsStore.updateOperation(operations[0].id, {
                 holeUnderspeedEnabled: true,
             });
@@ -919,7 +918,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: '' },
             });
 
-            const updatedOperations = get(operationsStore);
+            const updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].holeUnderspeedPercent).toBe(60);
         });
 
@@ -935,7 +934,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: CutDirection.CLOCKWISE },
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].cutDirection).toBe(CutDirection.CLOCKWISE);
         });
 
@@ -960,18 +959,18 @@ describe('Operations Component - Function Coverage', () => {
 
             // If we can't find the UI element, directly test the updateOperationField function
             if (!chainsTab) {
-                const operations = get(operationsStore);
+                const operations = operationsStore.operations;
                 operationsStore.updateOperation(operations[0].id, {
                     targetType: 'chains',
                 });
-                const updatedOperations = get(operationsStore);
+                const updatedOperations = operationsStore.operations;
                 expect(updatedOperations[0].targetType).toBe('chains');
                 return;
             }
 
             await fireEvent.click(chainsTab!);
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].targetType).toBe('chains');
         });
 
@@ -987,7 +986,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: LeadType.ARC },
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].leadInConfig?.type).toBe(LeadType.ARC);
         });
 
@@ -995,7 +994,7 @@ describe('Operations Component - Function Coverage', () => {
             render(Operations);
 
             // First set lead-in type to create length input
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             operationsStore.updateOperation(operations[0].id, {
                 leadInConfig: { type: LeadType.ARC, length: 5 },
             });
@@ -1011,7 +1010,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: '7.5' },
             });
 
-            const updatedOperations = get(operationsStore);
+            const updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].leadInConfig?.length).toBe(7.5);
         });
 
@@ -1026,7 +1025,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: LeadType.ARC },
             });
 
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             expect(operations[0].leadOutConfig?.type).toBe(LeadType.ARC);
         });
 
@@ -1034,7 +1033,7 @@ describe('Operations Component - Function Coverage', () => {
             render(Operations);
 
             // First set lead-out type to create length input
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             operationsStore.updateOperation(operations[0].id, {
                 leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
@@ -1058,7 +1057,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: '8.2' },
             });
 
-            const updatedOperations = get(operationsStore);
+            const updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].leadOutConfig?.length).toBe(8.2);
         });
 
@@ -1066,7 +1065,7 @@ describe('Operations Component - Function Coverage', () => {
             render(Operations);
 
             // First set lead-out type to create fit checkbox
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             operationsStore.updateOperation(operations[0].id, {
                 leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
@@ -1089,7 +1088,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { checked: true },
             });
 
-            const updatedOperations = get(operationsStore);
+            const updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].leadOutConfig?.fit).toBe(true);
         });
 
@@ -1097,7 +1096,7 @@ describe('Operations Component - Function Coverage', () => {
             render(Operations);
 
             // First set lead-out type to create angle input
-            const operations = get(operationsStore);
+            const operations = operationsStore.operations;
             operationsStore.updateOperation(operations[0].id, {
                 leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
@@ -1120,7 +1119,7 @@ describe('Operations Component - Function Coverage', () => {
                 target: { value: '90' },
             });
 
-            const updatedOperations = get(operationsStore);
+            const updatedOperations = operationsStore.operations;
             expect(updatedOperations[0].leadOutConfig?.angle).toBe(90);
         });
     });

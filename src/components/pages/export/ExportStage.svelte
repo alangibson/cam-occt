@@ -1,10 +1,10 @@
 <script lang="ts">
     import GCodeExport from './GCodeExport.svelte';
     import AccordionPanel from '$components/panels/AccordionPanel.svelte';
-    import { workflowStore } from '$lib/stores/workflow/store';
+    import { workflowStore } from '$lib/stores/workflow/store.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import type { CuttingParameters } from '$lib/cam/gcode/interfaces';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { onMount } from 'svelte';
 
     // Resizable columns state
@@ -161,7 +161,7 @@
         <div class="main-column">
             <GCodeExport
                 {includeComments}
-                cutterCompensation={$settingsStore.settings.camSettings
+                cutterCompensation={settingsStore.settings.camSettings
                     .cutterCompensation}
                 {adaptiveFeedControl}
                 {enableTHC}

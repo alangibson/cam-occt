@@ -1,39 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
-import { getShapePoints } from '$lib/cam/shape/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
+import { Unit } from '$lib/config/units/units';
+
+// Helper function to create a Drawing from shapes and apply translation
+function createAndTranslateDrawing(
+    shapes: ShapeData[],
+    units: Unit | string = Unit.MM
+): Drawing {
+    const drawing = new Drawing({
+        shapes,
+        units: units as Unit,
+        fileName: 'test.dxf',
+    });
+    translateToPositiveQuadrant(drawing);
+    return drawing;
+}
 
 // Helper function to calculate bounds for translated shapes
-function calculateBounds(shapes: ShapeData[]) {
-    if (shapes.length === 0) {
-        return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
-    }
-
-    let minX = Infinity,
-        maxX = -Infinity;
-    let minY = Infinity,
-        maxY = -Infinity;
-
-    shapes.forEach((shape) => {
-        const points = getShapePoints(new Shape(shape), { mode: 'BOUNDS' });
-        points.forEach((point) => {
-            minX = Math.min(minX, point.x);
-            maxX = Math.max(maxX, point.x);
-            minY = Math.min(minY, point.y);
-            maxY = Math.max(maxY, point.y);
-        });
-    });
-
-    return {
-        min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
-        max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 },
-    };
-}
 
 describe('DXF Unit Detection', () => {
     describe('$INSUNITS header variable parsing', () => {
@@ -341,14 +331,10 @@ EOF`;
             const parsed = await parseDXF(dxfWithNegativeCoords);
 
             // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            const drawing = createAndTranslateDrawing(
+                parsed.shapes,
+                parsed.units
+            );
 
             expect(drawing.units).toBe('inch');
             expect(drawing.bounds.min.x).toBe(0);
@@ -399,7 +385,9 @@ EOF`;
             const parsed = await parseDXF(dxfWithPolyline);
 
             // Apply decomposition separately
-            const decomposed = decomposePolylines(parsed.shapes);
+            const decomposed = decomposePolylines(
+                parsed.shapes.map((s) => new Shape(s))
+            );
 
             // Create decomposed drawing
             const drawing = {

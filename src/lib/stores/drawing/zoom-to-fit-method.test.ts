@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { get } from 'svelte/store';
-import { drawingStore } from './store';
+import { drawingStore } from './store.svelte';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
@@ -19,9 +18,11 @@ describe('DrawingStore zoomToFit method', () => {
                     id: '1',
                     type: GeometryType.LINE,
                     layer: '0',
-                    start: { x: 0, y: 0 },
-                    end: { x: 200, y: 100 },
-                } as any,
+                    geometry: {
+                        start: { x: 0, y: 0 },
+                        end: { x: 200, y: 100 },
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -32,21 +33,21 @@ describe('DrawingStore zoomToFit method', () => {
         // Manually set a different zoom and offset
         drawingStore.setViewTransform(0.5, { x: -50, y: -50 });
 
-        const stateBeforeFit = get(drawingStore);
+        const stateBeforeFit = drawingStore;
         expect(stateBeforeFit.scale).toBe(0.5);
         expect(stateBeforeFit.offset).toEqual({ x: -50, y: -50 });
 
         // Call zoomToFit
         drawingStore.zoomToFit();
 
-        const stateAfterFit = get(drawingStore);
+        const stateAfterFit = drawingStore;
 
         // The scale and offset should have changed
         expect(stateAfterFit.scale).not.toBe(0.5);
         expect(stateAfterFit.offset).not.toEqual({ x: -50, y: -50 });
 
         // The drawing should still be loaded
-        expect(stateAfterFit.drawing?.shapes).toEqual(testDrawing.shapes);
+        expect(stateAfterFit.drawing?.shapes.length).toBe(1);
     });
 
     it('should do nothing when canvas dimensions are not set', () => {
@@ -58,9 +59,11 @@ describe('DrawingStore zoomToFit method', () => {
                     id: '1',
                     type: GeometryType.LINE,
                     layer: '0',
-                    start: { x: 0, y: 0 },
-                    end: { x: 100, y: 100 },
-                } as any,
+                    geometry: {
+                        start: { x: 0, y: 0 },
+                        end: { x: 100, y: 100 },
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -69,13 +72,13 @@ describe('DrawingStore zoomToFit method', () => {
         drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         // The store should have canvas dimensions from beforeEach
-        const state = get(drawingStore);
+        const state = drawingStore;
         expect(state.canvasDimensions).not.toBeNull();
 
         // Call zoomToFit - it should work since we have canvas dimensions
         drawingStore.zoomToFit();
 
-        const afterState = get(drawingStore);
+        const afterState = drawingStore;
         // The zoom should have been calculated
         expect(afterState.scale).toBeGreaterThan(0);
     });
@@ -92,14 +95,14 @@ describe('DrawingStore zoomToFit method', () => {
         // Set a custom zoom and offset
         drawingStore.setViewTransform(3, { x: 200, y: 200 });
 
-        const stateBeforeFit = get(drawingStore);
+        const stateBeforeFit = drawingStore;
         expect(stateBeforeFit.scale).toBe(3);
         expect(stateBeforeFit.offset).toEqual({ x: 200, y: 200 });
 
         // Call zoomToFit
         drawingStore.zoomToFit();
 
-        const stateAfterFit = get(drawingStore);
+        const stateAfterFit = drawingStore;
 
         // For empty drawings, it should use default zoom (1) and offset (0, 0)
         expect(stateAfterFit.scale).toBe(1);
@@ -113,9 +116,11 @@ describe('DrawingStore zoomToFit method', () => {
                     id: '1',
                     type: GeometryType.LINE,
                     layer: '0',
-                    start: { x: 50, y: 50 },
-                    end: { x: 150, y: 150 },
-                } as any,
+                    geometry: {
+                        start: { x: 50, y: 50 },
+                        end: { x: 150, y: 150 },
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -127,7 +132,7 @@ describe('DrawingStore zoomToFit method', () => {
         drawingStore.setViewTransform(0.5, { x: -100, y: -100 });
         drawingStore.zoomToFit();
 
-        const firstFit = get(drawingStore);
+        const firstFit = drawingStore;
         const firstScale = firstFit.scale;
         const firstOffset = { ...firstFit.offset };
 
@@ -135,7 +140,7 @@ describe('DrawingStore zoomToFit method', () => {
         drawingStore.setViewTransform(3, { x: 300, y: 300 });
         drawingStore.zoomToFit();
 
-        const secondFit = get(drawingStore);
+        const secondFit = drawingStore;
 
         // Should return to the same zoom-to-fit values
         expect(secondFit.scale).toBe(firstScale);

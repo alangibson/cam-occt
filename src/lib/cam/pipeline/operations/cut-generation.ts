@@ -2,7 +2,7 @@ import type { Part } from '$lib/cam/part/classes.svelte';
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 import type { CutGenerationResult } from './interfaces';
 import type { Operation } from '$lib/cam/operation/classes.svelte';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { generateCutsForChainsWithOperation } from './chain-operations';
 import { generateCutsForPartsWithOperation } from './part-operations';
 import { generateSpotsForChainsWithOperation } from './spot-operations';
@@ -112,10 +112,10 @@ export async function createCutsFromOperation(
         // Collect kerf generation promises for parallel execution
         const kerfPromises = allCuts.map((cut) => {
             // Get original chain for this cut
-            const chain = allChains.find((c) => c.id === cut.chainId);
+            const chain = allChains.find((c) => c.id === cut.sourceChainId);
             if (!chain) {
                 console.warn(
-                    `Cannot find chain ${cut.chainId} for cut ${cut.name} - skipping kerf generation`
+                    `Cannot find chain ${cut.sourceChainId} for cut ${cut.name} - skipping kerf generation`
                 );
                 return Promise.resolve();
             }

@@ -6,10 +6,8 @@
  * using the offset shapes instead of the original chain geometry.
  */
 
-import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
-import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';
@@ -21,12 +19,11 @@ import {
 } from '$lib/cam/lead/functions';
 import { detectParts } from '$lib/cam/part/part-detection';
 import type { Cut } from './classes.svelte';
-import type { CutData } from './interfaces';
 
 /**
  * Check if cut has valid cached lead geometry
  */
-export function hasValidCachedLeads(cut: Cut | CutData): boolean {
+export function hasValidCachedLeads(cut: Cut): boolean {
     const currentVersion: string = '1.0.0'; // Should match the version in cuts.ts
 
     // Check if we have cached lead geometry
@@ -62,7 +59,7 @@ export function hasValidCachedLeads(cut: Cut | CutData): boolean {
 /**
  * Get cached lead geometry for display
  */
-export function getCachedLeadGeometry(cut: Cut | CutData): LeadResult {
+export function getCachedLeadGeometry(cut: Cut): LeadResult {
     return {
         leadIn: cut.leadIn,
         leadOut: cut.leadOut,
@@ -75,8 +72,8 @@ export function getCachedLeadGeometry(cut: Cut | CutData): LeadResult {
  */
 export async function calculateLeadPoints(
     cut: Cut,
-    chainMap: Map<string, ChainData> | undefined,
-    partMap: Map<string, PartData> | undefined,
+    chainMap: Map<string, Chain> | undefined,
+    partMap: Map<string, Part> | undefined,
     leadType: 'leadIn' | 'leadOut'
 ): Promise<Point2D[] | undefined> {
     if (!chainMap || !partMap) {
@@ -84,26 +81,23 @@ export async function calculateLeadPoints(
     }
 
     try {
-        const chain = chainMap.get(cut.chainId);
+        const chain = chainMap.get(cut.sourceChainId);
         if (!chain) {
             return undefined;
         }
 
-        const part = partMap.get(cut.chainId); // Part lookup for lead fitting
+        const part = partMap.get(cut.sourceChainId); // Part lookup for lead fitting
         const { chainForLeads, leadInConfig, leadOutConfig, offsetPart } =
             await prepareLeadCalculation(cut, chain);
 
         // Use offset-based part context if available, otherwise fall back to original part context
-        const effectivePartData = offsetPart || part;
-        const effectivePart = effectivePartData
-            ? new Part(effectivePartData)
-            : undefined;
+        const effectivePart = offsetPart || part;
 
         const leadResult = calculateLeads(
-            new Chain(chainForLeads),
+            chainForLeads,
             leadInConfig,
             leadOutConfig,
-            cut.cutDirection,
+            cut.direction,
             effectivePart,
             cut.normal
         );
@@ -136,21 +130,22 @@ export async function calculateLeadPoints(
  */
 async function prepareLeadCalculation(
     cut: Cut,
-    chain: ChainData
+    chain: Chain
 ): Promise<{
-    chainForLeads: ChainData;
+    chainForLeads: Chain;
     leadInConfig: LeadConfig;
     leadOutConfig: LeadConfig;
-    offsetPart?: PartData;
+    offsetPart?: Part;
 }> {
     // Use offset shapes for lead calculation if available
     const chainForLeads = cut.offset
-        ? {
-              ...chain,
+        ? new Chain({
+              id: chain.id,
+              name: chain.name,
               shapes: cut.offset.offsetShapes,
               clockwise: chain.clockwise,
               originalChainId: chain.id,
-          }
+          })
         : chain;
 
     // Create lead configurations based on cut properties
@@ -158,11 +153,11 @@ async function prepareLeadCalculation(
     const leadOutConfig = createLeadOutConfig(cut);
 
     // If using offset geometry, create a Part from offset geometry for proper material avoidance
-    let offsetPart: PartData | undefined;
+    let offsetPart: Part | undefined;
     if (cut.offset) {
         try {
             // Create a single-chain array for part detection on offset geometry
-            const offsetChains = [new Chain(chainForLeads)];
+            const offsetChains = [chainForLeads];
             const partDetectionResult = await detectParts(offsetChains);
 
             // Use the first detected part (there should only be one for a single chain)

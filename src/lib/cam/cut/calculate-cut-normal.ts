@@ -20,7 +20,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { CutDirection, NormalSide } from './enums';
 import { getChainStartPoint, getChainTangent } from '$lib/cam/chain/functions';

@@ -4,12 +4,13 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Lead Geometry Debug', () => {
     // Helper to create a simple line chain
@@ -125,7 +126,7 @@ describe('Lead Geometry Debug', () => {
             leadIn,
             { type: LeadType.NONE, length: 0 },
             CutDirection.NONE,
-            part,
+            new Part(part),
             { x: 1, y: 0 }
         );
 

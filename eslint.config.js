@@ -33,6 +33,20 @@ export default [
   ...eslintPluginSvelte.configs["flat/recommended"],
   eslintConfigPrettier,
   noBarrelFiles.flat,
+  // Typescript-only rules
+  // {
+  //   files: ['src/**/*.ts'],
+  //   languageOptions: {
+  //     parser: tseslint.parser,
+  //     parserOptions: {
+  //       project: './tsconfig.json',      // <-- REQUIRED for type-aware rules
+  //       tsconfigRootDir: import.meta.dirname,
+  //     },
+  //   },
+  //   rules: {
+  //     "@typescript-eslint/no-misused-spread": "error",
+  //   }
+  // },
   // Custom (Type/Java)script file treatment
   {
     files: ["src/**/*.js", "src/**/*.ts"],
@@ -192,6 +206,8 @@ export default [
       parser: svelteParser,
       parserOptions: {
         parser: tseslint.parser,
+        // project: './tsconfig.json',
+        // tsconfigRootDir: import.meta.dirname,
       },
       globals: {
         console: "readonly",

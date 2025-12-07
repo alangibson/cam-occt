@@ -1,5 +1,5 @@
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
+import { shapesBoundingBox } from '$lib/cam/shape/functions';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import { ZOOM_TO_FIT_MARGIN } from './constants';
@@ -20,7 +20,7 @@ export function calculateZoomToFitForDrawing(
 
     try {
         // Get bounding box for all shapes in the drawing
-        const boundingBox = getBoundingBoxForShapes(drawing.shapes);
+        const boundingBox = shapesBoundingBox(drawing.shapes);
 
         // Get unit scale factor for proper display
         const unitScale = getPhysicalScaleFactor(drawing.units, displayUnit);

@@ -4,7 +4,7 @@ import { generateId } from '$lib/domain/id';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Slot Detection in Parts', () => {
     // Helper function to create test shapes

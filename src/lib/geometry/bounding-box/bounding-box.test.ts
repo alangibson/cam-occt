@@ -1,17 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { calculateDynamicTolerance, combineBoundingBoxes } from './functions';
 import {
-    calculateDynamicTolerance,
-    combineBoundingBoxes,
-    getBoundingBoxForArc,
-    getBoundingBoxForCircle,
-    getBoundingBoxForEllipse,
-    getBoundingBoxForLine,
-    getBoundingBoxForPolyline,
-    getBoundingBoxForShape,
-    getBoundingBoxForShapes,
-    getBoundingBoxForSpline,
-} from './functions';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+    createPolylineFromVertices,
+    polylineBoundingBox,
+} from '$lib/geometry/dxf-polyline/functions';
 import { GeometryType } from '$lib/geometry/enums';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Geometry } from '$lib/geometry/types';
@@ -19,10 +11,16 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { BoundingBoxData } from './interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
+import { lineBoundingBox } from '$lib/geometry/line/functions';
+import { circleBoundingBox } from '$lib/geometry/circle/functions';
+import { shapeBoundingBox, shapesBoundingBox } from '$lib/cam/shape/functions';
+import { arcBoundingBox } from '$lib/geometry/arc/functions';
+import { ellipseBoundingBox } from '$lib/geometry/ellipse/functions';
+import { splineBoundingBox } from '$lib/geometry/spline/functions';
 
 describe('getBoundingBoxForLine', () => {
     it('calculates bounding box for horizontal line', () => {
@@ -31,7 +29,7 @@ describe('getBoundingBoxForLine', () => {
             end: { x: 30, y: 20 },
         };
 
-        const result = getBoundingBoxForLine(line);
+        const result = lineBoundingBox(line);
         expect(result).toEqual({
             min: { x: 10, y: 20 },
             max: { x: 30, y: 20 },
@@ -44,7 +42,7 @@ describe('getBoundingBoxForLine', () => {
             end: { x: 15, y: 25 },
         };
 
-        const result = getBoundingBoxForLine(line);
+        const result = lineBoundingBox(line);
         expect(result).toEqual({
             min: { x: 15, y: 5 },
             max: { x: 15, y: 25 },
@@ -57,7 +55,7 @@ describe('getBoundingBoxForLine', () => {
             end: { x: 100, y: 50 },
         };
 
-        const result = getBoundingBoxForLine(line);
+        const result = lineBoundingBox(line);
         expect(result).toEqual({
             min: { x: 0, y: 0 },
             max: { x: 100, y: 50 },
@@ -70,7 +68,7 @@ describe('getBoundingBoxForLine', () => {
             end: { x: 10, y: 20 },
         };
 
-        const result = getBoundingBoxForLine(line);
+        const result = lineBoundingBox(line);
         expect(result).toEqual({
             min: { x: 10, y: 20 },
             max: { x: 50, y: 100 },
@@ -83,9 +81,7 @@ describe('getBoundingBoxForLine', () => {
             end: { x: 10, y: 20 },
         };
 
-        expect(() => getBoundingBoxForLine(invalidLine)).toThrow(
-            'Invalid line'
-        );
+        expect(() => lineBoundingBox(invalidLine)).toThrow('Invalid line');
     });
 });
 
@@ -96,7 +92,7 @@ describe('getBoundingBoxForCircle', () => {
             radius: 5,
         };
 
-        const result = getBoundingBoxForCircle(circle);
+        const result = circleBoundingBox(circle);
         expect(result).toEqual({
             min: { x: -5, y: -5 },
             max: { x: 5, y: 5 },
@@ -109,7 +105,7 @@ describe('getBoundingBoxForCircle', () => {
             radius: 15,
         };
 
-        const result = getBoundingBoxForCircle(circle);
+        const result = circleBoundingBox(circle);
         expect(result).toEqual({
             min: { x: -5, y: 5 },
             max: { x: 25, y: 35 },
@@ -122,7 +118,7 @@ describe('getBoundingBoxForCircle', () => {
             radius: -5,
         };
 
-        expect(() => getBoundingBoxForCircle(invalidCircle)).toThrow(
+        expect(() => circleBoundingBox(invalidCircle)).toThrow(
             'Invalid circle'
         );
     });
@@ -138,7 +134,7 @@ describe('getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        const result = getBoundingBoxForArc(arc);
+        const result = arcBoundingBox(arc);
         expect(result.min.x).toBeCloseTo(0, 10);
         expect(result.min.y).toBeCloseTo(0, 10);
         expect(result.max.x).toBeCloseTo(10, 10);
@@ -154,7 +150,7 @@ describe('getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        const result = getBoundingBoxForArc(arc);
+        const result = arcBoundingBox(arc);
         expect(result.min.x).toBeCloseTo(-5, 10);
         expect(result.min.y).toBeCloseTo(0, 10);
         expect(result.max.x).toBeCloseTo(5, 10);
@@ -170,7 +166,7 @@ describe('getBoundingBoxForArc', () => {
             clockwise: true,
         };
 
-        const result = getBoundingBoxForArc(arc);
+        const result = arcBoundingBox(arc);
         expect(result.min.x).toBeCloseTo(0, 10);
         expect(result.min.y).toBeCloseTo(0, 10);
         expect(result.max.x).toBeCloseTo(10, 10);
@@ -186,7 +182,7 @@ describe('getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        const result = getBoundingBoxForArc(arc);
+        const result = arcBoundingBox(arc);
         expect(result.max.x).toBeCloseTo(8, 10); // Should include 0° extreme
     });
 
@@ -199,7 +195,7 @@ describe('getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        expect(() => getBoundingBoxForArc(invalidArc)).toThrow('Invalid arc');
+        expect(() => arcBoundingBox(invalidArc)).toThrow('Invalid arc');
     });
 });
 
@@ -213,9 +209,9 @@ describe('getBoundingBoxForPolyline', () => {
             ],
             true
         );
-        const polyline: Polyline = polylineShape.geometry as Polyline;
+        const polyline: DxfPolyline = polylineShape.geometry as DxfPolyline;
 
-        const result = getBoundingBoxForPolyline(polyline);
+        const result = polylineBoundingBox(polyline);
         expect(result).toEqual({
             min: { x: 0, y: 0 },
             max: { x: 10, y: 8 },
@@ -232,9 +228,9 @@ describe('getBoundingBoxForPolyline', () => {
             ],
             false
         );
-        const polyline: Polyline = polylineShape.geometry as Polyline;
+        const polyline: DxfPolyline = polylineShape.geometry as DxfPolyline;
 
-        const result = getBoundingBoxForPolyline(polyline);
+        const result = polylineBoundingBox(polyline);
         expect(result).toEqual({
             min: { x: -5, y: -10 },
             max: { x: 25, y: 40 },
@@ -243,12 +239,12 @@ describe('getBoundingBoxForPolyline', () => {
 
     it('throws error for empty polyline', () => {
         // createPolylineFromVertices throws for empty array, so test directly with empty polyline
-        const emptyPolyline: Polyline = {
+        const emptyPolyline: DxfPolyline = {
             closed: false,
             shapes: [],
         };
 
-        expect(() => getBoundingBoxForPolyline(emptyPolyline)).toThrow(
+        expect(() => polylineBoundingBox(emptyPolyline)).toThrow(
             'Invalid polyline'
         );
     });
@@ -261,9 +257,9 @@ describe('getBoundingBoxForPolyline', () => {
             ],
             false
         );
-        const invalidPolyline = invalidPolylineShape.geometry as Polyline;
+        const invalidPolyline = invalidPolylineShape.geometry as DxfPolyline;
 
-        expect(() => getBoundingBoxForPolyline(invalidPolyline)).toThrow(
+        expect(() => polylineBoundingBox(invalidPolyline)).toThrow(
             'Invalid line'
         );
     });
@@ -277,7 +273,7 @@ describe('getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0.5, // 5 units along y-axis
         };
 
-        const result = getBoundingBoxForEllipse(ellipse);
+        const result = ellipseBoundingBox(ellipse);
         expect(result.min.x).toBeCloseTo(-10, 10);
         expect(result.min.y).toBeCloseTo(-5, 10);
         expect(result.max.x).toBeCloseTo(10, 10);
@@ -291,7 +287,7 @@ describe('getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0.5,
         };
 
-        const result = getBoundingBoxForEllipse(ellipse);
+        const result = ellipseBoundingBox(ellipse);
         // Rotated ellipse should have larger bounding box
         expect(Math.abs(result.max.x - result.min.x)).toBeGreaterThan(10);
         expect(Math.abs(result.max.y - result.min.y)).toBeGreaterThan(5);
@@ -304,7 +300,7 @@ describe('getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0.6,
         };
 
-        const result = getBoundingBoxForEllipse(ellipse);
+        const result = ellipseBoundingBox(ellipse);
         expect(result.min.x).toBeCloseTo(12, 10);
         expect(result.min.y).toBeCloseTo(10.2, 10);
         expect(result.max.x).toBeCloseTo(28, 10);
@@ -318,7 +314,7 @@ describe('getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0.5,
         };
 
-        expect(() => getBoundingBoxForEllipse(invalidEllipse)).toThrow(
+        expect(() => ellipseBoundingBox(invalidEllipse)).toThrow(
             'Invalid ellipse'
         );
     });
@@ -340,7 +336,7 @@ describe('getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        const result = getBoundingBoxForSpline(spline);
+        const result = splineBoundingBox(spline);
         // The result should contain all control points within the bounds
         expect(result.min.x).toBeLessThanOrEqual(0);
         expect(result.min.y).toBeLessThanOrEqual(0);
@@ -371,7 +367,7 @@ describe('getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        const result = getBoundingBoxForSpline(spline);
+        const result = splineBoundingBox(spline);
         // Should use fit points instead of control points
         expect(result.max.x).toBeLessThan(50); // Much smaller than control points
     });
@@ -386,7 +382,7 @@ describe('getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        expect(() => getBoundingBoxForSpline(invalidSpline)).toThrow(
+        expect(() => splineBoundingBox(invalidSpline)).toThrow(
             'Invalid spline'
         );
     });
@@ -403,7 +399,7 @@ describe('getBoundingBoxForShape', () => {
             },
         };
 
-        const result = getBoundingBoxForShape(lineShape);
+        const result = shapeBoundingBox(lineShape);
         expect(result).toEqual({
             min: { x: 0, y: 0 },
             max: { x: 10, y: 10 },
@@ -417,7 +413,7 @@ describe('getBoundingBoxForShape', () => {
             geometry: {},
         } as unknown as ShapeData;
 
-        expect(() => getBoundingBoxForShape(invalidShape)).toThrow(
+        expect(() => shapeBoundingBox(invalidShape)).toThrow(
             'Unsupported shape type'
         );
     });
@@ -468,7 +464,7 @@ describe('combineBoundingBoxes', () => {
     });
 });
 
-describe('getBoundingBoxForShapes', () => {
+describe('shapesBoundingBox', () => {
     it('calculates bounding box for multiple shapes', () => {
         const shapes: ShapeData[] = [
             {
@@ -483,7 +479,7 @@ describe('getBoundingBoxForShapes', () => {
             },
         ];
 
-        const result = getBoundingBoxForShapes(shapes);
+        const result = shapesBoundingBox(shapes);
         expect(result).toEqual({
             min: { x: 0, y: 0 },
             max: { x: 25, y: 20 },
@@ -491,7 +487,7 @@ describe('getBoundingBoxForShapes', () => {
     });
 
     it('throws error for empty shapes array', () => {
-        expect(() => getBoundingBoxForShapes([])).toThrow(
+        expect(() => shapesBoundingBox([])).toThrow(
             'Cannot calculate bounding box for empty array'
         );
     });
@@ -504,7 +500,7 @@ describe('Edge Cases - getBoundingBoxForLine', () => {
             end: { x: 10, y: 15 },
         };
 
-        expect(() => getBoundingBoxForLine(line)).toThrow(
+        expect(() => lineBoundingBox(line)).toThrow(
             'Invalid line: start and end points must be finite numbers'
         );
     });
@@ -515,7 +511,7 @@ describe('Edge Cases - getBoundingBoxForLine', () => {
             end: { x: 10, y: 15 },
         };
 
-        expect(() => getBoundingBoxForLine(line)).toThrow(
+        expect(() => lineBoundingBox(line)).toThrow(
             'Invalid line: start and end points must be finite numbers'
         );
     });
@@ -526,7 +522,7 @@ describe('Edge Cases - getBoundingBoxForLine', () => {
             end: { x: 10, y: 15 },
         };
 
-        expect(() => getBoundingBoxForLine(line)).toThrow(
+        expect(() => lineBoundingBox(line)).toThrow(
             'Invalid line: start and end points must be finite numbers'
         );
     });
@@ -537,7 +533,7 @@ describe('Edge Cases - getBoundingBoxForLine', () => {
             end: null as unknown as Point2D,
         };
 
-        expect(() => getBoundingBoxForLine(line)).toThrow(
+        expect(() => lineBoundingBox(line)).toThrow(
             'Invalid line: start and end points must be finite numbers'
         );
     });
@@ -550,7 +546,7 @@ describe('Edge Cases - getBoundingBoxForCircle', () => {
             radius: 5,
         };
 
-        expect(() => getBoundingBoxForCircle(circle)).toThrow(
+        expect(() => circleBoundingBox(circle)).toThrow(
             'Invalid circle: center must be finite and radius must be positive'
         );
     });
@@ -561,7 +557,7 @@ describe('Edge Cases - getBoundingBoxForCircle', () => {
             radius: -5,
         };
 
-        expect(() => getBoundingBoxForCircle(circle)).toThrow(
+        expect(() => circleBoundingBox(circle)).toThrow(
             'Invalid circle: center must be finite and radius must be positive'
         );
     });
@@ -572,7 +568,7 @@ describe('Edge Cases - getBoundingBoxForCircle', () => {
             radius: 0,
         };
 
-        expect(() => getBoundingBoxForCircle(circle)).toThrow(
+        expect(() => circleBoundingBox(circle)).toThrow(
             'Invalid circle: center must be finite and radius must be positive'
         );
     });
@@ -583,7 +579,7 @@ describe('Edge Cases - getBoundingBoxForCircle', () => {
             radius: NaN,
         };
 
-        expect(() => getBoundingBoxForCircle(circle)).toThrow(
+        expect(() => circleBoundingBox(circle)).toThrow(
             'Invalid circle: center must be finite and radius must be positive'
         );
     });
@@ -594,7 +590,7 @@ describe('Edge Cases - getBoundingBoxForCircle', () => {
             radius: 5,
         };
 
-        expect(() => getBoundingBoxForCircle(circle)).toThrow(
+        expect(() => circleBoundingBox(circle)).toThrow(
             'Invalid circle: center must be finite and radius must be positive'
         );
     });
@@ -610,7 +606,7 @@ describe('Edge Cases - getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        expect(() => getBoundingBoxForArc(arc)).toThrow(
+        expect(() => arcBoundingBox(arc)).toThrow(
             'Invalid arc: center, radius, and angles must be finite numbers'
         );
     });
@@ -624,7 +620,7 @@ describe('Edge Cases - getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        expect(() => getBoundingBoxForArc(arc)).toThrow(
+        expect(() => arcBoundingBox(arc)).toThrow(
             'Invalid arc: center, radius, and angles must be finite numbers'
         );
     });
@@ -638,7 +634,7 @@ describe('Edge Cases - getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        expect(() => getBoundingBoxForArc(arc)).toThrow(
+        expect(() => arcBoundingBox(arc)).toThrow(
             'Invalid arc: center, radius, and angles must be finite numbers'
         );
     });
@@ -652,7 +648,7 @@ describe('Edge Cases - getBoundingBoxForArc', () => {
             clockwise: true,
         };
 
-        const result = getBoundingBoxForArc(arc);
+        const result = arcBoundingBox(arc);
         // The actual implementation behavior - let's test what it actually returns
         // Without changing the implementation to match our expectation
         expect(result.max.x).toBeGreaterThan(-15);
@@ -668,7 +664,7 @@ describe('Edge Cases - getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        const result = getBoundingBoxForArc(arc);
+        const result = arcBoundingBox(arc);
         // Should include rightmost point (0 degrees)
         expect(result.max.x).toBeCloseTo(10);
         expect(result.min.x).toBeCloseTo(Math.cos((7 * Math.PI) / 4) * 10);
@@ -683,7 +679,7 @@ describe('Edge Cases - getBoundingBoxForArc', () => {
             clockwise: false,
         };
 
-        const result = getBoundingBoxForArc(arc);
+        const result = arcBoundingBox(arc);
         // Should be very close to full circle bounds
         expect(result.min.x).toBeCloseTo(2, 0);
         expect(result.max.x).toBeCloseTo(8, 0);
@@ -700,7 +696,7 @@ describe('Edge Cases - getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0.5,
         };
 
-        expect(() => getBoundingBoxForEllipse(ellipse)).toThrow(
+        expect(() => ellipseBoundingBox(ellipse)).toThrow(
             'Invalid ellipse: center, major axis endpoint, and ratio must be finite numbers'
         );
     });
@@ -712,7 +708,7 @@ describe('Edge Cases - getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0.5,
         };
 
-        expect(() => getBoundingBoxForEllipse(ellipse)).toThrow(
+        expect(() => ellipseBoundingBox(ellipse)).toThrow(
             'Invalid ellipse: major axis length must be positive'
         );
     });
@@ -724,7 +720,7 @@ describe('Edge Cases - getBoundingBoxForEllipse', () => {
             minorToMajorRatio: -0.5,
         };
 
-        expect(() => getBoundingBoxForEllipse(ellipse)).toThrow(
+        expect(() => ellipseBoundingBox(ellipse)).toThrow(
             'Invalid ellipse: center, major axis endpoint, and ratio must be finite numbers'
         );
     });
@@ -736,7 +732,7 @@ describe('Edge Cases - getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0,
         };
 
-        expect(() => getBoundingBoxForEllipse(ellipse)).toThrow(
+        expect(() => ellipseBoundingBox(ellipse)).toThrow(
             'Invalid ellipse: center, major axis endpoint, and ratio must be finite numbers'
         );
     });
@@ -748,7 +744,7 @@ describe('Edge Cases - getBoundingBoxForEllipse', () => {
             minorToMajorRatio: 0.6, // minor axis = 6
         };
 
-        const result = getBoundingBoxForEllipse(ellipse);
+        const result = ellipseBoundingBox(ellipse);
 
         // For a rotated ellipse, the bounding box should be larger than the axis-aligned case
         expect(Math.abs(result.max.x - result.min.x)).toBeGreaterThan(10);
@@ -767,7 +763,7 @@ describe('Edge Cases - getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        expect(() => getBoundingBoxForSpline(spline)).toThrow(
+        expect(() => splineBoundingBox(spline)).toThrow(
             'Invalid spline: must have control points'
         );
     });
@@ -788,7 +784,7 @@ describe('Edge Cases - getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        const result = getBoundingBoxForSpline(spline);
+        const result = splineBoundingBox(spline);
         // Should use fit points when NURBS fails
         expect(result.min.x).toBe(1);
         expect(result.min.y).toBe(1);
@@ -809,7 +805,7 @@ describe('Edge Cases - getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        const result = getBoundingBoxForSpline(spline);
+        const result = splineBoundingBox(spline);
         // Should use control points as final fallback
         expect(result.min.x).toBe(2);
         expect(result.min.y).toBe(3);
@@ -827,7 +823,7 @@ describe('Edge Cases - getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        expect(() => getBoundingBoxForSpline(spline)).toThrow(
+        expect(() => splineBoundingBox(spline)).toThrow(
             'Invalid spline: no finite points found'
         );
     });
@@ -850,7 +846,7 @@ describe('Edge Cases - getBoundingBoxForSpline', () => {
             closed: false,
         };
 
-        const result = getBoundingBoxForSpline(spline);
+        const result = splineBoundingBox(spline);
         // Should use control points as fallback when NURBS sampling fails
         expect(result.min.x).toBe(0);
         expect(result.min.y).toBe(0);
@@ -867,7 +863,7 @@ describe('Edge Cases - getBoundingBoxForShape', () => {
             geometry: {} as unknown as Geometry,
         };
 
-        expect(() => getBoundingBoxForShape(shape)).toThrow(
+        expect(() => shapeBoundingBox(shape)).toThrow(
             'Unsupported shape type: unknown'
         );
     });

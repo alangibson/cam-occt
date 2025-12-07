@@ -19,19 +19,19 @@ describe('Workflow functions', () => {
             expect(result).toBe(true);
         });
 
-        it('should allow edit stage after import is completed', () => {
+        it('should allow program stage after import is completed', () => {
             const completedStages = new Set([WorkflowStage.IMPORT]);
             const result = validateStageAdvancement(
-                WorkflowStage.EDIT,
+                WorkflowStage.PROGRAM,
                 completedStages
             );
             expect(result).toBe(true);
         });
 
-        it('should not allow edit stage without import completed', () => {
+        it('should not allow program stage without import completed', () => {
             const completedStages = new Set<WorkflowStage>();
             const result = validateStageAdvancement(
-                WorkflowStage.EDIT,
+                WorkflowStage.PROGRAM,
                 completedStages
             );
             expect(result).toBe(false);
@@ -40,8 +40,6 @@ describe('Workflow functions', () => {
         it('should allow export stage when program is completed (special case)', () => {
             const completedStages = new Set([
                 WorkflowStage.IMPORT,
-                WorkflowStage.EDIT,
-                WorkflowStage.PREPARE,
                 WorkflowStage.PROGRAM,
             ]);
             const result = validateStageAdvancement(
@@ -52,11 +50,7 @@ describe('Workflow functions', () => {
         });
 
         it('should not allow export stage without program completed', () => {
-            const completedStages = new Set([
-                WorkflowStage.IMPORT,
-                WorkflowStage.EDIT,
-                WorkflowStage.PREPARE,
-            ]);
+            const completedStages = new Set([WorkflowStage.IMPORT]);
             const result = validateStageAdvancement(
                 WorkflowStage.EXPORT,
                 completedStages
@@ -64,11 +58,8 @@ describe('Workflow functions', () => {
             expect(result).toBe(false);
         });
 
-        it('should not allow export stage with missing intermediate stages', () => {
-            const completedStages = new Set([
-                WorkflowStage.IMPORT,
-                WorkflowStage.PROGRAM, // Missing EDIT and PREPARE
-            ]);
+        it('should not allow export stage without import completed', () => {
+            const completedStages = new Set([WorkflowStage.PROGRAM]);
             const result = validateStageAdvancement(
                 WorkflowStage.EXPORT,
                 completedStages
@@ -79,29 +70,24 @@ describe('Workflow functions', () => {
         it('should validate sequential stages properly', () => {
             const completedStages = new Set([
                 WorkflowStage.IMPORT,
-                WorkflowStage.EDIT,
+                WorkflowStage.PROGRAM,
             ]);
 
-            expect(
-                validateStageAdvancement(WorkflowStage.PREPARE, completedStages)
-            ).toBe(true);
-            expect(
-                validateStageAdvancement(WorkflowStage.PROGRAM, completedStages)
-            ).toBe(false);
             expect(
                 validateStageAdvancement(
                     WorkflowStage.SIMULATE,
                     completedStages
                 )
-            ).toBe(false);
+            ).toBe(true);
+            expect(
+                validateStageAdvancement(WorkflowStage.EXPORT, completedStages)
+            ).toBe(true);
         });
     });
 
     describe('getStageDisplayName', () => {
         it('should return correct display names for all stages', () => {
             expect(getStageDisplayName(WorkflowStage.IMPORT)).toBe('Import');
-            expect(getStageDisplayName(WorkflowStage.EDIT)).toBe('Edit');
-            expect(getStageDisplayName(WorkflowStage.PREPARE)).toBe('Prepare');
             expect(getStageDisplayName(WorkflowStage.PROGRAM)).toBe('Program');
             expect(getStageDisplayName(WorkflowStage.SIMULATE)).toBe(
                 'Simulate'
@@ -119,12 +105,6 @@ describe('Workflow functions', () => {
         it('should return correct descriptions for all stages', () => {
             expect(getStageDescription(WorkflowStage.IMPORT)).toBe(
                 'Import DXF or SVG drawings'
-            );
-            expect(getStageDescription(WorkflowStage.EDIT)).toBe(
-                'Edit drawing using basic tools'
-            );
-            expect(getStageDescription(WorkflowStage.PREPARE)).toBe(
-                'Analyze chains and detect parts'
             );
             expect(getStageDescription(WorkflowStage.PROGRAM)).toBe(
                 'Build cuts with cut parameters'
@@ -146,8 +126,6 @@ describe('Workflow functions', () => {
     describe('isWorkflowStage', () => {
         it('should return true for valid workflow stages', () => {
             expect(isWorkflowStage(WorkflowStage.IMPORT)).toBe(true);
-            expect(isWorkflowStage(WorkflowStage.EDIT)).toBe(true);
-            expect(isWorkflowStage(WorkflowStage.PREPARE)).toBe(true);
             expect(isWorkflowStage(WorkflowStage.PROGRAM)).toBe(true);
             expect(isWorkflowStage(WorkflowStage.SIMULATE)).toBe(true);
             expect(isWorkflowStage(WorkflowStage.EXPORT)).toBe(true);
@@ -168,16 +146,14 @@ describe('Workflow functions', () => {
         it('should contain all workflow stages in correct order', () => {
             expect(WORKFLOW_ORDER).toEqual([
                 WorkflowStage.IMPORT,
-                WorkflowStage.EDIT,
-                WorkflowStage.PREPARE,
                 WorkflowStage.PROGRAM,
                 WorkflowStage.SIMULATE,
                 WorkflowStage.EXPORT,
             ]);
         });
 
-        it('should have 6 stages', () => {
-            expect(WORKFLOW_ORDER).toHaveLength(6);
+        it('should have 4 stages', () => {
+            expect(WORKFLOW_ORDER).toHaveLength(4);
         });
     });
 });

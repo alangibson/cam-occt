@@ -5,12 +5,12 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { type ChainData } from '$lib/cam/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
@@ -175,7 +175,7 @@ function calculateChainBoundingBox(chain: ChainData): BoundingBoxData {
         maxY = -Infinity;
 
     for (const shape of chain.shapes) {
-        const shapeBounds = getShapeBoundingBox(shape);
+        const shapeBounds = shapeBoundingBox(shape);
         minX = Math.min(minX, shapeBounds.min.x);
         maxX = Math.max(maxX, shapeBounds.max.x);
         minY = Math.min(minY, shapeBounds.min.y);
@@ -188,7 +188,7 @@ function calculateChainBoundingBox(chain: ChainData): BoundingBoxData {
     };
 }
 
-function getShapeBoundingBox(shape: ShapeData): BoundingBoxData {
+function shapeBoundingBox(shape: ShapeData): BoundingBoxData {
     switch (shape.type) {
         case 'line':
             const line = shape.geometry as Line;
@@ -231,7 +231,7 @@ function getShapeBoundingBox(shape: ShapeData): BoundingBoxData {
             };
 
         case 'polyline':
-            const polyline = shape.geometry as Polyline;
+            const polyline = shape.geometry as DxfPolyline;
             let minX = Infinity,
                 maxX = -Infinity,
                 minY = Infinity,

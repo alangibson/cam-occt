@@ -9,7 +9,7 @@
  *
  */
 
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import {
     buildContainmentHierarchy,
@@ -18,9 +18,8 @@ import {
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
-import { isChainClosed } from '$lib/cam/chain/functions';
+import { chainBoundingBox, isChainClosed } from '$lib/cam/chain/functions';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type {
     PartData,
     PartDetectionParameters,
@@ -63,7 +62,7 @@ export async function detectParts(
         BoundingBoxData
     >();
     for (const chain of closedChains) {
-        chainBounds.set(chain.id, calculateChainBoundingBox(chain));
+        chainBounds.set(chain.id, chainBoundingBox(chain));
     }
 
     // Build containment hierarchy first to identify part chains

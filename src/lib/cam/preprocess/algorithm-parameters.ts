@@ -6,7 +6,6 @@
  */
 
 // Import part detection parameters for combined interface
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { PartDetectionParameters } from '$lib/cam/part/interfaces';
 import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 
@@ -84,11 +83,3 @@ export interface AlgorithmParameters {
     joinColinearLines: JoinColinearLinesParameters;
     startPointOptimization: StartPointOptimizationParameters;
 }
-
-export const DEFAULT_ALGORITHM_PARAMETERS_MM: AlgorithmParameters = {
-    chainDetection: DEFAULT_CHAIN_DETECTION_PARAMETERS_MM,
-    chainNormalization: DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM,
-    partDetection: DEFAULT_PART_DETECTION_PARAMETERS, // No units - counts and ratios
-    joinColinearLines: DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS_MM,
-    startPointOptimization: DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM,
-};

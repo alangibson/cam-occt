@@ -23,13 +23,13 @@ import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import { generateCirclePoints } from '$lib/geometry/circle/functions';
 import { tessellateArc } from '$lib/geometry/arc/functions';
 import {
     polylineToPoints,
     polylineToVertices,
-} from '$lib/geometry/polyline/functions';
+} from '$lib/geometry/dxf-polyline/functions';
 import {
     sampleEllipse,
     tessellateEllipse,
@@ -65,7 +65,7 @@ vi.mock('$lib/geometry/ellipse/functions', async (importOriginal) => {
     };
 });
 
-vi.mock('$lib/geometry/polyline/functions', async (importOriginal) => {
+vi.mock('$lib/geometry/dxf-polyline/functions', async (importOriginal) => {
     const original = (await importOriginal()) as Record<string, unknown>;
     return {
         ...original,
@@ -185,7 +185,7 @@ describe('getShapePoints', () => {
         ];
         vi.mocked(polylineToPoints).mockReturnValue(mockPoints);
 
-        const polylineGeometry: Polyline = {
+        const polylineGeometry: DxfPolyline = {
             closed: false,
             shapes: [],
         };
@@ -1154,22 +1154,24 @@ describe('reverseShape', () => {
             } as Line,
         };
 
-        const result = reverseShape(new Shape(line));
-        expect(result.geometry).toEqual({
+        const shape = new Shape(line);
+        reverseShape(shape);
+        expect(shape.geometry).toEqual({
             start: { x: 10, y: 0 },
             end: { x: 0, y: 0 },
         });
     });
 
-    it('should handle unknown shape type by returning unchanged', () => {
+    it('should handle unknown shape type by not changing it', () => {
         const unknownShape: ShapeData = {
             id: '1',
             type: 'unknown' as any,
             geometry: { test: 'value' } as unknown as Geometry,
         };
 
-        const result = reverseShape(new Shape(unknownShape));
-        expect(result.geometry).toEqual({ test: 'value' });
+        const shape = new Shape(unknownShape);
+        reverseShape(shape);
+        expect(shape.geometry).toEqual({ test: 'value' });
     });
 });
 
@@ -1228,7 +1230,7 @@ describe('scaleShape', () => {
         };
 
         const result = scaleShape(new Shape(polyline), 2, { x: 0, y: 0 });
-        expect((result.geometry as Polyline).shapes[0].geometry).toEqual({
+        expect((result.geometry as DxfPolyline).shapes[0].geometry).toEqual({
             start: { x: 0, y: 0 },
             end: { x: 10, y: 0 },
         });
@@ -1256,7 +1258,7 @@ describe('scaleShape', () => {
         };
 
         const result = scaleShape(new Shape(polyline), 2, { x: 0, y: 0 });
-        expect((result.geometry as Polyline).shapes[0].geometry).toEqual({
+        expect((result.geometry as DxfPolyline).shapes[0].geometry).toEqual({
             center: { x: 10, y: 10 },
             radius: 6,
             startAngle: 0,
@@ -1381,10 +1383,12 @@ describe('rotateShape', () => {
             y: 0,
         });
         expect(
-            ((result.geometry as Polyline).shapes[0].geometry as Arc).startAngle
+            ((result.geometry as DxfPolyline).shapes[0].geometry as Arc)
+                .startAngle
         ).toBeCloseTo(Math.PI / 4);
         expect(
-            ((result.geometry as Polyline).shapes[0].geometry as Arc).endAngle
+            ((result.geometry as DxfPolyline).shapes[0].geometry as Arc)
+                .endAngle
         ).toBeCloseTo((3 * Math.PI) / 4);
     });
 
@@ -1412,12 +1416,12 @@ describe('rotateShape', () => {
             y: 0,
         });
         expect(
-            ((result.geometry as Polyline).shapes[0].geometry as Circle).center
-                .x
+            ((result.geometry as DxfPolyline).shapes[0].geometry as Circle)
+                .center.x
         ).toBeCloseTo(0, 5);
         expect(
-            ((result.geometry as Polyline).shapes[0].geometry as Circle).center
-                .y
+            ((result.geometry as DxfPolyline).shapes[0].geometry as Circle)
+                .center.y
         ).toBeCloseTo(1);
     });
 });
@@ -1525,7 +1529,7 @@ describe('isShapeClosed', () => {
                         },
                     },
                 ],
-            } as Polyline,
+            } as DxfPolyline,
         };
 
         vi.mocked(polylineToPoints).mockReturnValue([
@@ -1545,7 +1549,7 @@ describe('isShapeClosed', () => {
             geometry: {
                 shapes: [],
                 closed: false,
-            } as Polyline,
+            } as DxfPolyline,
         };
 
         vi.mocked(polylineToPoints).mockReturnValue([{ x: 0, y: 0 }]);
@@ -1736,7 +1740,7 @@ describe('tessellateShape', () => {
             geometry: {
                 shapes: [],
                 closed: false,
-            } as Polyline,
+            } as DxfPolyline,
         };
 
         // Mock polylineToVertices to return vertices
@@ -1757,7 +1761,7 @@ describe('tessellateShape', () => {
             geometry: {
                 shapes: [],
                 closed: false,
-            } as Polyline,
+            } as DxfPolyline,
         };
 
         // Mock polylineToVertices to return empty array to trigger fallback

@@ -1,10 +1,12 @@
 <script lang="ts">
     import AccordionPanel from './AccordionPanel.svelte';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { RapidOptimizationAlgorithm } from '$lib/config/settings/enums';
 
     // Reactive state
-    $: optimizationSettings = $settingsStore.settings.optimizationSettings;
+    const optimizationSettings = $derived(
+        settingsStore.settings.optimizationSettings
+    );
 
     function handleCutHolesFirstChange(event: Event) {
         const target = event.target as HTMLInputElement;

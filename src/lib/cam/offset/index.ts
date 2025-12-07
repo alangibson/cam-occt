@@ -14,7 +14,7 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import {
     isChainClosed,
     tessellateChainToShapes,

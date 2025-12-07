@@ -1,20 +1,19 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { get } from 'svelte/store';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import {
     detectShapeChains,
     setChainsDirection,
 } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { drawingStore } from '$lib/stores/drawing/store';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import { chainStore } from '$lib/stores/chains/store';
-import { partStore } from '$lib/stores/parts/store';
-import { planStore } from '$lib/stores/plan/store';
-import { cutStore } from '$lib/stores/cuts/store';
-import { operationsStore } from '$lib/stores/operations/store';
-import { toolStore } from '$lib/stores/tools/store';
-import { kerfStore } from '$lib/stores/kerfs/store';
+import { chainStore } from '$lib/stores/chains/store.svelte';
+import { partStore } from '$lib/stores/parts/store.svelte';
+import { planStore } from '$lib/stores/plan/store.svelte';
+import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
+import { toolStore } from '$lib/stores/tools/store.svelte';
+import { kerfStore } from '$lib/stores/kerfs/store.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
@@ -90,7 +89,7 @@ describe.skip('Spline Rendering Race Condition', () => {
             puddleJumpDelay: 0,
             plungeRate: 500,
         });
-        const toolsAfter = get(toolStore);
+        const toolsAfter = toolStore.tools;
         const addedTool = toolsAfter[toolsAfter.length - 1];
         const toolId = addedTool.id;
 
@@ -126,7 +125,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Get the generated cuts
-        const generatedCuts = get(planStore).plan.cuts;
+        const generatedCuts = planStore.plan.cuts;
 
         expect(generatedCuts.length).toBeGreaterThan(0);
 
@@ -216,7 +215,7 @@ describe.skip('Spline Rendering Race Condition', () => {
             puddleJumpDelay: 0,
             plungeRate: 500,
         });
-        const tools = get(toolStore);
+        const tools = toolStore.tools;
         const toolId = tools[tools.length - 1].id;
 
         // Create first operation
@@ -249,7 +248,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Capture first operation's cuts and offset shapes
-        const firstCuts = [...get(planStore).plan.cuts];
+        const firstCuts = [...planStore.plan.cuts];
         const firstOffsetShapes: Map<string, ShapeData[]> = new Map();
 
         for (const cut of firstCuts) {
@@ -291,7 +290,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Get updated cuts
-        const allCuts = get(planStore).plan.cuts;
+        const allCuts = planStore.plan.cuts;
 
         console.log(`After second operation: ${allCuts.length} total cuts`);
 
@@ -400,7 +399,7 @@ describe.skip('Spline Rendering Race Condition', () => {
             puddleJumpDelay: 0,
             plungeRate: 500,
         });
-        const tools = get(toolStore);
+        const tools = toolStore.tools;
         const toolId = tools[tools.length - 1].id;
 
         // Add both operations
@@ -459,7 +458,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Get all cuts
-        const allCuts = get(planStore).plan.cuts;
+        const allCuts = planStore.plan.cuts;
 
         // Collect all offset shapes from all cuts
         const allOffsetShapes: Array<{ cutName: string; shape: ShapeData }> =

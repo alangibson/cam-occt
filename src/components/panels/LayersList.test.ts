@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from '@testing-library/svelte';
 import LayersList from './LayersList.svelte';
-import { drawingStore } from '$lib/stores/drawing/store';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';

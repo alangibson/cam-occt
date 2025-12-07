@@ -17,6 +17,7 @@ import {
     OCTAGON_SIDES,
 } from '$lib/geometry/constants';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 /**
  * Calculate a point on an ellipse at a given parameter value
@@ -825,10 +826,82 @@ export function tessellateEllipse(ellipse: Ellipse): Point2D[] {
 }
 
 /**
+ * Translate an ellipse by the given offsets
+ */
+export function translateEllipse(
+    ellipse: Ellipse,
+    dx: number,
+    dy: number
+): Ellipse {
+    return {
+        center: { x: ellipse.center.x + dx, y: ellipse.center.y + dy },
+        majorAxisEndpoint: ellipse.majorAxisEndpoint, // This is a vector, not translated
+        minorToMajorRatio: ellipse.minorToMajorRatio,
+        startParam: ellipse.startParam,
+        endParam: ellipse.endParam,
+    };
+}
+
+/**
  * Generate a content hash for an Ellipse
  * @param ellipse - The ellipse to hash
  * @returns A SHA-256 hash as a hex string
  */
 export async function hashEllipse(ellipse: Ellipse): Promise<string> {
     return hashObject(ellipse);
+}
+
+export function ellipseBoundingBox(ellipse: Ellipse): BoundingBoxData {
+    if (
+        !ellipse.center ||
+        !isFinite(ellipse.center.x) ||
+        !isFinite(ellipse.center.y) ||
+        !ellipse.majorAxisEndpoint ||
+        !isFinite(ellipse.majorAxisEndpoint.x) ||
+        !isFinite(ellipse.majorAxisEndpoint.y) ||
+        !isFinite(ellipse.minorToMajorRatio) ||
+        ellipse.minorToMajorRatio <= 0
+    ) {
+        throw new Error(
+            'Invalid ellipse: center, major axis endpoint, and ratio must be finite numbers'
+        );
+    }
+
+    const majorAxisLength: number = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
+            ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+    );
+
+    if (majorAxisLength <= 0) {
+        throw new Error('Invalid ellipse: major axis length must be positive');
+    }
+
+    const minorAxisLength: number = majorAxisLength * ellipse.minorToMajorRatio;
+
+    const angle: number = Math.atan2(
+        ellipse.majorAxisEndpoint.y,
+        ellipse.majorAxisEndpoint.x
+    );
+    const cos: number = Math.cos(angle);
+    const sin: number = Math.sin(angle);
+
+    const halfWidth: number = Math.sqrt(
+        majorAxisLength * majorAxisLength * cos * cos +
+            minorAxisLength * minorAxisLength * sin * sin
+    );
+    const halfHeight: number = Math.sqrt(
+        majorAxisLength * majorAxisLength * sin * sin +
+            minorAxisLength * minorAxisLength * cos * cos
+    );
+
+    return {
+        min: {
+            x: ellipse.center.x - halfWidth,
+            y: ellipse.center.y - halfHeight,
+        },
+        max: {
+            x: ellipse.center.x + halfWidth,
+            y: ellipse.center.y + halfHeight,
+        },
+    };
 }

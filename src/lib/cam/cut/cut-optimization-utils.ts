@@ -15,7 +15,7 @@ import { calculateSquaredDistance } from '$lib/geometry/math/functions';
 import { getChainEndPoint, getChainStartPoint } from '$lib/cam/chain/functions';
 import { calculateMidpoint } from '$lib/geometry/point/functions';
 import { calculateArcMidpointAngle } from '$lib/geometry/arc/functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Cut } from './classes.svelte';
 
 /**
@@ -43,10 +43,10 @@ export function findNearestCut(
         if (cutStartPointsCache && cutStartPointsCache.has(cut.id)) {
             startPoint = cutStartPointsCache.get(cut.id)!;
         } else {
-            const chain = chains.get(cut.chainId);
+            const chain = chains.get(cut.sourceChainId);
             if (!chain) continue;
 
-            const part = findPartForChain(cut.chainId);
+            const part = findPartForChain(cut.sourceChainId);
             startPoint = getCutStartPoint(cut, chain, part);
         }
 
@@ -82,9 +82,9 @@ export function prepareChainsAndLeadConfigs(
 } {
     // Use the cut's cutChain if available (it may have been optimized)
     let leadCalculationChain: Chain;
-    if (cut.cutChain) {
+    if (cut.chain) {
         // Use the cutChain directly - it already has the correct shape order
-        leadCalculationChain = cut.cutChain;
+        leadCalculationChain = cut.chain;
     } else if (cut.offset && cut.offset.offsetShapes.length > 0) {
         // Create a temporary chain from offset shapes
         // IMPORTANT: Preserve the clockwise property from the original chain
@@ -126,7 +126,7 @@ export function getCutStartPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
                 leadCalculationChain,
                 leadInConfig,
                 leadOutConfig,
-                cut.cutDirection,
+                cut.direction,
                 part,
                 cut.normal
             );
@@ -160,7 +160,7 @@ function getCutChainPoint(
     getPointFn: (chain: Chain) => Point2D
 ): Point2D {
     // Use cut.cutChain if it exists (it may have been reversed for open chains)
-    const chainToUse = cut.cutChain || chain;
+    const chainToUse = cut.chain || chain;
 
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = new Chain({

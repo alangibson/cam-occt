@@ -7,8 +7,7 @@
  */
 
 import { MeasurementSystem } from '$lib/config/settings/enums';
-import { get } from 'svelte/store';
-import { settingsStore } from '$lib/stores/settings/store';
+import { settingsStore } from '$lib/stores/settings/store.svelte';
 import { CamDefaults } from './cam-defaults';
 import { LeadDefaults } from './lead-defaults';
 import { ChainDefaults } from './chain-defaults';
@@ -81,8 +80,9 @@ export class DefaultsManager {
      */
     initializeFromSettings(): void {
         try {
-            const settings = get(settingsStore);
-            this.updateMeasurementSystem(settings.settings.measurementSystem);
+            this.updateMeasurementSystem(
+                settingsStore.settings.measurementSystem
+            );
         } catch {
             // Settings store not ready yet, keep default
             console.warn(

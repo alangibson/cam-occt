@@ -2,7 +2,7 @@
  * Part operations module - handles cut generation for parts (shells, holes, and slots)
  */
 
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
 import { getChainCutDirection } from '$lib/cam/chain/functions';
@@ -64,9 +64,7 @@ export async function generateCutsForPartsWithOperation(
     const shellChain: Chain | undefined = chains.find(
         (c) => c.id === part.shell.id
     );
-    const shellStoredDirection: CutDirection = getChainCutDirection(
-        shellChain ? new Chain(shellChain) : undefined
-    );
+    const shellStoredDirection: CutDirection = getChainCutDirection(shellChain);
     const shellCutDirection: CutDirection =
         shellStoredDirection === CutDirection.NONE
             ? CutDirection.NONE
@@ -127,7 +125,7 @@ export async function generateCutsForPartsWithOperation(
     let shellExecutionClockwise: boolean | null = null;
     if (shellChain) {
         const shellCutChainResult = createCutChain(
-            new Chain(shellChain),
+            shellChain,
             shellCutDirection,
             shellCalculatedOffset?.offsetShapes
         );
@@ -161,20 +159,20 @@ export async function generateCutsForPartsWithOperation(
     const shellCut = new Cut({
         id: crypto.randomUUID(),
         name: `${operation.name} - ${part.name} (Shell)`,
-        operationId: operation.id,
-        chainId: part.shell.id,
-        toolId: tool.id,
+        sourceOperationId: operation.id,
+        sourceChainId: part.shell.id,
+        sourceToolId: tool.id,
         enabled: true,
         order: index + 1,
         action: operation.action,
-        cutDirection: shellCutDirection,
+        direction: shellCutDirection,
         executionClockwise: shellExecutionClockwise,
         leadInConfig: operation.leadInConfig,
         leadOutConfig: operation.leadOutConfig,
         kerfCompensation: shellKerfCompensation,
         kerfWidth: shellKerfWidth,
         offset: shellCalculatedOffset,
-        cutChain: shellExecutionChain,
+        chain: shellExecutionChain.clone().toData(),
         isHole: false,
         holeUnderspeedPercent: operation.holeUnderspeedEnabled
             ? operation.holeUnderspeedPercent
@@ -197,7 +195,7 @@ export async function generateCutsForPartsWithOperation(
         if (wasOptimized) {
             // Recalculate normal with the new start point
             const newShellCutNormalResult = calculateCutNormal(
-                shellCut.cutChain!,
+                shellCut.chain!,
                 shellCutDirection,
                 part,
                 shellKerfCompensation
@@ -208,8 +206,8 @@ export async function generateCutsForPartsWithOperation(
             shellCut.normalSide = newShellCutNormalResult.normalSide;
 
             // Update offset shapes to match optimized cutChain
-            if (shellCut.offset && shellCut.cutChain) {
-                shellCut.offset!.offsetShapes = shellCut.cutChain.shapes;
+            if (shellCut.offset && shellCut.chain) {
+                shellCut.offset!.offsetShapes = shellCut.chain.shapes;
             }
         }
     }
@@ -218,7 +216,7 @@ export async function generateCutsForPartsWithOperation(
     if (shellChain) {
         const shellLeadResult = await calculateCutLeads(
             shellCut,
-            operation.toData(),
+            operation,
             shellChain,
             parts
         );
@@ -253,9 +251,8 @@ export async function generateCutsForPartsWithOperation(
             const holeChain: Chain | undefined = chains.find(
                 (c) => c.id === hole.chain.id
             );
-            const holeStoredDirection: CutDirection = getChainCutDirection(
-                holeChain ? new Chain(holeChain) : undefined
-            );
+            const holeStoredDirection: CutDirection =
+                getChainCutDirection(holeChain);
             const holeCutDirection: CutDirection =
                 holeStoredDirection === CutDirection.NONE
                     ? CutDirection.NONE
@@ -320,7 +317,7 @@ export async function generateCutsForPartsWithOperation(
             let holeExecutionClockwise: boolean | null = null;
             if (holeChain) {
                 const holeCutChainResult = createCutChain(
-                    new Chain(holeChain),
+                    holeChain,
                     holeCutDirection,
                     holeCalculatedOffset?.offsetShapes
                 );
@@ -354,20 +351,20 @@ export async function generateCutsForPartsWithOperation(
             const holeCut = new Cut({
                 id: crypto.randomUUID(),
                 name: `${operation.name} - ${part.name} ${prefix}(Hole ${holeIndex + 1})`,
-                operationId: operation.id,
-                chainId: hole.chain.id,
-                toolId: tool?.id || null,
+                sourceOperationId: operation.id,
+                sourceChainId: hole.chain.id,
+                sourceToolId: tool?.id || null,
                 enabled: true,
                 order: cutOrder++,
                 action: operation.action,
-                cutDirection: holeCutDirection,
+                direction: holeCutDirection,
                 executionClockwise: holeExecutionClockwise,
                 leadInConfig: operation.leadInConfig,
                 leadOutConfig: operation.leadOutConfig,
                 kerfCompensation: holeKerfCompensation,
                 kerfWidth: holeKerfWidth,
                 offset: holeCalculatedOffset,
-                cutChain: holeExecutionChain,
+                chain: holeExecutionChain.clone().toData(),
                 isHole: true,
                 holeUnderspeedPercent: operation.holeUnderspeedEnabled
                     ? operation.holeUnderspeedPercent
@@ -390,7 +387,7 @@ export async function generateCutsForPartsWithOperation(
                 if (wasOptimized) {
                     // Recalculate normal with the new start point
                     const newHoleCutNormalResult = calculateCutNormal(
-                        holeCut.cutChain!,
+                        holeCut.chain!,
                         holeCutDirection,
                         part,
                         holeKerfCompensation
@@ -401,8 +398,8 @@ export async function generateCutsForPartsWithOperation(
                     holeCut.normalSide = newHoleCutNormalResult.normalSide;
 
                     // Update offset shapes to match optimized cutChain
-                    if (holeCut.offset && holeCut.cutChain) {
-                        holeCut.offset!.offsetShapes = holeCut.cutChain.shapes;
+                    if (holeCut.offset && holeCut.chain) {
+                        holeCut.offset!.offsetShapes = holeCut.chain.shapes;
                     }
                 }
             }
@@ -411,7 +408,7 @@ export async function generateCutsForPartsWithOperation(
             if (holeChain) {
                 const holeLeadResult = await calculateCutLeads(
                     holeCut,
-                    operation.toData(),
+                    operation,
                     holeChain,
                     parts
                 );
@@ -448,9 +445,8 @@ export async function generateCutsForPartsWithOperation(
             const slotChain: Chain | undefined = chains.find(
                 (c) => c.id === slot.chain.id
             );
-            const slotStoredDirection: CutDirection = getChainCutDirection(
-                slotChain ? new Chain(slotChain) : undefined
-            );
+            const slotStoredDirection: CutDirection =
+                getChainCutDirection(slotChain);
             const slotCutDirection: CutDirection =
                 slotStoredDirection === CutDirection.NONE
                     ? CutDirection.NONE
@@ -516,7 +512,7 @@ export async function generateCutsForPartsWithOperation(
             let slotExecutionClockwise: boolean | null = null;
             if (slotChain) {
                 const slotCutChainResult = createCutChain(
-                    new Chain(slotChain),
+                    slotChain,
                     slotCutDirection,
                     slotCalculatedOffset?.offsetShapes
                 );
@@ -551,13 +547,13 @@ export async function generateCutsForPartsWithOperation(
             const slotCut = new Cut({
                 id: crypto.randomUUID(),
                 name: `${operation.name} - ${part.name} (Slot ${slotIndex + 1})`,
-                operationId: operation.id,
-                chainId: slot.chain.id,
-                toolId: tool?.id || null,
+                sourceOperationId: operation.id,
+                sourceChainId: slot.chain.id,
+                sourceToolId: tool?.id || null,
                 enabled: true,
                 order: cutOrder++,
                 action: operation.action,
-                cutDirection: slotCutDirection,
+                direction: slotCutDirection,
                 executionClockwise: slotExecutionClockwise,
                 leadInConfig:
                     operation.kerfCompensation === KerfCompensation.PART
@@ -570,7 +566,7 @@ export async function generateCutsForPartsWithOperation(
                 kerfCompensation: slotKerfCompensation,
                 kerfWidth: slotKerfWidth,
                 offset: slotCalculatedOffset,
-                cutChain: slotExecutionChain,
+                chain: slotExecutionChain.clone().toData(),
                 isHole: false,
                 holeUnderspeedPercent: undefined,
                 normal: slotCutNormalResult.normal,
@@ -591,7 +587,7 @@ export async function generateCutsForPartsWithOperation(
                 if (wasOptimized) {
                     // Recalculate normal with the new start point
                     const newSlotCutNormalResult = calculateCutNormal(
-                        slotCut.cutChain!,
+                        slotCut.chain!,
                         slotCutDirection,
                         part,
                         slotKerfCompensation
@@ -602,8 +598,8 @@ export async function generateCutsForPartsWithOperation(
                     slotCut.normalSide = newSlotCutNormalResult.normalSide;
 
                     // Update offset shapes to match optimized cutChain
-                    if (slotCut.offset && slotCut.cutChain) {
-                        slotCut.offset!.offsetShapes = slotCut.cutChain.shapes;
+                    if (slotCut.offset && slotCut.chain) {
+                        slotCut.offset!.offsetShapes = slotCut.chain.shapes;
                     }
                 }
             }
@@ -616,7 +612,7 @@ export async function generateCutsForPartsWithOperation(
             ) {
                 const slotLeadResult = await calculateCutLeads(
                     slotCut,
-                    operation.toData(),
+                    operation,
                     slotChain,
                     parts
                 );

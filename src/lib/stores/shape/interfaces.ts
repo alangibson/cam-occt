@@ -14,15 +14,3 @@ export interface ShapeVisualizationState {
     showShapeTangentLines: boolean;
     showShapeTessellation: boolean;
 }
-
-export interface ShapeVisualizationStore {
-    subscribe: (run: (value: ShapeVisualizationState) => void) => () => void;
-    setShowShapePaths: (show: boolean) => void;
-    setShowShapeStartPoints: (show: boolean) => void;
-    setShowShapeEndPoints: (show: boolean) => void;
-    setShowShapeNormals: (show: boolean) => void;
-    setShowShapeWindingDirection: (show: boolean) => void;
-    setShowShapeTangentLines: (show: boolean) => void;
-    setShowShapeTessellation: (show: boolean) => void;
-    reset: () => void;
-}

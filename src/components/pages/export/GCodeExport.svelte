@@ -1,13 +1,13 @@
 <script lang="ts">
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { planStore } from '$lib/stores/plan/store';
-    import { toolStore } from '$lib/stores/tools/store';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
+    import { toolStore } from '$lib/stores/tools/store.svelte';
     import { SvelteMap } from 'svelte/reactivity';
     import { CutterCompensation } from '$lib/cam/gcode/enums';
     import { onMount, createEventDispatcher } from 'svelte';
     import { cutsToToolPaths } from '$lib/cam/gcode/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode/gcode-generator';
-    import { Chain } from '$lib/cam/chain/classes';
+    import { Chain } from '$lib/cam/chain/classes.svelte';
     import { Part } from '$lib/cam/part/classes.svelte';
     import { Shape } from '$lib/cam/shape/classes';
     import { Unit } from '$lib/config/units/units';
@@ -27,9 +27,9 @@
 
     const _dispatch = createEventDispatcher();
 
-    const drawing = $derived($drawingStore.drawing);
-    const displayUnit = $derived($drawingStore.displayUnit);
-    const cuts = $derived($planStore.plan.cuts);
+    const drawing = $derived(drawingStore.drawing);
+    const displayUnit = $derived(drawingStore.displayUnit);
+    const cuts = $derived(planStore.plan.cuts);
     const chains = $derived(
         drawing
             ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
@@ -40,7 +40,7 @@
             ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
             : []
     );
-    const tools = $derived($toolStore);
+    const tools = $derived(toolStore.tools);
 
     let generatedGCode = $state('');
     let isGenerating = $state(false);

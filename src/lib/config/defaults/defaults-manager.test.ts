@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { MeasurementSystem } from '$lib/config/settings/enums';
 import { DefaultsManager } from './defaults-manager';
 import { THOUSANDTHS_PRECISION_FACTOR } from '$lib/config/units/units';
-import { settingsStore } from '$lib/stores/settings/store';
+import { settingsStore } from '$lib/stores/settings/store.svelte';
 
 describe('DefaultsManager', () => {
     let defaults: DefaultsManager;

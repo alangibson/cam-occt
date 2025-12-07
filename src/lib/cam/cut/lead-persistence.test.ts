@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 /**
  * Tests for lead persistence utilities
  */
@@ -22,6 +22,7 @@ import { OffsetDirection } from '$lib/cam/offset/types';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { OperationData } from '$lib/cam/operation/interface';
 import type { LeadResult } from '$lib/cam/lead/interfaces';
+import { Operation } from '$lib/cam/operation/classes.svelte';
 
 // Mock the stores
 vi.mock('$lib/stores/cuts/store', () => ({
@@ -87,13 +88,13 @@ describe('Lead Persistence Utils', () => {
     const mockCut: CutData = {
         id: 'cut-1',
         name: 'Test Cut',
-        operationId: 'op-1',
-        chainId: 'chain-1',
-        toolId: 'tool-1',
+        sourceOperationId: 'op-1',
+        sourceChainId: 'chain-1',
+        sourceToolId: 'tool-1',
         enabled: true,
         order: 1,
         action: OperationAction.CUT,
-        cutDirection: CutDirection.CLOCKWISE,
+        direction: CutDirection.CLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
         normalSide: NormalSide.LEFT,
@@ -387,7 +388,7 @@ describe('Lead Persistence Utils', () => {
 
             const result = await calculateCutLeads(
                 new Cut(mockCut),
-                mockOperation,
+                new Operation(mockOperation),
                 new Chain(mockChain),
                 []
             );
@@ -459,7 +460,7 @@ describe('Lead Persistence Utils', () => {
 
             const result = await calculateCutLeads(
                 new Cut(cutWithOffset),
-                mockOperation,
+                new Operation(mockOperation),
                 new Chain(mockChain),
                 []
             );
@@ -505,7 +506,7 @@ describe('Lead Persistence Utils', () => {
 
             const result = await calculateCutLeads(
                 new Cut(cutWithEmptyOffset),
-                mockOperation,
+                new Operation(mockOperation),
                 new Chain(mockChain),
                 []
             );
@@ -541,7 +542,7 @@ describe('Lead Persistence Utils', () => {
 
             const result = await calculateCutLeads(
                 new Cut(cutNoLeads),
-                mockOperation,
+                new Operation(mockOperation),
                 new Chain(mockChain),
                 []
             );
@@ -558,7 +559,7 @@ describe('Lead Persistence Utils', () => {
 
             const result = await calculateCutLeads(
                 new Cut(mockCut),
-                mockOperation,
+                new Operation(mockOperation),
                 new Chain(mockChain),
                 []
             );
@@ -577,13 +578,13 @@ describe('Lead Persistence Utils', () => {
     });
 
     describe('calculateLeadPoints', () => {
-        const mockChainMap = new Map<string, ChainData>();
+        const mockChainMap = new Map<string, Chain>();
         const mockPartMap = new Map();
 
         beforeEach(() => {
             mockChainMap.clear();
             mockPartMap.clear();
-            mockChainMap.set('chain-1', mockChain);
+            mockChainMap.set('chain-1', new Chain(mockChain));
             mockPartMap.set('chain-1', { id: 'part-1', shells: [], holes: [] });
         });
 
@@ -610,7 +611,7 @@ describe('Lead Persistence Utils', () => {
         it('should return undefined when chain is not found', async () => {
             const cutWithUnknownChain = {
                 ...mockCut,
-                chainId: 'unknown-chain',
+                sourceChainId: 'unknown-chain',
             };
             const result = await calculateLeadPoints(
                 new Cut(cutWithUnknownChain),

@@ -16,7 +16,7 @@ import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     test('Example 1: Circle with High-Precision Offsets', () => {

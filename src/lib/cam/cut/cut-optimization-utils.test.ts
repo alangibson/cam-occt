@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it } from 'vitest';
 import {
     prepareChainsAndLeadConfigs,
@@ -21,9 +21,9 @@ import { OperationAction } from '$lib/cam/operation/enums';
 const createTestCut = (overrides: Partial<CutData> = {}): CutData => ({
     id: 'test-cut',
     name: 'Test Cut',
-    operationId: 'test-operation',
-    chainId: 'test-chain',
-    toolId: 'test-tool',
+    sourceOperationId: 'test-operation',
+    sourceChainId: 'test-chain',
+    sourceToolId: 'test-tool',
     enabled: true,
     order: 1,
     action: OperationAction.CUT,
@@ -39,7 +39,7 @@ const createTestCut = (overrides: Partial<CutData> = {}): CutData => ({
         flipSide: false,
         fit: true,
     },
-    cutDirection: CutDirection.CLOCKWISE,
+    direction: CutDirection.CLOCKWISE,
     normal: { x: 1, y: 0 },
     normalConnectionPoint: { x: 0, y: 0 },
     normalSide: NormalSide.LEFT,

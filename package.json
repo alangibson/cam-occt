@@ -14,6 +14,7 @@
     "check:ts": "tsc --noEmit --strict",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "deploy": "npm run validate && npm run build && wrangler deploy",
+    "fix": "npm run lint:fix && npm run format:fix",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --check . --log-level error",

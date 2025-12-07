@@ -3,10 +3,9 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { isChainClosed } from '$lib/cam/chain/functions';
+import { isChainClosed, chainBoundingBox } from '$lib/cam/chain/functions';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { getShapeStartPoint } from '$lib/cam/shape/functions';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import { Shape } from '$lib/cam/shape/classes';
 
@@ -40,7 +39,7 @@ describe('Diagnostic - Small Chains Analysis', () => {
 
         if (chain1) {
             console.log(`\nchain-1: ${chain1.shapes.length} shapes`);
-            const bbox = calculateChainBoundingBox(chain1);
+            const bbox = chainBoundingBox(chain1);
             console.log(
                 `  BBox: (${bbox.min.x.toFixed(2)}, ${bbox.min.y.toFixed(2)}) to (${bbox.max.x.toFixed(2)}, ${bbox.max.y.toFixed(2)})`
             );
@@ -58,7 +57,7 @@ describe('Diagnostic - Small Chains Analysis', () => {
 
         if (chain2) {
             console.log(`\nchain-2: ${chain2.shapes.length} shapes`);
-            const bbox = calculateChainBoundingBox(chain2);
+            const bbox = chainBoundingBox(chain2);
             console.log(
                 `  BBox: (${bbox.min.x.toFixed(2)}, ${bbox.min.y.toFixed(2)}) to (${bbox.max.x.toFixed(2)}, ${bbox.max.y.toFixed(2)})`
             );
@@ -76,7 +75,7 @@ describe('Diagnostic - Small Chains Analysis', () => {
 
         if (chain3) {
             console.log(`\nchain-3: ${chain3.shapes.length} shapes`);
-            const bbox = calculateChainBoundingBox(chain3);
+            const bbox = chainBoundingBox(chain3);
             console.log(
                 `  BBox: (${bbox.min.x.toFixed(2)}, ${bbox.min.y.toFixed(2)}) to (${bbox.max.x.toFixed(2)}, ${bbox.max.y.toFixed(2)})`
             );
@@ -118,7 +117,7 @@ describe('Diagnostic - Small Chains Analysis', () => {
         for (const chain of [chain1, chain2, chain3, chain4]) {
             if (chain) {
                 console.log(`\n${chain.id}: ${chain.shapes.length} shapes`);
-                const bbox = calculateChainBoundingBox(chain);
+                const bbox = chainBoundingBox(chain);
                 console.log(
                     `  BBox: (${bbox.min.x.toFixed(2)}, ${bbox.min.y.toFixed(2)}) to (${bbox.max.x.toFixed(2)}, ${bbox.max.y.toFixed(2)})`
                 );
@@ -137,7 +136,7 @@ describe('Diagnostic - Small Chains Analysis', () => {
 
         if (chain5) {
             console.log(`\nchain-5: ${chain5.shapes.length} shapes`);
-            const bbox = calculateChainBoundingBox(chain5);
+            const bbox = chainBoundingBox(chain5);
             console.log(
                 `  BBox: (${bbox.min.x.toFixed(2)}, ${bbox.min.y.toFixed(2)}) to (${bbox.max.x.toFixed(2)}, ${bbox.max.y.toFixed(2)})`
             );

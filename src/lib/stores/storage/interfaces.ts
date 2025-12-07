@@ -7,7 +7,6 @@ import type {
     DrawingOverlay,
 } from '$lib/stores/overlay/interfaces';
 import type { CutData } from '$lib/cam/cut/interfaces';
-import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { ApplicationSettings } from '$lib/config/settings/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
@@ -46,9 +45,6 @@ export interface PersistedState {
     // Overlay state
     overlayStage: string;
     overlays: Record<string, DrawingOverlay>;
-
-    // Prepare stage state
-    prepareStageState: PrepareStageState | null;
 
     // Operations, cuts, and tools
     operations: OperationData[];

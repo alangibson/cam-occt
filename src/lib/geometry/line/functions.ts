@@ -7,6 +7,7 @@ import type { IntersectionResult } from '$lib/cam/offset/types';
 import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';
 import type { SegmentPosition } from './types';
 import { hashObject } from '$lib/geometry/hash/functions';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 export function getLineStartPoint(line: Line): Point2D {
     return line.start;
@@ -333,10 +334,46 @@ export function tessellateLine(line: Line): Point2D[] {
 }
 
 /**
+ * Translate a line by the given offsets
+ */
+export function translateLine(line: Line, dx: number, dy: number): Line {
+    return {
+        start: { x: line.start.x + dx, y: line.start.y + dy },
+        end: { x: line.end.x + dx, y: line.end.y + dy },
+    };
+}
+
+/**
  * Generate a content hash for a Line
  * @param line - The line to hash
  * @returns A SHA-256 hash as a hex string
  */
 export async function hashLine(line: Line): Promise<string> {
     return hashObject(line);
+}
+
+export function lineBoundingBox(line: Line): BoundingBoxData {
+    if (
+        !line.start ||
+        !line.end ||
+        !isFinite(line.start.x) ||
+        !isFinite(line.start.y) ||
+        !isFinite(line.end.x) ||
+        !isFinite(line.end.y)
+    ) {
+        throw new Error(
+            'Invalid line: start and end points must be finite numbers'
+        );
+    }
+
+    return {
+        min: {
+            x: Math.min(line.start.x, line.end.x),
+            y: Math.min(line.start.y, line.end.y),
+        },
+        max: {
+            x: Math.max(line.start.x, line.end.x),
+            y: Math.max(line.start.y, line.end.y),
+        },
+    };
 }

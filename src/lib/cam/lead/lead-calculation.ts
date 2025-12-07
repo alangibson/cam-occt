@@ -1,6 +1,5 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
@@ -27,8 +26,7 @@ import {
 import { isChainHoleInPart, isChainShellInPart } from './part-lookup-utils';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import type { LeadConfig, LeadResult, Lead } from './interfaces';
-import type { ChainData } from '$lib/cam/chain/interfaces';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * Calculate lead-in and lead-out geometry for a chain.
@@ -38,11 +36,11 @@ import { Chain } from '$lib/cam/chain/classes';
  * @param cutNormal - Pre-calculated normal direction from the cut (required for consistency)
  */
 export function calculateLeads(
-    chain: ChainData,
+    chain: Chain,
     leadInConfig: LeadConfig,
     leadOutConfig: LeadConfig,
     cutDirection: CutDirection = CutDirection.NONE,
-    part: PartData | undefined,
+    part: Part | undefined,
     cutNormal: Point2D
 ): LeadResult {
     const result: LeadResult = {};
@@ -53,24 +51,14 @@ export function calculateLeads(
         return result;
     }
 
-    // Create Chain instance for functions that need it
-    const chainInstance = new Chain(chain);
-
-    // Create Part instance if provided
-    const partInstance = part ? new Part(part) : undefined;
-
     // Determine if chain is a hole or shell
     // For offset chains, use the originalChainId to get correct classification
-    const isHole: boolean = partInstance
-        ? isChainHoleInPart(chainInstance, partInstance)
-        : false;
-    const isShell: boolean = partInstance
-        ? isChainShellInPart(chainInstance, partInstance)
-        : false;
+    const isHole: boolean = part ? isChainHoleInPart(chain, part) : false;
+    const isShell: boolean = part ? isChainShellInPart(chain, part) : false;
 
     // Get chain start and end points
-    const startPoint: Point2D | null = getChainStartPoint(chainInstance);
-    const endPoint: Point2D | null = getChainEndPoint(chainInstance);
+    const startPoint: Point2D | null = getChainStartPoint(chain);
+    const endPoint: Point2D | null = getChainEndPoint(chain);
 
     if (!startPoint || !endPoint) {
         return result;
@@ -120,14 +108,14 @@ export function calculateLeads(
  * Calculate a single lead (in or out).
  */
 function calculateLead(
-    chain: ChainData,
+    chain: Chain,
     point: Point2D,
     config: LeadConfig,
     isLeadIn: boolean,
     isHole: boolean,
     isShell: boolean,
     cutDirection: CutDirection,
-    part: PartData | undefined,
+    part: Part | undefined,
     warnings: string[],
     cutNormal: Point2D
 ): Lead | undefined {
@@ -159,25 +147,22 @@ function calculateLead(
  * If no clear path is found after 360 degrees of rotation, adds a warning.
  */
 function calculateArcLead(
-    chain: ChainData,
+    chain: Chain,
     point: Point2D,
     arcLength: number,
     isLeadIn: boolean,
     isHole: boolean,
     isShell: boolean,
     cutDirection: CutDirection,
-    part: PartData | undefined,
+    part: Part | undefined,
     warnings: string[],
     flipSide: boolean,
     manualAngle: number | undefined,
     fit: boolean,
     cutNormal: Point2D
 ): Lead {
-    // Create Chain instance for functions that need it
-    const chainInstance = new Chain(chain);
-
     // Get the tangent direction at the point
-    const tangent: Point2D = getChainTangent(chainInstance, point, isLeadIn);
+    const tangent: Point2D = getChainTangent(chain, point, isLeadIn);
 
     // Use pre-calculated cut normal for lead direction
     // Apply flipSide if requested (lead-specific configuration)
@@ -296,7 +281,7 @@ function calculateArcLead(
 
             // For holes, add additional check to ensure lead stays within hole boundary
             const exitsHole: boolean =
-                isHole && checkArcExitsHole(arc, chainInstance, point);
+                isHole && checkArcExitsHole(arc, chain, point);
 
             if (!intersectsSolid && !exitsHole) {
                 return {

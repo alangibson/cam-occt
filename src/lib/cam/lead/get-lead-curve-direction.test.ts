@@ -13,7 +13,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import { isArc } from '$lib/geometry/arc/functions';
 import { PartType } from '$lib/cam/part/enums';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 // Since getLeadCurveDirection is not exported, we test it indirectly
 // through calculateLeads and verify the resulting curve direction

@@ -5,7 +5,7 @@ import { getShapePoints } from '$lib/cam/shape/functions';
 import { detectCutDirection } from '$lib/cam/cut/cut-direction';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { generateId } from '$lib/domain/id';
 
 interface ChainDetectionOptions {
@@ -61,7 +61,7 @@ export function detectShapeChains(
                 new Chain({
                     id: generateId(),
                     name: `${chainId}`,
-                    shapes: shapeIndices.map((index) => shapes[index].toData()),
+                    shapes: shapeIndices.map((index) => shapes[index]),
                 })
             );
             chainId++;
@@ -72,7 +72,7 @@ export function detectShapeChains(
                 new Chain({
                     id: generateId(),
                     name: `${chainId}`,
-                    shapes: [singleShape.toData()],
+                    shapes: [singleShape],
                 })
             );
             chainId++;
@@ -177,13 +177,16 @@ function setChainDirection(
     const direction = detectCutDirection(chain, tolerance);
 
     return new Chain({
-        ...chain.toData(),
+        id: chain.id,
+        name: chain.name,
+        shapes: chain.shapes,
         clockwise:
             direction === CutDirection.CLOCKWISE
                 ? true
                 : direction === CutDirection.COUNTERCLOCKWISE
                   ? false
                   : null,
+        originalChainId: chain.originalChainId,
     });
 }
 

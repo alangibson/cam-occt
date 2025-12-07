@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { getStageDisplayName } from '$lib/stores/workflow/functions';
     import {
@@ -11,8 +11,6 @@
 
     const allStages = [
         WorkflowStage.IMPORT,
-        WorkflowStage.EDIT,
-        WorkflowStage.PREPARE,
         WorkflowStage.PROGRAM,
         WorkflowStage.SIMULATE,
         WorkflowStage.EXPORT,
@@ -26,6 +24,8 @@
         PreprocessingStep.OptimizeStarts,
     ];
 
+    const allProgramSteps = [PreprocessingStep.TranslateToPositive];
+
     const preprocessingStepDisplayNames: Record<PreprocessingStep, string> = {
         [PreprocessingStep.DecomposePolylines]: 'Decompose Polylines',
         [PreprocessingStep.DeduplicateShapes]: 'Deduplicate Shapes',
@@ -34,12 +34,17 @@
         [PreprocessingStep.OptimizeStarts]: 'Optimize Starts',
     };
 
+    const programStepDisplayNames: Partial<Record<PreprocessingStep, string>> =
+        {
+            [PreprocessingStep.TranslateToPositive]: 'Translate to Positive',
+        };
+
     function handleStageToggle(stage: WorkflowStage) {
         settingsStore.toggleStageEnabled(stage);
     }
 
     function isStageEnabled(stage: WorkflowStage): boolean {
-        return $settingsStore.settings.enabledStages.includes(stage);
+        return settingsStore.settings.enabledStages.includes(stage);
     }
 
     function handlePreprocessingStepToggle(step: PreprocessingStep) {
@@ -47,7 +52,15 @@
     }
 
     function isPreprocessingStepEnabled(step: PreprocessingStep): boolean {
-        return $settingsStore.settings.enabledPreprocessingSteps.includes(step);
+        return settingsStore.settings.enabledPreprocessingSteps.includes(step);
+    }
+
+    function handleProgramStepToggle(step: PreprocessingStep) {
+        settingsStore.toggleProgramStepEnabled(step);
+    }
+
+    function isProgramStepEnabled(step: PreprocessingStep): boolean {
+        return settingsStore.settings.enabledProgramSteps.includes(step);
     }
 
     function handleOffsetImplementationChange(
@@ -74,7 +87,7 @@
 
     function handleZoomToFitToggle() {
         settingsStore.setZoomToFit(
-            !$settingsStore.settings.optimizationSettings.zoomToFit
+            !settingsStore.settings.optimizationSettings.zoomToFit
         );
     }
 </script>
@@ -108,7 +121,7 @@
         </section>
 
         <section class="settings-section">
-            <h2>Preprogram</h2>
+            <h2>Preprocess</h2>
             <div class="stages-list">
                 {#each allPreprocessingSteps as step (step)}
                     <label class="stage-item">
@@ -125,12 +138,30 @@
                 <label class="stage-item">
                     <input
                         type="checkbox"
-                        checked={$settingsStore.settings.optimizationSettings
+                        checked={settingsStore.settings.optimizationSettings
                             .zoomToFit}
                         onchange={handleZoomToFitToggle}
                     />
                     <span class="stage-name">Zoom to Fit</span>
                 </label>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>Program</h2>
+            <div class="stages-list">
+                {#each allProgramSteps as step (step)}
+                    <label class="stage-item">
+                        <input
+                            type="checkbox"
+                            checked={isProgramStepEnabled(step)}
+                            onchange={() => handleProgramStepToggle(step)}
+                        />
+                        <span class="stage-name"
+                            >{programStepDisplayNames[step]}</span
+                        >
+                    </label>
+                {/each}
             </div>
         </section>
 
@@ -144,7 +175,7 @@
                     <select
                         id="offsetImplementation"
                         class="dropdown-select"
-                        value={$settingsStore.settings.offsetImplementation}
+                        value={settingsStore.settings.offsetImplementation}
                         onchange={(e) =>
                             handleOffsetImplementationChange(
                                 e.currentTarget.value as OffsetImplementation
@@ -156,11 +187,11 @@
                             >Polyline</option
                         >
                     </select>
-                    {#if $settingsStore.settings.offsetImplementation === OffsetImplementation.Exact}
+                    {#if settingsStore.settings.offsetImplementation === OffsetImplementation.Exact}
                         <span class="option-description"
                             >Preserves curves for smooth geometry</span
                         >
-                    {:else if $settingsStore.settings.offsetImplementation === OffsetImplementation.Polyline}
+                    {:else if settingsStore.settings.offsetImplementation === OffsetImplementation.Polyline}
                         <span class="option-description"
                             >Converts curves to straight line segments</span
                         >
@@ -174,10 +205,10 @@
                     <select
                         id="cutterCompensation"
                         class="dropdown-select"
-                        value={$settingsStore.settings.camSettings
+                        value={settingsStore.settings.camSettings
                             .cutterCompensation === null
                             ? 'null'
-                            : $settingsStore.settings.camSettings
+                            : settingsStore.settings.camSettings
                                   .cutterCompensation}
                         onchange={(e) => {
                             const value = e.currentTarget.value;
@@ -196,11 +227,11 @@
                         >
                         <option value="null">No G-code</option>
                     </select>
-                    {#if $settingsStore.settings.camSettings.cutterCompensation === CutterCompensation.MACHINE}
+                    {#if settingsStore.settings.camSettings.cutterCompensation === CutterCompensation.MACHINE}
                         <span class="option-description"
                             >Machine handles cutter compensation (G41/G42)</span
                         >
-                    {:else if $settingsStore.settings.camSettings.cutterCompensation === CutterCompensation.SOFTWARE}
+                    {:else if settingsStore.settings.camSettings.cutterCompensation === CutterCompensation.SOFTWARE}
                         <span class="option-description"
                             >Software offsets tool path by kerf width</span
                         >

@@ -1,16 +1,14 @@
 <script lang="ts">
     import type { Tool } from '$lib/cam/tool/interfaces';
-    import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
+    import {
+        toolStore,
+        createDefaultTool,
+    } from '$lib/stores/tools/store.svelte';
 
-    let tools: Tool[] = [];
-    let draggedTool: Tool | null = null;
-    let dragOverIndex: number | null = null;
-
-    // Subscribe to tool store
     // Note: Tool persistence is handled by the main storage system in store.ts
-    toolStore.subscribe((value) => {
-        tools = value;
-    });
+    let tools = $derived(toolStore.tools);
+    let draggedTool: Tool | null = $state(null);
+    let dragOverIndex: number | null = $state(null);
 
     function addNewTool() {
         const newToolNumber =

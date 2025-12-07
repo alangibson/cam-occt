@@ -1,4 +1,4 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Part } from '$lib/cam/part/classes.svelte';
 /**
  * Test for Cut Normal Direction on Parts

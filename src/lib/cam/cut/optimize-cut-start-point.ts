@@ -9,7 +9,6 @@ import type { Cut } from '$lib/cam/cut/classes.svelte';
 import { OptimizeStarts } from './enums';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { StartPointOptimizationParameters } from '$lib/cam/preprocess/algorithm-parameters';
-import { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Optimizes the start point of a cut by optimizing its cutChain.
@@ -31,7 +30,7 @@ export function optimizeCutStartPoint(
     }
 
     // Skip if cut has no cutChain
-    if (!cut.cutChain) {
+    if (!cut.chain) {
         return false;
     }
 
@@ -47,7 +46,7 @@ export function optimizeCutStartPoint(
     };
 
     // Optimize the cut's chain
-    const result = optimizeChainStartPoint(cut.cutChain, params);
+    const result = optimizeChainStartPoint(cut.chain, params);
 
     // If no optimization was performed, return false
     if (!result.modified || !result.optimizedChain) {
@@ -55,6 +54,6 @@ export function optimizeCutStartPoint(
     }
 
     // Mutate the cut with the optimized chain
-    cut.cutChain = new Chain(result.optimizedChain);
+    cut.chain = result.optimizedChain;
     return true;
 }

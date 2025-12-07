@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
+import { shapesBoundingBox } from '$lib/cam/shape/functions';
 
 describe('DXF Parser - ELLIPSE entity support', () => {
     describe('Full ellipse parsing', () => {
@@ -424,7 +424,7 @@ ENDSEC
 EOF`;
 
             const drawing = await parseDXF(dxfContent);
-            const bounds = getBoundingBoxForShapes(drawing.shapes);
+            const bounds = shapesBoundingBox(drawing.shapes);
 
             expect(bounds).toBeDefined();
             expect(bounds.min.x).toBeLessThan(100);

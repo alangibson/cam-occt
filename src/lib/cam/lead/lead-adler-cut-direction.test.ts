@@ -10,57 +10,24 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { polylineToPoints } from '$lib/geometry/polyline/functions';
-import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
+import { isPointInPolygon } from '$lib/geometry/polygon/functions';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
+import { getShapePoints } from '$lib/cam/shape/functions';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {
-    // Helper to check if a point is inside a polygon using ray casting
-    function isPointInPolygon(
-        point: { x: number; y: number },
-        polygon: { x: number; y: number }[]
-    ): boolean {
-        let inside = false;
-        const x: number = point.x;
-        const y: number = point.y;
-
-        for (
-            let i: number = 0, j = polygon.length - 1;
-            i < polygon.length;
-            j = i++
-        ) {
-            const xi = polygon[i].x;
-            const yi = polygon[i].y;
-            const xj = polygon[j].x;
-            const yj = polygon[j].y;
-
-            if (
-                yi > y !== yj > y &&
-                x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
-            ) {
-                inside = !inside;
-            }
-        }
-
-        return inside;
-    }
-
     // Helper to get polygon points from a chain
     function getPolygonFromChain(chain: ChainData): { x: number; y: number }[] {
         const points: { x: number; y: number }[] = [];
 
         for (const shape of chain.shapes) {
-            if (shape.type === 'line') {
-                const lineGeometry = shape.geometry as Line;
-                points.push(lineGeometry.start);
-            } else if (shape.type === 'polyline') {
-                const polylineGeometry = shape.geometry as Polyline;
-                points.push(...polylineToPoints(polylineGeometry));
-            }
+            const shapePoints = getShapePoints(new Shape(shape), {
+                mode: 'TESSELLATION',
+            });
+            points.push(...shapePoints);
         }
 
         return points;
@@ -74,14 +41,14 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         const shellPolygon = getPolygonFromChain(part.shell);
 
         // First check if point is inside the shell
-        if (!isPointInPolygon(point, shellPolygon)) {
+        if (!isPointInPolygon(point, { points: shellPolygon })) {
             return false; // Not inside shell, definitely not in solid area
         }
 
         // Check if point is inside any hole
         for (const hole of part.voids) {
             const holePolygon = getPolygonFromChain(hole.chain);
-            if (isPointInPolygon(point, holePolygon)) {
+            if (isPointInPolygon(point, { points: holePolygon })) {
                 return false; // Inside hole, not solid area
             }
         }
@@ -93,8 +60,12 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -182,8 +153,12 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
         const parsed = await parseDXF(dxfContent);
+        // Decompose polylines before chain detection
+        const decomposed = decomposePolylines(
+            parsed.shapes.map((s) => new Shape(s))
+        );
         // Convert ShapeData to Shape instances for chain detection
-        const shapeInstances = parsed.shapes.map((s) => new Shape(s));
+        const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -192,9 +167,10 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
 
         // Analyze the shell geometry
         const shellShape = part5.shell.shapes[0];
-        if (shellShape.type === 'polyline') {
-            const points = polylineToPoints(shellShape.geometry as Polyline);
-
+        const points = getShapePoints(new Shape(shellShape), {
+            mode: 'TESSELLATION',
+        });
+        if (points.length > 0) {
             // Find the nearest edge of the bounding box to understand constraints
             const bbox = part5.boundingBox;
             const connectionPoint = points[0];
@@ -219,10 +195,10 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         // Analyze hole position relative to connection point
         if (part5.voids.length > 0) {
             const holeShape = part5.voids[0].chain.shapes[0];
-            if (holeShape.type === 'polyline') {
-                const holePoints = polylineToPoints(
-                    holeShape.geometry as Polyline
-                );
+            const holePoints = getShapePoints(new Shape(holeShape), {
+                mode: 'TESSELLATION',
+            });
+            if (holePoints.length > 0) {
                 const holeCenter = {
                     x:
                         holePoints.reduce(
@@ -238,9 +214,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
                         ) / holePoints.length,
                 };
 
-                const connectionPoint = polylineToPoints(
-                    shellShape.geometry as Polyline
-                )[0];
+                const connectionPoint = points[0];
                 const _distToHole = Math.sqrt(
                     (connectionPoint.x - holeCenter.x) ** 2 +
                         (connectionPoint.y - holeCenter.y) ** 2

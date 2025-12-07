@@ -11,7 +11,7 @@ import type { CacheableLead } from '$lib/cam/lead/interfaces';
  * - All fills and ends use round geometry for smooth transitions
  * - Lead-in/out geometry is included for complete visualization
  */
-export interface Kerf {
+export interface KerfData {
     /** Unique identifier */
     id: string;
 

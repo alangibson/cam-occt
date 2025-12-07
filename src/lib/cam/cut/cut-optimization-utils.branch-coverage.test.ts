@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, it, expect, vi } from 'vitest';
 import {
     findNearestCut,
@@ -39,14 +39,14 @@ describe('cut-optimization-utils - branch coverage', () => {
 
     const mockCut: CutData = {
         id: 'test-cut',
-        chainId: 'test-chain',
+        sourceChainId: 'test-chain',
         name: 'Test Cut',
-        operationId: 'test-op',
-        toolId: null,
+        sourceOperationId: 'test-op',
+        sourceToolId: null,
         enabled: true,
         order: 1,
         action: OperationAction.CUT,
-        cutDirection: CutDirection.CLOCKWISE,
+        direction: CutDirection.CLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
         normalSide: NormalSide.LEFT,

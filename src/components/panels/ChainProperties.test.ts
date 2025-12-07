@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';

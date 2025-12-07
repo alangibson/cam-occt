@@ -115,10 +115,10 @@ export class RenderingPipeline {
                 if (state.cuts) {
                     for (const cut of state.cuts) {
                         // Only include offset shapes from cuts with enabled operations
-                        if (!cut.operationId) continue;
+                        if (!cut.sourceOperationId) continue;
 
                         const operation = state.operations.find(
-                            (op) => op.id === cut.operationId
+                            (op) => op.id === cut.sourceOperationId
                         );
                         if (!operation || !operation.enabled) continue;
 

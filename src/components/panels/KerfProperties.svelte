@@ -1,100 +1,104 @@
 <script lang="ts">
-    import { kerfStore } from '$lib/stores/kerfs/store';
-    import { planStore } from '$lib/stores/plan/store';
-    import { selectionStore } from '$lib/stores/selection/store';
+    import { kerfStore } from '$lib/stores/kerfs/store.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive kerf data
-    $: kerfs = $kerfStore.kerfs;
-    $: selection = $selectionStore;
-    $: selectedKerfId = selection.kerfs.selected;
-    $: selectedKerf = selectedKerfId
-        ? kerfs.find((kerf) => kerf.id === selectedKerfId)
-        : null;
+    let kerfs = $derived(kerfStore.kerfs);
+    let selectedKerfId = $derived(selectionStore.kerfs.selected);
+    let selectedKerf = $derived(
+        selectedKerfId ? kerfs.find((kerf) => kerf.id === selectedKerfId) : null
+    );
 
     // Get the associated cut for reference
-    $: cuts = $planStore.plan.cuts;
-    $: associatedCut =
+    let cuts = $derived(planStore.plan.cuts);
+    let associatedCut = $derived(
         selectedKerf && cuts && cuts.length > 0
             ? cuts.find((cut) => cut.id === selectedKerf.cutId)
-            : null;
+            : null
+    );
 
     // Build properties array
-    $: properties = selectedKerf
-        ? (() => {
-              const props: Array<{ property: string; value: string }> = [];
+    let properties = $derived(
+        selectedKerf
+            ? (() => {
+                  const props: Array<{ property: string; value: string }> = [];
 
-              // Type is always first
-              props.push({
-                  property: 'Type',
-                  value: 'Kerf',
-              });
-
-              props.push({
-                  property: 'Name',
-                  value: selectedKerf.name,
-              });
-
-              props.push({
-                  property: 'Enabled',
-                  value: selectedKerf.enabled ? 'Yes' : 'No',
-              });
-
-              props.push({
-                  property: 'Kerf Width',
-                  value: `${selectedKerf.kerfWidth.toFixed(3)} units`,
-              });
-
-              props.push({
-                  property: 'Status',
-                  value: selectedKerf.isClosed ? 'Closed' : 'Open',
-              });
-
-              if (associatedCut) {
+                  // Type is always first
                   props.push({
-                      property: 'Cut',
-                      value: associatedCut.name,
+                      property: 'Type',
+                      value: 'Kerf',
                   });
-              }
 
-              props.push({
-                  property: 'Cut ID',
-                  value: selectedKerf.cutId,
-              });
+                  props.push({
+                      property: 'Name',
+                      value: selectedKerf.name,
+                  });
 
-              props.push({
-                  property: 'Inner Chain Shapes',
-                  value: String(selectedKerf.innerChain.shapes.length),
-              });
+                  props.push({
+                      property: 'Enabled',
+                      value: selectedKerf.enabled ? 'Yes' : 'No',
+                  });
 
-              props.push({
-                  property: 'Outer Chain Shapes',
-                  value: String(selectedKerf.outerChain.shapes.length),
-              });
+                  props.push({
+                      property: 'Kerf Width',
+                      value: `${selectedKerf.kerfWidth.toFixed(3)} units`,
+                  });
 
-              props.push({
-                  property: 'Lead-In',
-                  value: selectedKerf.leadIn ? 'Present' : 'None',
-              });
+                  props.push({
+                      property: 'Status',
+                      value: selectedKerf.isClosed ? 'Closed' : 'Open',
+                  });
 
-              props.push({
-                  property: 'Lead-Out',
-                  value: selectedKerf.leadOut ? 'Present' : 'None',
-              });
+                  if (associatedCut) {
+                      props.push({
+                          property: 'Cut',
+                          value: associatedCut.name,
+                      });
+                  }
 
-              props.push({
-                  property: 'Generated',
-                  value: new Date(selectedKerf.generatedAt).toLocaleString(),
-              });
+                  props.push({
+                      property: 'Cut ID',
+                      value: selectedKerf.cutId,
+                  });
 
-              props.push({
-                  property: 'Version',
-                  value: String(selectedKerf.version),
-              });
+                  props.push({
+                      property: 'Inner Chain Shapes',
+                      value: String(selectedKerf.innerChain.shapes.length),
+                  });
 
-              return props;
-          })()
-        : [];
+                  props.push({
+                      property: 'Outer Chain Shapes',
+                      value: String(selectedKerf.outerChain.shapes.length),
+                  });
+
+                  props.push({
+                      property: 'Lead-In',
+                      value: selectedKerf.leadIn ? 'Present' : 'None',
+                  });
+
+                  props.push({
+                      property: 'Lead-Out',
+                      value: selectedKerf.leadOut ? 'Present' : 'None',
+                  });
+
+                  props.push({
+                      property: 'Generated',
+                      value: new Date(
+                          selectedKerf.generatedAt
+                      ).toLocaleString(),
+                  });
+
+                  props.push({
+                      property: 'Version',
+                      value: String(selectedKerf.version),
+                  });
+
+                  return props;
+              })()
+            : []
+    );
 
     async function copyKerfToClipboard() {
         if (!selectedKerf) return;

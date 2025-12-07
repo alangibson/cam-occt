@@ -1,29 +1,14 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it } from 'vitest';
-import { EPSILON } from '$lib/geometry/math/constants';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import {
-    createPolylineFromVertices,
-    polylineToPoints,
-} from '$lib/geometry/polyline/functions';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
 
 describe('Chain Normalization', () => {
-    // Helper function for floating point comparison with EPSILON tolerance
-    function expectPointToEqual(
-        actual: { x: number; y: number },
-        expected: { x: number; y: number }
-    ) {
-        expect(Math.abs(actual.x - expected.x)).toBeLessThan(EPSILON);
-        expect(Math.abs(actual.y - expected.y)).toBeLessThan(EPSILON);
-    }
-
     // Helper function to create a line shape
     function createLine(
         id: string,
@@ -499,84 +484,6 @@ describe('Chain Normalization', () => {
             });
             expect(analysis[0].canTraverse).toBe(true);
             expect(analysis[0].issues).toHaveLength(0);
-        });
-
-        it('should preserve bulge directions when reversing polylines', () => {
-            // Helper function to create polyline with bulges
-            function createPolylineWithBulges(
-                id: string,
-                vertices: Array<{ x: number; y: number; bulge?: number }>
-            ): ShapeData {
-                const verticesWithBulge = vertices.map((v) => ({
-                    x: v.x,
-                    y: v.y,
-                    bulge: v.bulge || 0,
-                }));
-                const polylineShape = createPolylineFromVertices(
-                    verticesWithBulge,
-                    false,
-                    { id }
-                );
-                return polylineShape;
-            }
-
-            // Create shapes that require polyline reversal for proper connectivity
-            // line1 ends at (10,0), poly1 should connect at (10,0) but ends at (20,0) instead
-            // So poly1 needs to be reversed to start at (20,0) and end at (10,0)
-            const shapes = [
-                createLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
-                createPolylineWithBulges('poly1', [
-                    { x: 20, y: 0, bulge: 0.5 }, // CCW arc segment (positive bulge) - start point
-                    { x: 15, y: 10, bulge: -0.3 }, // CW arc segment (negative bulge)
-                    { x: 10, y: 0, bulge: 0 }, // Straight segment - end point that should connect to line1
-                ]),
-                createLine('line2', { x: 20, y: 0 }, { x: 30, y: 0 }),
-            ];
-
-            const chain = createChain('chain-1', shapes);
-            const normalizedChain = normalizeChain(new Chain(chain));
-
-            // Find the polyline in normalized chain
-            const normalizedPoly = normalizedChain.shapes.find(
-                (shape) => shape.id === 'poly1'
-            );
-            expect(normalizedPoly).toBeDefined();
-
-            // Access the polyline geometry directly
-            const actualPolyGeom = normalizedPoly!.geometry as Polyline;
-
-            // Verify that we have segments array
-            expect(actualPolyGeom.shapes).toBeDefined();
-            expect(Array.isArray(actualPolyGeom.shapes)).toBe(true);
-
-            // Verify points were reversed
-            // Original order: [(20,0), (15,10), (10,0)] -> Reversed: [(10,0), (15,10), (20,0)]
-            const points = polylineToPoints(actualPolyGeom);
-            expect(points.length).toBeGreaterThan(0);
-            if (points.length >= 3) {
-                expectPointToEqual(points[0], { x: 10, y: 0 }); // Should start at (10,0) to connect with line1
-                expectPointToEqual(points[1], { x: 15, y: 10 });
-                expectPointToEqual(points[2], { x: 20, y: 0 }); // Should end at (20,0) to connect with line2
-            }
-
-            // Verify the polyline has the expected number of segments
-            expect(actualPolyGeom.shapes).toHaveLength(2);
-
-            // The segments should represent the reversed path with arc information preserved
-            // After reversal:
-            // First segment: from (10,0) to (15,10)
-            // Second segment: from (15,10) to (20,0)
-            const segment1 = actualPolyGeom.shapes[0];
-            const segment2 = actualPolyGeom.shapes[1];
-
-            if (segment1 && 'start' in segment1 && 'end' in segment1) {
-                expectPointToEqual((segment1 as Line).start, { x: 10, y: 0 });
-                expectPointToEqual((segment1 as Line).end, { x: 15, y: 10 });
-            }
-            if (segment2 && 'start' in segment2 && 'end' in segment2) {
-                expectPointToEqual((segment2 as Line).start, { x: 15, y: 10 });
-                expectPointToEqual((segment2 as Line).end, { x: 20, y: 0 });
-            }
         });
     });
 });

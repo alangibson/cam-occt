@@ -1,16 +1,16 @@
 <script lang="ts">
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { SelectionMode } from '$lib/config/settings/enums';
     import {
         calculateDrawingSize,
         type DrawingSize,
     } from '$lib/cam/drawing/drawing-size';
 
-    const drawing = $derived($drawingStore.drawing);
-    const scale = $derived($drawingStore.scale);
+    const drawing = $derived(drawingStore.drawing);
+    const scale = $derived(drawingStore.scale);
     const fileName = $derived(drawing?.fileName ?? null);
-    const selectionMode = $derived($settingsStore.settings.selectionMode);
+    const selectionMode = $derived(settingsStore.settings.selectionMode);
 
     let drawingSize = $state<DrawingSize | null>(null);
 
@@ -41,7 +41,7 @@
     }
 
     function handleZoom100Click() {
-        drawingStore.setViewTransform(1, $drawingStore.offset);
+        drawingStore.setViewTransform(1, drawingStore.offset);
     }
 
     function handleSelectionModeChange(event: Event) {

@@ -5,41 +5,16 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
+import { isPointInPolygon } from '$lib/geometry/polygon/functions';
 
 describe('Lead Concave Area Fix', () => {
-    // Helper to check if a point is inside a polygon using ray casting
-    function isPointInPolygon(point: Point2D, polygon: Point2D[]): boolean {
-        let inside = false;
-        const x: number = point.x;
-        const y: number = point.y;
-
-        for (
-            let i: number = 0, j = polygon.length - 1;
-            i < polygon.length;
-            j = i++
-        ) {
-            const xi = polygon[i].x;
-            const yi = polygon[i].y;
-            const xj = polygon[j].x;
-            const yj = polygon[j].y;
-
-            if (
-                yi > y !== yj > y &&
-                x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
-            ) {
-                inside = !inside;
-            }
-        }
-
-        return inside;
-    }
-
     // Helper to create a complex shape that has both convex and concave areas
     function createComplexConcaveShape(): ChainData {
         // Create a shape that resembles the problematic geometry from ADLER.dxf
@@ -98,7 +73,7 @@ describe('Lead Concave Area Fix', () => {
             leadIn,
             leadOut,
             CutDirection.NONE,
-            part,
+            new Part(part),
             { x: 1, y: 0 }
         );
 
@@ -132,13 +107,13 @@ describe('Lead Concave Area Fix', () => {
                 continue;
             }
 
-            if (isPointInPolygon(point, polygon)) {
+            if (isPointInPolygon(point, { points: polygon })) {
                 pointsInside++;
             }
         }
 
         points.slice(0, 3).forEach((p) => {
-            isPointInPolygon(p, polygon);
+            isPointInPolygon(p, { points: polygon });
         });
 
         // With the improved algorithm, we should have fewer points inside the solid area
@@ -198,7 +173,7 @@ describe('Lead Concave Area Fix', () => {
             leadIn,
             { type: LeadType.NONE, length: 0 },
             CutDirection.NONE,
-            part,
+            new Part(part),
             { x: 1, y: 0 }
         );
 

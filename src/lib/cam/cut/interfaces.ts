@@ -5,8 +5,8 @@ import type { NormalSide } from './enums';
 import type { OffsetDirection } from '$lib/cam/offset/types';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { OffsetData } from '$lib/cam/offset/interfaces';
-import type { Chain } from '$lib/cam/chain/classes';
 import type { OperationAction } from '$lib/cam/operation/enums';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 
 export interface CutData {
     id: string;
@@ -14,9 +14,9 @@ export interface CutData {
     enabled: boolean;
     order: number; // Execution order within operation
 
-    operationId: string; // Reference to the operation that created this cut
-    chainId: string; // Reference to the source chain
-    toolId: string | null; // Reference to the tool used
+    sourceOperationId: string; // Reference to the operation that created this cut
+    sourceChainId: string; // Reference to the source chain
+    sourceToolId: string | null; // Reference to the tool used
     action: OperationAction; // Operation action type (cut, spot)
 
     feedRate?: number; // Cutting speed
@@ -29,9 +29,9 @@ export interface CutData {
     // Cut
     //
     // User-defined cut direction from operation
-    cutDirection: CutDirection;
+    direction: CutDirection;
     // Cloned chain with shapes reordered for user-specified cut direction
-    cutChain?: Chain;
+    chain?: ChainData;
     // Execution direction (independent of underlying chain's natural winding)
     // true=clockwise execution, false=counterclockwise, null=no direction (open chains)
     executionClockwise?: boolean | null;

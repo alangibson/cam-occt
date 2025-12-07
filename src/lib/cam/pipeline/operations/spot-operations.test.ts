@@ -94,9 +94,9 @@ describe('generateSpotsForChainsWithOperation', () => {
         const result = await generateSpotsForChainsWithOperation(operation, 0);
 
         const cut = result.cuts[0];
-        expect(cut.cutChain).toBeDefined();
-        expect(cut.cutChain!.shapes).toHaveLength(1);
-        expect(cut.cutChain!.shapes[0].type).toBe(GeometryType.POINT);
+        expect(cut.chain).toBeDefined();
+        expect(cut.chain!.shapes).toHaveLength(1);
+        expect(cut.chain!.shapes[0].type).toBe(GeometryType.POINT);
     });
 
     it('should set cut name with (Spot) suffix', async () => {

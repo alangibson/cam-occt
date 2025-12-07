@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { createEmptyRenderState, cloneRenderState } from './render-state';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { Unit } from '$lib/config/units/units';
-import type { Chain } from '$lib/cam/chain/classes';
+import type { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('createEmptyRenderState', () => {
     it('should create state with correct default values', () => {
@@ -36,8 +36,8 @@ describe('createEmptyRenderState', () => {
         const state = createEmptyRenderState();
 
         expect(state.overlays).toHaveProperty(WorkflowStage.IMPORT);
-        expect(state.overlays).toHaveProperty(WorkflowStage.EDIT);
-        expect(state.overlays).toHaveProperty(WorkflowStage.PREPARE);
+        expect(state.overlays).toHaveProperty(WorkflowStage.PROGRAM);
+        expect(state.overlays).toHaveProperty(WorkflowStage.PROGRAM);
         expect(state.overlays).toHaveProperty(WorkflowStage.PROGRAM);
         expect(state.overlays).toHaveProperty(WorkflowStage.SIMULATE);
         expect(state.overlays).toHaveProperty(WorkflowStage.EXPORT);
@@ -45,8 +45,8 @@ describe('createEmptyRenderState', () => {
     });
 
     it('should accept a custom stage parameter', () => {
-        const state = createEmptyRenderState(WorkflowStage.PREPARE);
-        expect(state.stage).toBe(WorkflowStage.PREPARE);
+        const state = createEmptyRenderState(WorkflowStage.PROGRAM);
+        expect(state.stage).toBe(WorkflowStage.PROGRAM);
     });
 
     it('should default to import stage when no stage is provided', () => {

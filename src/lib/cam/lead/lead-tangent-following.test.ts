@@ -13,7 +13,7 @@ import { OffsetDirection } from '$lib/cam/offset/types';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 /**
  * CRITICAL INVARIANT TESTS

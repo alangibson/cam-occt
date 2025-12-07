@@ -3,8 +3,8 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
-import { polylineToPoints } from '$lib/geometry/polyline/functions';
-import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
+import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
+import { shapeBoundingBox } from '$lib/cam/shape/functions';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import type { Circle } from '$lib/geometry/circle/interfaces';
@@ -12,7 +12,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 
 /**
@@ -102,7 +102,7 @@ function aggregateShapeBounds(shapes: ShapeData[]): {
         maxY: number = -Infinity;
 
     for (const shape of shapes) {
-        const shapeBounds = getShapeBoundingBox(shape);
+        const shapeBounds = shapeBoundingBox(shape);
         minX = Math.min(minX, shapeBounds.min.x);
         minY = Math.min(minY, shapeBounds.min.y);
         maxX = Math.max(maxX, shapeBounds.max.x);
@@ -297,7 +297,7 @@ function shapeToSVG(shape: ShapeData): string {
         }
 
         case 'polyline': {
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             const points: string = polylineToPoints(polyline)
                 .map((p: { x: number; y: number }) => `${p.x},${p.y}`)
                 .join(' ');

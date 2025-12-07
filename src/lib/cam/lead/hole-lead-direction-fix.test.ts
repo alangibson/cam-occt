@@ -11,7 +11,7 @@ import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Hole Lead Direction Fix', () => {
     it('should calculate hole leads pointing into hole void for offset chains', async () => {

@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from '@testing-library/svelte';
-import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
-import { operationsStore } from '$lib/stores/operations/store';
-import { partStore } from '$lib/stores/parts/store';
-import { selectionStore } from '$lib/stores/selection/store';
-import { toolStore } from '$lib/stores/tools/store';
-import { drawingStore } from '$lib/stores/drawing/store';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
+import { partStore } from '$lib/stores/parts/store.svelte';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
+import { toolStore } from '$lib/stores/tools/store.svelte';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
@@ -51,7 +50,7 @@ describe('Operations Auto-Selection Feature', () => {
 
         // Since there's no "Add Operation" button visible, simulate the operation creation
         // by directly calling the operations store method that would be triggered
-        const partHighlighted = get(selectionStore).parts.highlighted;
+        const partHighlighted = selectionStore.getState().parts.highlighted;
         operationsStore.addOperation({
             name: 'Test Operation',
             action: OperationAction.CUT,
@@ -78,7 +77,7 @@ describe('Operations Auto-Selection Feature', () => {
         });
 
         // Check that the operation was created with the highlighted part
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         expect(operations.length).toBe(1);
 
         const newOperation = operations[0];
@@ -100,7 +99,7 @@ describe('Operations Auto-Selection Feature', () => {
             toolId: '1',
             targetType: 'chains',
             targetIds: (() => {
-                const selectedIds = get(selectionStore).chains.selected;
+                const selectedIds = selectionStore.getState().chains.selected;
                 return Array.from(selectedIds);
             })(),
             enabled: true,
@@ -123,7 +122,7 @@ describe('Operations Auto-Selection Feature', () => {
         });
 
         // Check that the operation was created with the selected chain
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         expect(operations.length).toBe(1);
 
         const newOperation = operations[0];
@@ -140,8 +139,8 @@ describe('Operations Auto-Selection Feature', () => {
         const { container: _container } = render(Operations);
 
         // Simulate operation creation with both part and chain selected (part should have priority)
-        const partHighlighted = get(selectionStore).parts.highlighted;
-        const chainSelectedIds = get(selectionStore).chains.selected;
+        const partHighlighted = selectionStore.getState().parts.highlighted;
+        const chainSelectedIds = selectionStore.getState().chains.selected;
 
         operationsStore.addOperation({
             name: 'Test Operation',
@@ -173,7 +172,7 @@ describe('Operations Auto-Selection Feature', () => {
         });
 
         // Check that the operation was created with the part (priority over chain)
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         expect(operations.length).toBe(1);
 
         const newOperation = operations[0];
@@ -214,7 +213,7 @@ describe('Operations Auto-Selection Feature', () => {
         });
 
         // Check that the operation was created with no targets
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         expect(operations.length).toBe(1);
 
         const newOperation = operations[0];
@@ -324,27 +323,45 @@ describe('Operations Auto-Selection Feature', () => {
         drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
 
         // Wait for part detection to complete (it's async in the Layer class)
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Poll until parts are detected or timeout
+        const maxWaitTime = 1000; // 1 second max
+        const pollInterval = 50; // Check every 50ms
+        let waited = 0;
+        let partsDetected = false;
+
+        while (waited < maxWaitTime && !partsDetected) {
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
+            waited += pollInterval;
+
+            const drawing = drawingStore.drawing;
+            const parts = drawing
+                ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+                : [];
+
+            if (parts.length > 0) {
+                partsDetected = true;
+            }
+        }
 
         // Render the component
         const component = render(Operations);
 
         // Ensure no operations exist yet
-        expect(get(operationsStore).length).toBe(0);
+        expect(operationsStore.operations.length).toBe(0);
 
         // Call the component's addNewOperation function with disabled operation
         // to avoid trying to generate cuts
         component.component.addNewOperation({ enabled: false });
 
         // Check that the first operation was created with all parts
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         expect(operations.length).toBe(1);
 
         const newOperation = operations[0];
         expect(newOperation.targetType).toBe('parts');
 
         // Get actual part IDs from the drawing
-        const drawing = get(drawingStore).drawing;
+        const drawing = drawingStore.drawing;
         const actualPartIds = drawing
             ? Object.values(drawing.layers)
                   .flatMap((layer) => layer.parts)
@@ -418,7 +435,7 @@ describe('Operations Auto-Selection Feature', () => {
         drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
 
         // Ensure no parts exist
-        let drawing = get(drawingStore).drawing;
+        let drawing = drawingStore.drawing;
         const parts = drawing
             ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
             : [];
@@ -428,20 +445,20 @@ describe('Operations Auto-Selection Feature', () => {
         const component = render(Operations);
 
         // Ensure no operations exist yet
-        expect(get(operationsStore).length).toBe(0);
+        expect(operationsStore.operations.length).toBe(0);
 
         // Call the component's addNewOperation function with disabled operation
         // to avoid trying to generate cuts
         component.component.addNewOperation({ enabled: false });
 
         // Check that the first operation was created with all chains
-        const operations = get(operationsStore);
+        const operations = operationsStore.operations;
         expect(operations.length).toBe(1);
 
         const newOperation = operations[0];
         expect(newOperation.targetType).toBe('chains');
         // Get the actual chain IDs from the drawing
-        drawing = get(drawingStore).drawing;
+        drawing = drawingStore.drawing;
         const actualChainIds = drawing
             ? Object.values(drawing.layers).flatMap((layer) =>
                   layer.chains.map((chain) => chain.id)
@@ -489,10 +506,28 @@ describe('Operations Auto-Selection Feature', () => {
         drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
 
         // Wait for part detection to complete (it's async in the Layer class)
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Poll until parts are detected or timeout
+        const maxWaitTime = 1000; // 1 second max
+        const pollInterval = 50; // Check every 50ms
+        let waited = 0;
+        let partsDetected = false;
+
+        while (waited < maxWaitTime && !partsDetected) {
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
+            waited += pollInterval;
+
+            const drawing = drawingStore.drawing;
+            const parts = drawing
+                ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+                : [];
+
+            if (parts.length > 0) {
+                partsDetected = true;
+            }
+        }
 
         // Get the part ID that was created
-        const drawing = get(drawingStore).drawing;
+        const drawing = drawingStore.drawing;
         const partIds = drawing
             ? Object.values(drawing.layers)
                   .flatMap((layer) => layer.parts)
@@ -504,14 +539,14 @@ describe('Operations Auto-Selection Feature', () => {
 
         // Create first operation (should auto-select all parts)
         component.component.addNewOperation({ enabled: false });
-        expect(get(operationsStore).length).toBe(1);
-        expect(get(operationsStore)[0].targetIds).toEqual(partIds);
+        expect(operationsStore.operations.length).toBe(1);
+        expect(operationsStore.operations[0].targetIds).toEqual(partIds);
 
         // Create second operation with nothing selected (should NOT auto-select - only first operation does)
         component.component.addNewOperation({ enabled: false });
-        expect(get(operationsStore).length).toBe(2);
+        expect(operationsStore.operations.length).toBe(2);
 
-        const secondOperation = get(operationsStore)[1];
+        const secondOperation = operationsStore.operations[1];
         expect(secondOperation.targetType).toBe('parts');
         expect(secondOperation.targetIds).toEqual([]); // Should be empty - only first operation auto-selects
     });

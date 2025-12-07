@@ -1,10 +1,10 @@
 <script lang="ts">
     import { layerStore } from '$lib/stores/layers/store.svelte';
-    import { drawingStore } from '$lib/stores/drawing/store';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive layer data
-    const drawing = $derived($drawingStore.drawing);
+    const drawing = $derived(drawingStore.drawing);
     const layers = $derived(drawing ? Object.values(drawing.layers) : []);
     const selectedLayerId = $derived(layerStore.selectedLayerId);
     const highlightedLayerId = $derived(layerStore.highlightedLayerId);

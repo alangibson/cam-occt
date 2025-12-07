@@ -13,7 +13,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Lead Tangency Tests', () => {
     // Helper to get cut normal for a chain
@@ -350,7 +350,7 @@ describe('Lead Tangency Tests', () => {
                 leadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
-                shellPart,
+                new Part(shellPart),
                 shellNormal.normal
             );
 
@@ -365,7 +365,7 @@ describe('Lead Tangency Tests', () => {
                 leadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.COUNTERCLOCKWISE,
-                holeInShellPart,
+                new Part(holeInShellPart),
                 holeNormal.normal
             );
 

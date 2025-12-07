@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
-import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
-import { toolStore } from '$lib/stores/tools/store';
-import { operationsStore } from '$lib/stores/operations/store';
+import { toolStore } from '$lib/stores/tools/store.svelte';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
 
 describe('Operations Component', () => {
     beforeEach(() => {
@@ -34,7 +33,7 @@ describe('Operations Component', () => {
         });
 
         // Verify tool was added to store
-        const toolsInStore = get(toolStore);
+        const toolsInStore = toolStore.tools;
         expect(toolsInStore).toHaveLength(1);
         expect(toolsInStore[0].toolName).toBe('Test Tool 1');
 
@@ -108,7 +107,7 @@ describe('Operations Component', () => {
             plungeRate: 600,
         });
 
-        const toolsInStore = get(toolStore);
+        const toolsInStore = toolStore.tools;
         expect(toolsInStore).toHaveLength(2);
 
         const { container, component } = render(Operations);

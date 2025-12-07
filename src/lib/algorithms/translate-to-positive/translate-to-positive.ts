@@ -1,154 +1,44 @@
-import { GeometryType } from '$lib/geometry/enums';
-import type { ShapeData } from '$lib/cam/shape/interfaces';
-import type { Circle } from '$lib/geometry/circle/interfaces';
-import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { Line } from '$lib/geometry/line/interfaces';
-import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Spline } from '$lib/geometry/spline/interfaces';
-import type { Arc } from '$lib/geometry/arc/interfaces';
-import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
+import type { Drawing } from '$lib/cam/drawing/classes.svelte';
+import type { Plan } from '$lib/cam/plan/classes.svelte';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 /**
- * Translate all shapes to ensure they are in the positive quadrant
+ * Translate drawing and plan to ensure they are in the positive quadrant
  *
- * This algorithm calculates the bounding box of all shapes and translates them
- * so that the minimum coordinates are at (0, 0), ensuring all geometry is in
- * the positive quadrant for consistent CAM processing.
+ * This algorithm calculates the combined bounding box of the drawing and plan (if provided)
+ * and translates them so that the minimum coordinates are at (0, 0), ensuring all geometry
+ * is in the positive quadrant for consistent CAM processing.
  */
-export function translateToPositiveQuadrant(shapes: ShapeData[]): ShapeData[] {
-    if (shapes.length === 0) return shapes;
+export function translateToPositiveQuadrant(
+    drawing: Drawing,
+    plan?: Plan
+): void {
+    // Calculate combined bounds from drawing and plan
+    let bounds: BoundingBoxData = drawing.bounds;
 
-    // Calculate bounding box
-    let minX: number = Infinity;
-    let minY: number = Infinity;
-
-    shapes.forEach((shape) => {
-        const points: Point2D[] = getShapePointsForBounds(shape);
-        points.forEach((point) => {
-            minX = Math.min(minX, point.x);
-            minY = Math.min(minY, point.y);
-        });
-    });
-
-    // Only translate if there are negative coordinates
-    if (minX >= 0 && minY >= 0) return shapes;
-
-    const translateX: number = minX < 0 ? -minX : 0;
-    const translateY: number = minY < 0 ? -minY : 0;
-
-    // Translate all shapes
-    return shapes.map((shape) => {
-        return translateShape(shape, translateX, translateY);
-    });
-}
-
-/**
- * Translate a single shape by the given offsets
- */
-function translateShape(shape: ShapeData, dx: number, dy: number): ShapeData {
-    const translated: ShapeData = { ...shape };
-
-    switch (shape.type) {
-        case GeometryType.LINE:
-            const line: Line = shape.geometry as Line;
-            translated.geometry = {
-                start: { x: line.start.x + dx, y: line.start.y + dy },
-                end: { x: line.end.x + dx, y: line.end.y + dy },
-            };
-            break;
-        case GeometryType.CIRCLE:
-            const circle: Circle = shape.geometry as Circle;
-            translated.geometry = {
-                center: { x: circle.center.x + dx, y: circle.center.y + dy },
-                radius: circle.radius,
-            };
-            break;
-        case GeometryType.ARC:
-            const arc: Arc = shape.geometry as Arc;
-            translated.geometry = {
-                center: { x: arc.center.x + dx, y: arc.center.y + dy },
-                radius: arc.radius,
-                startAngle: arc.startAngle,
-                endAngle: arc.endAngle,
-                clockwise: arc.clockwise,
-            };
-            break;
-        case GeometryType.POLYLINE:
-            const polyline: Polyline = shape.geometry as Polyline;
-            // Translate shapes instead of points/vertices (new polyline structure)
-            const translatedShapes: ShapeData[] = polyline.shapes.map(
-                (polylineShape) => {
-                    const segment: Line | Arc = polylineShape.geometry as
-                        | Line
-                        | Arc;
-                    if ('start' in segment && 'end' in segment) {
-                        // Line segment
-                        return {
-                            ...polylineShape,
-                            geometry: {
-                                start: {
-                                    x: segment.start.x + dx,
-                                    y: segment.start.y + dy,
-                                },
-                                end: {
-                                    x: segment.end.x + dx,
-                                    y: segment.end.y + dy,
-                                },
-                            },
-                        };
-                    } else if ('center' in segment && 'radius' in segment) {
-                        // Arc segment
-                        return {
-                            ...polylineShape,
-                            geometry: {
-                                ...segment,
-                                center: {
-                                    x: segment.center.x + dx,
-                                    y: segment.center.y + dy,
-                                },
-                            },
-                        };
-                    }
-                    return polylineShape; // Unknown segment type, return as-is
-                }
-            );
-
-            translated.geometry = {
-                ...polyline,
-                shapes: translatedShapes,
-            };
-            break;
-        case GeometryType.ELLIPSE:
-            const ellipse: Ellipse = shape.geometry as Ellipse;
-            translated.geometry = {
-                center: { x: ellipse.center.x + dx, y: ellipse.center.y + dy },
-                majorAxisEndpoint: ellipse.majorAxisEndpoint, // This is a vector, not translated
-                minorToMajorRatio: ellipse.minorToMajorRatio,
-                startParam: ellipse.startParam,
-                endParam: ellipse.endParam,
-            };
-            break;
-        case GeometryType.SPLINE:
-            const spline: Spline = shape.geometry as Spline;
-            translated.geometry = {
-                ...spline,
-                controlPoints: spline.controlPoints.map((p: Point2D) => ({
-                    x: p.x + dx,
-                    y: p.y + dy,
-                })),
-                fitPoints: spline.fitPoints
-                    ? spline.fitPoints.map((p: Point2D) => ({
-                          x: p.x + dx,
-                          y: p.y + dy,
-                      }))
-                    : [],
-            };
-            break;
-        default:
-            // No translation needed for unknown types
-            break;
+    // If plan is provided, combine its bounds with drawing bounds
+    if (plan) {
+        const planBounds = plan.bounds;
+        bounds = {
+            min: {
+                x: Math.min(bounds.min.x, planBounds.min.x),
+                y: Math.min(bounds.min.y, planBounds.min.y),
+            },
+            max: {
+                x: Math.max(bounds.max.x, planBounds.max.x),
+                y: Math.max(bounds.max.y, planBounds.max.y),
+            },
+        };
     }
 
-    return translated;
+    // Only translate if there are negative coordinates
+    if (bounds.min.x >= 0 && bounds.min.y >= 0) return;
+
+    const dx: number = bounds.min.x < 0 ? -bounds.min.x : 0;
+    const dy: number = bounds.min.y < 0 ? -bounds.min.y : 0;
+
+    drawing.translate(dx, dy);
+    if (plan) {
+        plan.translate(dx, dy);
+    }
 }

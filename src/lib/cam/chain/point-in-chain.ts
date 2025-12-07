@@ -9,16 +9,15 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Shape } from '$lib/cam/shape/classes';
 import type { RayTracingConfig } from '$lib/algorithms/raytracing/types';
 import { DEFAULT_RAYTRACING_CONFIG } from '$lib/algorithms/raytracing/types';
 import { isChainClosed } from '$lib/cam/chain/functions';
 import { createHorizontalRay } from '$lib/algorithms/raytracing/utils';
-import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
+import { shapeBoundingBox } from '$lib/cam/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import {
     countHorizontalRayLineCrossings,
@@ -61,7 +60,7 @@ export function isPointInsideChainExact(
     // Optimization: Use bounding box pre-filter to skip shapes that cannot intersect the ray
     for (const shape of chain.shapes) {
         // Quick bounding box check: skip shapes whose Y bounds don't include the ray's Y
-        const shapeBBox = getShapeBoundingBox(shape);
+        const shapeBBox = shapeBoundingBox(shape);
         if (point.y < shapeBBox.min.y || point.y > shapeBBox.max.y) {
             continue; // Ray cannot intersect this shape
         }
@@ -118,13 +117,6 @@ function countRayShapeCrossings(
                 config
             );
 
-        case GeometryType.POLYLINE:
-            return countRayPolylineCrossings(
-                ray,
-                shape.geometry as Polyline,
-                config
-            );
-
         case GeometryType.ELLIPSE:
             // TODO: Implement exact ellipse intersection
             return 0;
@@ -149,36 +141,6 @@ function countRayShapeCrossings(
             );
             return 0;
     }
-}
-
-/**
- * Counts ray crossings for polyline (composite shape)
- */
-function countRayPolylineCrossings(
-    ray: { origin: Point2D; direction: Point2D },
-    polyline: Polyline,
-    config: RayTracingConfig
-): number {
-    let totalCrossings: number = 0;
-
-    if (polyline.shapes && polyline.shapes.length > 0) {
-        // Polyline with constituent shapes
-        for (const segment of polyline.shapes) {
-            totalCrossings += countRayShapeCrossings(
-                ray,
-                new Shape(segment),
-                config
-            );
-        }
-    } else {
-        // Simple polyline - treat as connected line segments
-        // This requires access to polyline points, which may not be directly available
-        // For now, return 0 and log a warning
-        console.warn('Simple polyline ray intersection not yet implemented');
-        return 0;
-    }
-
-    return totalCrossings;
 }
 
 /**

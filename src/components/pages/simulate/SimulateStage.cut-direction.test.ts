@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { get } from 'svelte/store';
-import { planStore } from '$lib/stores/plan/store';
-import { cutStore } from '$lib/stores/cuts/store';
-import { chainStore } from '$lib/stores/chains/store';
+import { planStore } from '$lib/stores/plan/store.svelte';
+import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { chainStore } from '$lib/stores/chains/store.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
@@ -41,17 +40,17 @@ describe.skip('SimulateStage Cut Direction', () => {
         chainStore.setChains([chain]);
 
         // Create cuts with different cut directions
-        get(planStore).plan.cuts.push(
+        planStore.plan.cuts.push(
             new Cut({
                 id: 'cut-clockwise-1',
                 name: 'Clockwise Circle',
-                operationId: 'op-1',
-                chainId: 'chain-1',
-                toolId: 'tool-1',
+                sourceOperationId: 'op-1',
+                sourceChainId: 'chain-1',
+                sourceToolId: 'tool-1',
                 enabled: true,
                 order: 1,
                 action: OperationAction.CUT,
-                cutDirection: CutDirection.CLOCKWISE,
+                direction: CutDirection.CLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
@@ -59,17 +58,17 @@ describe.skip('SimulateStage Cut Direction', () => {
             })
         );
 
-        get(planStore).plan.cuts.push(
+        planStore.plan.cuts.push(
             new Cut({
                 id: 'cut-counter-1',
                 name: 'Counterclockwise Circle',
-                operationId: 'op-2',
-                chainId: 'chain-1',
-                toolId: 'tool-1',
+                sourceOperationId: 'op-2',
+                sourceChainId: 'chain-1',
+                sourceToolId: 'tool-1',
                 enabled: true,
                 order: 2,
                 action: OperationAction.CUT,
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
@@ -125,17 +124,17 @@ describe.skip('SimulateStage Cut Direction', () => {
         chainStore.setChains([chain]);
 
         // Create cuts with different cut directions
-        get(planStore).plan.cuts.push(
+        planStore.plan.cuts.push(
             new Cut({
                 id: 'cut-clockwise-2',
                 name: 'Clockwise Ellipse',
-                operationId: 'op-3',
-                chainId: 'chain-2',
-                toolId: 'tool-1',
+                sourceOperationId: 'op-3',
+                sourceChainId: 'chain-2',
+                sourceToolId: 'tool-1',
                 enabled: true,
                 order: 3,
                 action: OperationAction.CUT,
-                cutDirection: CutDirection.CLOCKWISE,
+                direction: CutDirection.CLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
@@ -143,17 +142,17 @@ describe.skip('SimulateStage Cut Direction', () => {
             })
         );
 
-        get(planStore).plan.cuts.push(
+        planStore.plan.cuts.push(
             new Cut({
                 id: 'cut-counter-2',
                 name: 'Counterclockwise Ellipse',
-                operationId: 'op-4',
-                chainId: 'chain-2',
-                toolId: 'tool-1',
+                sourceOperationId: 'op-4',
+                sourceChainId: 'chain-2',
+                sourceToolId: 'tool-1',
                 enabled: true,
                 order: 4,
                 action: OperationAction.CUT,
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
@@ -188,17 +187,17 @@ describe.skip('SimulateStage Cut Direction', () => {
         chainStore.setChains([chain]);
 
         // Create cut with "none" cut direction
-        get(planStore).plan.cuts.push(
+        planStore.plan.cuts.push(
             new Cut({
                 id: 'cut-open-1',
                 name: 'Open Line',
-                operationId: 'op-5',
-                chainId: 'chain-3',
-                toolId: 'tool-1',
+                sourceOperationId: 'op-5',
+                sourceChainId: 'chain-3',
+                sourceToolId: 'tool-1',
                 enabled: true,
                 order: 5,
                 action: OperationAction.CUT,
-                cutDirection: CutDirection.NONE,
+                direction: CutDirection.NONE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },

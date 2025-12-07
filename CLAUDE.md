@@ -12,7 +12,7 @@ MetalHead CAM is a web-based Computer-Aided Manufacturing (CAM) application that
 
 ## User Workflow Stages
 
-The application implements a complete 6-stage workflow from DXF import to G-code export:
+The application implements a complete 4-stage workflow from DXF import to G-code export:
 
 ### 1. Import Stage
 
@@ -20,36 +20,31 @@ The application implements a complete 6-stage workflow from DXF import to G-code
 - Unit detection from DXF `$INSUNITS` header
 - File validation and error handling
 - Support for all standard DXF entities
-
-### 2. Edit Stage
-
-- Shape selection with orange hover/selection highlighting
-- Display unit switching (mm/inch) with accurate physical scaling
-- Layer management with visibility controls
-- Properties panel showing detailed shape information
-
-### 3. Prepare Stage
-
 - Automatic chain detection from connected shapes
-- Part detection (shells with holes)
-- User-configurable tolerance for chain closure
-- Chain analysis with optimization tools
+- Automatic part detection (shells with holes)
 
-### 4. Program Stage
+### 2. Program Stage
 
+- Preprocessing tools for geometry optimization:
+  - Decompose polylines into line/arc segments
+  - Join co-linear lines to simplify geometry
+  - Translate to positive quadrant
+  - Optimize start points to minimize rapids
 - Operations management with plasma cutting parameters
 - Automatic cut generation with green canvas highlighting
 - Advanced lead-in/lead-out with line/arc geometry
 - Cut order optimization and rapid generation
+- Layer management with visibility controls
+- Shape/chain/part selection and properties inspection
 
-### 5. Simulate Stage
+### 3. Simulate Stage
 
 - Real-time 3D cutting simulation with Three.js
 - Animated tool head movement and progress tracking
 - Timeline controls (play, pause, scrub, speed)
 - Visual cut tracing
 
-### 6. Export Stage
+### 4. Export Stage
 
 - LinuxCNC QtPlasmaC G-code generation
 - Plasma-specific M-codes and THC control

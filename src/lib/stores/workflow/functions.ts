@@ -3,8 +3,6 @@ import { WorkflowStage } from './enums';
 // Define the workflow progression order
 const WORKFLOW_ORDER: WorkflowStage[] = [
     WorkflowStage.IMPORT,
-    WorkflowStage.EDIT,
-    WorkflowStage.PREPARE,
     WorkflowStage.PROGRAM,
     WorkflowStage.SIMULATE,
     WorkflowStage.EXPORT,
@@ -32,13 +30,8 @@ export function validateStageAdvancement(
     // Special case: Export stage becomes available when Program is completed (same as Simulate)
     if (targetStage === WorkflowStage.EXPORT) {
         // Export requires all previous enabled stages to be completed
-        // Check Import, Edit, Prepare, Program (skip Simulate if not checking all)
-        const requiredStages = [
-            WorkflowStage.IMPORT,
-            WorkflowStage.EDIT,
-            WorkflowStage.PREPARE,
-            WorkflowStage.PROGRAM,
-        ];
+        // Check Import, Program (skip Simulate if not checking all)
+        const requiredStages = [WorkflowStage.IMPORT, WorkflowStage.PROGRAM];
 
         for (const stage of requiredStages) {
             // Skip disabled stages
@@ -71,10 +64,6 @@ export function getStageDisplayName(stage: WorkflowStage): string {
     switch (stage) {
         case WorkflowStage.IMPORT:
             return 'Import';
-        case WorkflowStage.EDIT:
-            return 'Edit';
-        case WorkflowStage.PREPARE:
-            return 'Prepare';
         case WorkflowStage.PROGRAM:
             return 'Program';
         case WorkflowStage.SIMULATE:
@@ -91,10 +80,6 @@ export function getStageDescription(stage: WorkflowStage): string {
     switch (stage) {
         case WorkflowStage.IMPORT:
             return 'Import DXF or SVG drawings';
-        case WorkflowStage.EDIT:
-            return 'Edit drawing using basic tools';
-        case WorkflowStage.PREPARE:
-            return 'Analyze chains and detect parts';
         case WorkflowStage.PROGRAM:
             return 'Build cuts with cut parameters';
         case WorkflowStage.SIMULATE:

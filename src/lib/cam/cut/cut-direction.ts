@@ -1,4 +1,4 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { CutDirection } from './enums';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
@@ -46,7 +46,7 @@ export function detectCutDirection(
     }
 
     // Calculate signed area using shoelace formula
-    const signedArea: number = calculateSignedArea(points);
+    const signedArea: number = calculateSignedArea({ points });
 
     // Positive area = counterclockwise, negative area = clockwise
     return signedArea > 0

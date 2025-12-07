@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it, vi } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
 import type { CutData } from '$lib/cam/cut/interfaces';
@@ -18,7 +18,7 @@ import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OperationAction } from '$lib/cam/operation/enums';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { createPolylineFromVertices } from '$lib/geometry/dxf-polyline/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
 
@@ -48,13 +48,13 @@ describe('Optimize Cut Order', () => {
         new Cut({
             id,
             name: `Cut ${id}`,
-            chainId,
-            operationId: 'op-1',
-            toolId: 'tool-1',
+            sourceChainId: chainId,
+            sourceOperationId: 'op-1',
+            sourceToolId: 'tool-1',
             enabled: true,
             order: 1,
             action: OperationAction.CUT,
-            cutDirection: CutDirection.COUNTERCLOCKWISE,
+            direction: CutDirection.COUNTERCLOCKWISE,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
             normalSide: NormalSide.LEFT,
@@ -213,7 +213,7 @@ describe('Optimize Cut Order', () => {
             expect(result.totalDistance).toBeGreaterThan(0);
 
             // Should pick the closest cut first (chain-1 is closest to origin)
-            expect(result.orderedCuts[0].chainId).toBe('chain-1');
+            expect(result.orderedCuts[0].sourceChainId).toBe('chain-1');
         });
     });
 
@@ -581,7 +581,7 @@ describe('Optimize Cut Order', () => {
             );
             const cut = createCut('cut-1', 'chain-1', {
                 leadOutConfig: { type: LeadType.ARC, length: 10 },
-                cutDirection: CutDirection.CLOCKWISE,
+                direction: CutDirection.CLOCKWISE,
             });
 
             const chains = createChainMap([['chain-1', chain]]);
@@ -607,7 +607,7 @@ describe('Optimize Cut Order', () => {
             );
             const cut = createCut('cut-1', 'chain-1', {
                 leadOutConfig: { type: LeadType.ARC, length: -1 }, // Invalid length to potentially cause errors
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
             });
 
             const chains = createChainMap([['chain-1', chain]]);
@@ -970,13 +970,13 @@ describe('Optimize Cut Order', () => {
             const cut = new Cut({
                 id: 'cut-1',
                 name: 'Cut 1',
-                chainId: 'chain-1',
-                operationId: 'op-1',
-                toolId: 'tool-1',
+                sourceChainId: 'chain-1',
+                sourceOperationId: 'op-1',
+                sourceToolId: 'tool-1',
                 enabled: true,
                 order: 1,
                 action: OperationAction.CUT,
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
                 normalSide: NormalSide.LEFT,
@@ -1034,13 +1034,13 @@ describe('Optimize Cut Order', () => {
             const cut = new Cut({
                 id: 'cut-1',
                 name: 'Cut 1',
-                chainId: 'chain-1',
-                operationId: 'op-1',
-                toolId: 'tool-1',
+                sourceChainId: 'chain-1',
+                sourceOperationId: 'op-1',
+                sourceToolId: 'tool-1',
                 enabled: true,
                 order: 1,
                 action: OperationAction.CUT,
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
                 normalSide: NormalSide.LEFT,
@@ -1162,13 +1162,13 @@ describe('Optimize Cut Order', () => {
                     new Cut({
                         id: `cut-${index}`,
                         name: `Cut ${index + 1}`,
-                        chainId: chain.id,
-                        operationId: 'op-1',
-                        toolId: 'tool-1',
+                        sourceChainId: chain.id,
+                        sourceOperationId: 'op-1',
+                        sourceToolId: 'tool-1',
                         enabled: true,
                         order: index + 1,
                         action: OperationAction.CUT,
-                        cutDirection: CutDirection.COUNTERCLOCKWISE,
+                        direction: CutDirection.COUNTERCLOCKWISE,
                         normal: { x: 1, y: 0 },
                         normalConnectionPoint: { x: 0, y: 0 },
                         normalSide: NormalSide.LEFT,
@@ -1200,11 +1200,11 @@ describe('Optimize Cut Order', () => {
             // Create a cut with COUNTERCLOCKWISE direction
             // For an open chain, this should reverse the traversal order
             const cut = createCut('cut-1', 'chain-1', {
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
                 executionClockwise: false,
                 leadInConfig: undefined, // No lead-in
                 leadOutConfig: undefined, // No lead-out
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'chain-1-cut',
                     name: 'chain-1-cut',
                     shapes: [
@@ -1250,11 +1250,11 @@ describe('Optimize Cut Order', () => {
 
             // Create a cut with CLOCKWISE direction (no reversal for open chain)
             const cut = createCut('cut-1', 'chain-1', {
-                cutDirection: CutDirection.CLOCKWISE,
+                direction: CutDirection.CLOCKWISE,
                 executionClockwise: true,
                 leadInConfig: undefined, // No lead-in
                 leadOutConfig: undefined, // No lead-out
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'chain-1-cut',
                     name: 'chain-1-cut',
                     shapes: chain.shapes,
@@ -1299,11 +1299,11 @@ describe('Optimize Cut Order', () => {
 
             // Create cuts with COUNTERCLOCKWISE direction (reversed)
             const cut1 = createCut('cut-1', 'chain-1', {
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
                 executionClockwise: false,
                 leadInConfig: undefined,
                 leadOutConfig: undefined,
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'chain-1-cut',
                     name: 'chain-1-cut',
                     shapes: [
@@ -1320,11 +1320,11 @@ describe('Optimize Cut Order', () => {
             });
 
             const cut2 = createCut('cut-2', 'chain-2', {
-                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                direction: CutDirection.COUNTERCLOCKWISE,
                 executionClockwise: false,
                 leadInConfig: undefined,
                 leadOutConfig: undefined,
-                cutChain: new Chain({
+                chain: new Chain({
                     id: 'chain-2-cut',
                     name: 'chain-2-cut',
                     shapes: [

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { get } from 'svelte/store';
-import { selectionStore } from '$lib/stores/selection/store';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
 
 // Test that we can directly call the store functions that Operations uses
 describe('Operations Store Functions Debug', () => {
@@ -12,7 +11,7 @@ describe('Operations Store Functions Debug', () => {
         const testPartId = 'part-debug-123';
         selectionStore.highlightPart(testPartId);
 
-        const finalState = get(selectionStore);
+        const finalState = selectionStore.getState();
 
         expect(finalState.parts.highlighted).toBe(testPartId);
     });
@@ -21,7 +20,7 @@ describe('Operations Store Functions Debug', () => {
         const testChainId = 'chain-debug-456';
         selectionStore.selectChain(testChainId);
 
-        const finalState = get(selectionStore);
+        const finalState = selectionStore.getState();
 
         expect(finalState.chains.selected.has(testChainId)).toBe(true);
         expect(finalState.chains.selected.size).toBe(1);
@@ -31,48 +30,41 @@ describe('Operations Store Functions Debug', () => {
         // First set a highlighted part
         const testPartId = 'part-debug-123';
         selectionStore.highlightPart(testPartId);
-        expect(get(selectionStore).parts.highlighted).toBe(testPartId);
+        expect(selectionStore.getState().parts.highlighted).toBe(testPartId);
 
         // Then clear it
         selectionStore.clearPartHighlight();
-        expect(get(selectionStore).parts.highlighted).toBe(null);
+        expect(selectionStore.getState().parts.highlighted).toBe(null);
     });
 
     it('should test selectChain with null', () => {
         // First select a chain
         const testChainId = 'chain-debug-456';
         selectionStore.selectChain(testChainId);
-        expect(get(selectionStore).chains.selected.has(testChainId)).toBe(true);
-        expect(get(selectionStore).chains.selected.size).toBe(1);
+        expect(selectionStore.getState().chains.selected.has(testChainId)).toBe(
+            true
+        );
+        expect(selectionStore.getState().chains.selected.size).toBe(1);
 
         // Then clear it
         selectionStore.selectChain(null);
-        expect(get(selectionStore).chains.selected.size).toBe(0);
+        expect(selectionStore.getState().chains.selected.size).toBe(0);
     });
 
     it('should verify stores are reactive', () => {
-        let partHighlighted = false;
-        let chainSelected = false;
-
-        // Subscribe to store
-        const unsubscribe = selectionStore.subscribe((state) => {
-            if (state.parts.highlighted) {
-                partHighlighted = true;
-            }
-            if (state.chains.selected.size > 0) {
-                chainSelected = true;
-            }
-        });
+        // Verify initial state
+        expect(selectionStore.parts.highlighted).toBeNull();
+        expect(selectionStore.chains.selected.size).toBe(0);
 
         // Trigger changes
         selectionStore.highlightPart('part-reactive-test');
         selectionStore.selectChain('chain-reactive-test');
 
-        // Verify callbacks were triggered
-        expect(partHighlighted).toBe(true);
-        expect(chainSelected).toBe(true);
-
-        // Cleanup
-        unsubscribe();
+        // Verify state was updated
+        expect(selectionStore.parts.highlighted).toBe('part-reactive-test');
+        expect(selectionStore.chains.selected.size).toBe(1);
+        expect(selectionStore.chains.selected.has('chain-reactive-test')).toBe(
+            true
+        );
     });
 });

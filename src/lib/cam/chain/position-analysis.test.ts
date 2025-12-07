@@ -1,7 +1,7 @@
 import { Shape } from '$lib/cam/shape/classes';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import { chainBoundingBox } from '$lib/cam/chain/functions';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
@@ -38,8 +38,8 @@ describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
         expect(chain13).toBeDefined();
 
         // Calculate bounding boxes
-        const boundaryBox = calculateChainBoundingBox(boundaryChain!);
-        const chain13Box = calculateChainBoundingBox(chain13!);
+        const boundaryBox = chainBoundingBox(boundaryChain!);
+        const chain13Box = chainBoundingBox(chain13!);
 
         // Check if both shapes are identical in X but different in Y
 

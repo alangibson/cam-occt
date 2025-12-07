@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { get } from 'svelte/store';
-import { drawingStore } from './store';
+import { drawingStore } from './store.svelte';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
@@ -19,16 +18,20 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
                     id: '1',
                     type: GeometryType.LINE,
                     layer: '0',
-                    start: { x: 0, y: 0 },
-                    end: { x: 100, y: 50 },
-                } as any,
+                    geometry: {
+                        start: { x: 0, y: 0 },
+                        end: { x: 100, y: 50 },
+                    },
+                },
                 {
                     id: '2',
                     type: GeometryType.LINE,
                     layer: '0',
-                    start: { x: 100, y: 50 },
-                    end: { x: 0, y: 50 },
-                } as any,
+                    geometry: {
+                        start: { x: 100, y: 50 },
+                        end: { x: 0, y: 50 },
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -36,7 +39,7 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
 
         drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
-        const state = get(drawingStore);
+        const state = drawingStore;
 
         // Should have calculated a zoom scale (not the default 1)
         expect(state.scale).toBeGreaterThan(0);
@@ -45,7 +48,7 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
         expect(typeof state.offset.x).toBe('number');
         expect(typeof state.offset.y).toBe('number');
         // Should have the drawing loaded
-        expect(state.drawing?.shapes).toEqual(testDrawing.shapes);
+        expect(state.drawing?.shapes.length).toBe(2);
         expect(state.drawing?.fileName).toBe('test.dxf');
     });
 
@@ -58,9 +61,11 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
                     id: '1',
                     type: GeometryType.LINE,
                     layer: '0',
-                    start: { x: 0, y: 0 },
-                    end: { x: 100, y: 50 },
-                } as any,
+                    geometry: {
+                        start: { x: 0, y: 0 },
+                        end: { x: 100, y: 50 },
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -70,10 +75,10 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
         // In practice, this test verifies the error handling in the calculateZoomToFitForDrawing function
         drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
-        const state = get(drawingStore);
+        const state = drawingStore;
 
         // The drawing should still be loaded
-        expect(state.drawing?.shapes).toEqual(testDrawing.shapes);
+        expect(state.drawing?.shapes.length).toBe(1);
         expect(state.drawing?.fileName).toBe('test.dxf');
         // Scale and offset should be reasonable values (may be calculated or default)
         expect(typeof state.scale).toBe('number');
@@ -90,9 +95,11 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
                     id: '1',
                     type: GeometryType.LINE,
                     layer: '0',
-                    start: { x: 0, y: 0 },
-                    end: { x: 200, y: 100 },
-                } as any,
+                    geometry: {
+                        start: { x: 0, y: 0 },
+                        end: { x: 200, y: 100 },
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -106,8 +113,8 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
         drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         // Verify drawing is loaded with canvas dimensions available (from beforeEach)
-        const state = get(drawingStore);
-        expect(state.drawing?.shapes).toEqual(testDrawing.shapes);
+        const state = drawingStore;
+        expect(state.drawing?.shapes.length).toBe(1);
         expect(state.canvasDimensions).not.toBeNull();
         expect(state.scale).toBeGreaterThan(0);
         expect(state.drawing?.fileName).toBe('test.dxf');
@@ -122,12 +129,12 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
 
         drawingStore.setDrawing(new Drawing(emptyDrawing), 'empty.dxf');
 
-        const state = get(drawingStore);
+        const state = drawingStore;
 
         // Should use fallback zoom settings for empty drawings
         expect(state.scale).toBe(1);
         expect(state.offset.x).toBe(0);
         expect(state.offset.y).toBe(0);
-        expect(state.drawing?.shapes).toEqual(emptyDrawing.shapes);
+        expect(state.drawing?.shapes).toEqual([]);
     });
 });

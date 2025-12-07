@@ -1,6 +1,6 @@
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
+import { shapesBoundingBox } from '$lib/cam/shape/functions';
 
 export interface DrawingSize {
     width: number;
@@ -17,7 +17,7 @@ export function calculateDrawingSize(
     }
 
     try {
-        const bounds: BoundingBoxData = getBoundingBoxForShapes(drawing.shapes);
+        const bounds: BoundingBoxData = shapesBoundingBox(drawing.shapes);
         return {
             width: Math.abs(bounds.max.x - bounds.min.x),
             height: Math.abs(bounds.max.y - bounds.min.y),

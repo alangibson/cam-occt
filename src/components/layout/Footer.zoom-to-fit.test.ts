@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
-import { get } from 'svelte/store';
 import Footer from './Footer.svelte';
-import { drawingStore } from '$lib/stores/drawing/store';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
@@ -37,9 +36,11 @@ describe('Footer Fit Button', () => {
                     id: '1',
                     type: GeometryType.CIRCLE,
                     layer: '0',
-                    center: { x: 50, y: 50 },
-                    radius: 25,
-                } as any,
+                    geometry: {
+                        center: { x: 50, y: 50 },
+                        radius: 25,
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -61,9 +62,11 @@ describe('Footer Fit Button', () => {
                     id: '1',
                     type: GeometryType.CIRCLE,
                     layer: '0',
-                    center: { x: 50, y: 50 },
-                    radius: 25,
-                } as any,
+                    geometry: {
+                        center: { x: 50, y: 50 },
+                        radius: 25,
+                    },
+                },
             ],
             units: Unit.MM,
             fileName: 'test.dxf',
@@ -74,7 +77,7 @@ describe('Footer Fit Button', () => {
         // Set an initial zoom that's not the zoom-to-fit value
         drawingStore.setViewTransform(2.5, { x: 100, y: 100 });
 
-        const initialState = get(drawingStore);
+        const initialState = drawingStore;
         expect(initialState.scale).toBe(2.5);
         expect(initialState.offset).toEqual({ x: 100, y: 100 });
 
@@ -84,7 +87,7 @@ describe('Footer Fit Button', () => {
         // Click the Fit button
         await fireEvent.click(fitButton);
 
-        const stateAfterFit = get(drawingStore);
+        const stateAfterFit = drawingStore;
 
         // The scale and offset should have changed after clicking Fit
         // Note: The exact values depend on the calculateZoomToFit algorithm

@@ -1,28 +1,32 @@
 <script lang="ts">
-    import { workflowStore } from '$lib/stores/workflow/store';
+    import { workflowStore } from '$lib/stores/workflow/store.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { getStageDisplayName } from '$lib/stores/workflow/functions';
 
     type WorkflowStageType = WorkflowStage;
-    import { uiStore } from '$lib/stores/ui/store';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { uiStore } from '$lib/stores/ui/store.svelte';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
 
     const allStages: WorkflowStageType[] = [
         WorkflowStage.IMPORT,
-        WorkflowStage.EDIT,
-        WorkflowStage.PREPARE,
         WorkflowStage.PROGRAM,
         WorkflowStage.SIMULATE,
         WorkflowStage.EXPORT,
     ];
 
     // Filter stages based on enabled stages from settings
-    $: stages = allStages.filter((stage) =>
-        $settingsStore.settings.enabledStages.includes(stage)
+    const stages = $derived(
+        allStages.filter((stage) =>
+            settingsStore.settings.enabledStages.includes(stage)
+        )
     );
 
+    // Create reactive references to workflow store state
+    const currentStage = $derived(workflowStore.currentStage);
+    const completedStages = $derived(workflowStore.completedStages);
+
     function handleStageClick(stage: WorkflowStageType) {
-        if ($workflowStore.canAdvanceTo(stage)) {
+        if (workflowStore.canAdvanceTo(stage)) {
             // Hide tool table and settings when navigating to a stage
             uiStore.hideToolTable();
             uiStore.hideSettings();
@@ -37,15 +41,13 @@
             <li class="breadcrumb-item">
                 <button
                     class="breadcrumb-button"
-                    class:current={$workflowStore.currentStage === stage}
-                    class:completed={$workflowStore.completedStages.has(stage)}
-                    class:accessible={$workflowStore.canAdvanceTo(stage)}
-                    class:inaccessible={!$workflowStore.canAdvanceTo(stage)}
-                    disabled={!$workflowStore.canAdvanceTo(stage)}
-                    on:click={() => handleStageClick(stage)}
-                    aria-current={$workflowStore.currentStage === stage
-                        ? 'step'
-                        : undefined}
+                    class:current={currentStage === stage}
+                    class:completed={completedStages.has(stage)}
+                    class:accessible={workflowStore.canAdvanceTo(stage)}
+                    class:inaccessible={!workflowStore.canAdvanceTo(stage)}
+                    disabled={!workflowStore.canAdvanceTo(stage)}
+                    onclick={() => handleStageClick(stage)}
+                    aria-current={currentStage === stage ? 'step' : undefined}
                 >
                     <span class="stage-name">{getStageDisplayName(stage)}</span>
                 </button>

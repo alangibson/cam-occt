@@ -2,7 +2,7 @@
  * Offset calculation for chain kerf compensation
  */
 
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import { OffsetDirection } from '$lib/cam/offset/types';

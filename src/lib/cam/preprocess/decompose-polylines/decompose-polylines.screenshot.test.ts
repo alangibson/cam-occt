@@ -1,17 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
 import { decomposePolylines } from './decompose-polylines';
 import { readFileSync } from 'fs';
 import path from 'path';
 import type {
-    Polyline,
-    PolylineVertex,
-} from '$lib/geometry/polyline/interfaces';
+    DxfPolyline,
+    DxfPolylineVertex,
+} from '$lib/geometry/dxf-polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 
 // Mock canvas for screenshot comparison
 function createTestCanvas(width: number = 800, height: number = 600) {
@@ -73,7 +74,7 @@ function drawShapes(
                 );
                 break;
             case 'polyline':
-                const polyline: Polyline = shape.geometry as Polyline;
+                const polyline: DxfPolyline = shape.geometry as DxfPolyline;
                 const points = polylineToPoints(polyline);
                 if (points.length > 0) {
                     ctx.moveTo(points[0].x * scale, points[0].y * scale);
@@ -153,7 +154,7 @@ function calculateShapeBounds(shapes: ShapeData[]): {
                 }
                 break;
             case 'polyline':
-                const polyline: Polyline = shape.geometry as Polyline;
+                const polyline: DxfPolyline = shape.geometry as DxfPolyline;
                 points = polylineToPoints(polyline);
                 break;
         }
@@ -182,20 +183,23 @@ describe('Polylinie.dxf Decomposition Visual Test', () => {
         const originalDrawing = await parseDXF(dxfContent);
 
         // Apply decomposition
-        const decomposedShapes = decomposePolylines(originalDrawing.shapes);
+        const decomposedShapes = decomposePolylines(
+            originalDrawing.shapes.map((s) => new Shape(s))
+        );
 
         // Log shape details for debugging
         originalDrawing.shapes.forEach((shape: ShapeData) => {
             if (shape.type === 'polyline') {
-                const geom = shape.geometry as Polyline;
+                const geom = shape.geometry as DxfPolyline;
                 if (
                     'vertices' in geom &&
                     Array.isArray(
-                        (geom as { vertices?: PolylineVertex[] }).vertices
+                        (geom as { vertices?: DxfPolylineVertex[] }).vertices
                     )
                 ) {
-                    (geom as { vertices: PolylineVertex[] }).vertices.filter(
-                        (v: PolylineVertex) => Math.abs(v.bulge || 0) > EPSILON
+                    (geom as { vertices: DxfPolylineVertex[] }).vertices.filter(
+                        (v: DxfPolylineVertex) =>
+                            Math.abs(v.bulge || 0) > EPSILON
                     );
                 }
             }

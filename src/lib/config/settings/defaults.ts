@@ -43,6 +43,7 @@ export const DEFAULT_SETTINGS: ApplicationSettings = {
         PreprocessingStep.DeduplicateShapes,
         PreprocessingStep.TranslateToPositive,
     ],
+    enabledProgramSteps: [PreprocessingStep.TranslateToPositive],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
     offsetImplementation: OffsetImplementation.Polyline,
     camSettings: DEFAULT_CAM_SETTINGS,

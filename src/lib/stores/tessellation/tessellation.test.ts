@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { get } from 'svelte/store';
-import { tessellationStore } from './store';
+import { tessellationStore } from './store.svelte';
 import type { TessellationPoint } from './interfaces';
 
 describe('tessellationStore', () => {
@@ -16,11 +15,9 @@ describe('tessellationStore', () => {
 
     describe('initial state', () => {
         it('should start with inactive tessellation and empty points', () => {
-            const state = get(tessellationStore);
-
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
-            expect(state.lastUpdate).toBeGreaterThan(0);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
+            expect(tessellationStore.lastUpdate).toBeGreaterThan(0);
         });
     });
 
@@ -33,10 +30,9 @@ describe('tessellationStore', () => {
             const points = createTestPoints();
             tessellationStore.setTessellation(points);
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toEqual(points);
-            expect(state.lastUpdate).toBe(mockTime);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toEqual(points);
+            expect(tessellationStore.lastUpdate).toBe(mockTime);
 
             vi.useRealTimers();
         });
@@ -50,17 +46,15 @@ describe('tessellationStore', () => {
             tessellationStore.setTessellation(initialPoints);
             tessellationStore.setTessellation(newPoints);
 
-            const state = get(tessellationStore);
-            expect(state.points).toEqual(newPoints);
-            expect(state.points).toHaveLength(3);
+            expect(tessellationStore.points).toEqual(newPoints);
+            expect(tessellationStore.points).toHaveLength(3);
         });
 
         it('should activate tessellation even with empty points', () => {
             tessellationStore.setTessellation([]);
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toHaveLength(0);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toHaveLength(0);
         });
 
         it('should update lastUpdate timestamp', () => {
@@ -70,15 +64,15 @@ describe('tessellationStore', () => {
 
             vi.setSystemTime(time1);
             tessellationStore.setTessellation([]);
-            const state1 = get(tessellationStore);
+            const lastUpdate1 = tessellationStore.lastUpdate;
 
             vi.setSystemTime(time2);
             tessellationStore.setTessellation(createTestPoints());
-            const state2 = get(tessellationStore);
+            const lastUpdate2 = tessellationStore.lastUpdate;
 
-            expect(state1.lastUpdate).toBe(time1);
-            expect(state2.lastUpdate).toBe(time2);
-            expect(state2.lastUpdate).toBeGreaterThan(state1.lastUpdate);
+            expect(lastUpdate1).toBe(time1);
+            expect(lastUpdate2).toBe(time2);
+            expect(lastUpdate2).toBeGreaterThan(lastUpdate1);
 
             vi.useRealTimers();
         });
@@ -96,10 +90,9 @@ describe('tessellationStore', () => {
             vi.setSystemTime(mockTime);
             tessellationStore.clearTessellation();
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
-            expect(state.lastUpdate).toBe(mockTime);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
+            expect(tessellationStore.lastUpdate).toBe(mockTime);
 
             vi.useRealTimers();
         });
@@ -108,9 +101,8 @@ describe('tessellationStore', () => {
             tessellationStore.clearTessellation();
             tessellationStore.clearTessellation(); // Clear again
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
         });
 
         it('should update lastUpdate timestamp when clearing', () => {
@@ -123,9 +115,8 @@ describe('tessellationStore', () => {
 
             vi.setSystemTime(time2);
             tessellationStore.clearTessellation();
-            const state = get(tessellationStore);
 
-            expect(state.lastUpdate).toBe(time2);
+            expect(tessellationStore.lastUpdate).toBe(time2);
 
             vi.useRealTimers();
         });
@@ -140,10 +131,9 @@ describe('tessellationStore', () => {
             const points = createTestPoints();
             tessellationStore.toggleTessellation(points);
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toEqual(points);
-            expect(state.lastUpdate).toBe(mockTime);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toEqual(points);
+            expect(tessellationStore.lastUpdate).toBe(mockTime);
 
             vi.useRealTimers();
         });
@@ -159,10 +149,9 @@ describe('tessellationStore', () => {
             vi.setSystemTime(mockTime);
             tessellationStore.toggleTessellation();
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
-            expect(state.lastUpdate).toBe(mockTime);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
+            expect(tessellationStore.lastUpdate).toBe(mockTime);
 
             vi.useRealTimers();
         });
@@ -172,41 +161,36 @@ describe('tessellationStore', () => {
 
             // Start inactive, toggle to active
             tessellationStore.toggleTessellation(points);
-            let state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toEqual(points);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toEqual(points);
 
             // Toggle to inactive
             tessellationStore.toggleTessellation();
-            state = get(tessellationStore);
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
 
             // Toggle back to active with new points
             const newPoints = [
                 { x: 100, y: 100, shapeId: 'new', chainId: 'new-chain' },
             ];
             tessellationStore.toggleTessellation(newPoints);
-            state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toEqual(newPoints);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toEqual(newPoints);
         });
 
         it('should activate with empty points when no points provided', () => {
             tessellationStore.toggleTessellation();
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toHaveLength(0);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toHaveLength(0);
         });
 
         it('should activate with provided points when transitioning from inactive', () => {
             const points = createTestPoints();
             tessellationStore.toggleTessellation(points);
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toEqual(points);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toEqual(points);
         });
 
         it('should ignore provided points when deactivating', () => {
@@ -221,9 +205,8 @@ describe('tessellationStore', () => {
             // Toggle with different points (should deactivate and ignore the new points)
             tessellationStore.toggleTessellation(ignoredPoints);
 
-            const state = get(tessellationStore);
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
         });
 
         it('should update lastUpdate timestamp on toggle', () => {
@@ -233,15 +216,15 @@ describe('tessellationStore', () => {
 
             vi.setSystemTime(time1);
             tessellationStore.toggleTessellation(createTestPoints());
-            const state1 = get(tessellationStore);
+            const lastUpdate1 = tessellationStore.lastUpdate;
 
             vi.setSystemTime(time2);
             tessellationStore.toggleTessellation(); // Toggle off
-            const state2 = get(tessellationStore);
+            const lastUpdate2 = tessellationStore.lastUpdate;
 
-            expect(state1.lastUpdate).toBe(time1);
-            expect(state2.lastUpdate).toBe(time2);
-            expect(state2.lastUpdate).toBeGreaterThan(state1.lastUpdate);
+            expect(lastUpdate1).toBe(time1);
+            expect(lastUpdate2).toBe(time2);
+            expect(lastUpdate2).toBeGreaterThan(lastUpdate1);
 
             vi.useRealTimers();
         });
@@ -256,39 +239,33 @@ describe('tessellationStore', () => {
 
             // Set initial points
             tessellationStore.setTessellation(points1);
-            let state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toEqual(points1);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toEqual(points1);
 
             // Toggle off
             tessellationStore.toggleTessellation();
-            state = get(tessellationStore);
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
 
             // Set new points
             tessellationStore.setTessellation(points2);
-            state = get(tessellationStore);
-            expect(state.isActive).toBe(true);
-            expect(state.points).toEqual(points2);
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toEqual(points2);
 
             // Clear
             tessellationStore.clearTessellation();
-            state = get(tessellationStore);
-            expect(state.isActive).toBe(false);
-            expect(state.points).toHaveLength(0);
+            expect(tessellationStore.isActive).toBe(false);
+            expect(tessellationStore.points).toHaveLength(0);
         });
 
         it('should preserve point data integrity during operations', () => {
             const originalPoints = createTestPoints();
 
             tessellationStore.setTessellation(originalPoints);
-            const state = get(tessellationStore);
 
-            // Verify deep equality - the store directly assigns the array reference
-            expect(state.points).toEqual(originalPoints);
-            expect(state.points).toBe(originalPoints); // Store assigns the reference directly
-            expect(state.points[0]).toEqual({
+            // Verify deep equality
+            expect(tessellationStore.points).toEqual(originalPoints);
+            expect(tessellationStore.points[0]).toEqual({
                 x: 0,
                 y: 0,
                 shapeId: 'shape-1',
@@ -313,10 +290,9 @@ describe('tessellationStore', () => {
                 op();
             });
 
-            const finalState = get(tessellationStore);
-            expect(finalState.isActive).toBe(true);
-            expect(finalState.points).toHaveLength(0);
-            expect(finalState.lastUpdate).toBe(
+            expect(tessellationStore.isActive).toBe(true);
+            expect(tessellationStore.points).toHaveLength(0);
+            expect(tessellationStore.lastUpdate).toBe(
                 time + (operations.length - 1) * 1000
             );
 

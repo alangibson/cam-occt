@@ -34,3 +34,17 @@ export function calculateMidpoint(start: Point2D, end: Point2D): Point2D {
 export async function hashPoint2D(point: Point2D): Promise<string> {
     return hashObject(point);
 }
+
+/**
+ * Translate a single point by the given offsets
+ */
+// export function translatePoint(
+//     point: Point2D,
+//     dx: number,
+//     dy: number
+// ): Point2D {
+//     return {
+//         x: point.x + dx,
+//         y: point.y + dy,
+//     };
+// }

@@ -1,5 +1,5 @@
 import { Shape } from '$lib/cam/shape/classes';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { createPolylineFromVertices } from '$lib/geometry/dxf-polyline/functions';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, it } from 'vitest';

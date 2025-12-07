@@ -1,7 +1,6 @@
 import { Shape } from '$lib/cam/shape/classes';
 import { GeometryType } from '$lib/geometry/enums';
 import { describe, expect, it } from 'vitest';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { generateId } from '$lib/domain/id';
 import { detectShapeChains } from './chain-detection';
 
@@ -56,17 +55,6 @@ describe('Chain Detection Algorithm', () => {
                 clockwise: false,
             },
         });
-    }
-
-    function createPolyline(
-        points: Array<{ x: number; y: number }>,
-        closed: boolean = false
-    ): Shape {
-        const polylineShape = createPolylineFromVertices(
-            points.map((p) => ({ ...p, bulge: 0 })),
-            closed
-        );
-        return new Shape(polylineShape);
     }
 
     describe('Basic Chain Detection', () => {
@@ -196,22 +184,6 @@ describe('Chain Detection Algorithm', () => {
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(3);
         });
-
-        it('should chain polylines with other shapes', () => {
-            const shapes: Shape[] = [
-                createPolyline([
-                    { x: 0, y: 0 },
-                    { x: 10, y: 0 },
-                    { x: 10, y: 10 },
-                ]),
-                createLine(10, 10, 20, 10), // Connects to polyline endpoint
-                createCircle(20, 10, 3), // Connects to line endpoint
-            ];
-
-            const chains = detectShapeChains(shapes, { tolerance: 0.05 });
-            expect(chains).toHaveLength(1);
-            expect(chains[0].shapes).toHaveLength(3);
-        });
     });
 
     describe('Complex Chain Scenarios', () => {
@@ -306,88 +278,6 @@ describe('Chain Detection Algorithm', () => {
             const chains = detectShapeChains(shapes, { tolerance: 0.05 });
             expect(chains).toHaveLength(1);
             expect(chains[0].shapes).toHaveLength(3);
-        });
-    });
-
-    describe('Closed Polylines with Bulges', () => {
-        it('should correctly detect 2 separate closed polylines with bulges as 2 chains', () => {
-            // Create first closed polyline with bulges - a rounded square
-            const polyline1Shape = createPolylineFromVertices(
-                [
-                    { x: 0, y: 0, bulge: 0.5 }, // Arc to next vertex
-                    { x: 10, y: 0, bulge: 0.5 }, // Arc to next vertex
-                    { x: 10, y: 10, bulge: 0.5 }, // Arc to next vertex
-                    { x: 0, y: 10, bulge: 0.5 }, // Arc back to start
-                ],
-                true
-            );
-
-            const polyline1 = new Shape(polyline1Shape);
-
-            // Create second closed polyline with bulges - a rounded triangle, separate from the first
-            const polyline2Shape = createPolylineFromVertices(
-                [
-                    { x: 20, y: 0, bulge: 1.0 }, // Strong arc to next vertex
-                    { x: 30, y: 0, bulge: -0.5 }, // Reverse arc to next vertex
-                    { x: 25, y: 10, bulge: 0.5 }, // Arc back to start
-                ],
-                true
-            );
-
-            const polyline2 = new Shape(polyline2Shape);
-
-            const shapes: Shape[] = [polyline1, polyline2];
-            const chains = detectShapeChains(shapes, { tolerance: 0.05 });
-
-            // Should detect 2 separate chains since the polylines don't touch
-            expect(chains).toHaveLength(2);
-            expect(chains[0].shapes).toHaveLength(1);
-            expect(chains[1].shapes).toHaveLength(1);
-
-            // Verify each chain contains one polyline
-            expect(chains[0].shapes[0].type).toBe('polyline');
-            expect(chains[1].shapes[0].type).toBe('polyline');
-        });
-
-        it('should detect 2 closed polylines with bulges as separate chains when they do not share points', () => {
-            // Create first closed polyline with bulges - a rounded square
-            const polyline1Shape = createPolylineFromVertices(
-                [
-                    { x: 0, y: 0, bulge: 0.5 },
-                    { x: 10, y: 0, bulge: 0.5 },
-                    { x: 10, y: 10, bulge: 0.5 },
-                    { x: 0, y: 10, bulge: 0.5 },
-                ],
-                true
-            );
-
-            const polyline1 = new Shape(polyline1Shape);
-
-            // Create second closed polyline with bulges - adjacent but not overlapping
-            // Note: With bulges, the actual arc endpoints may differ from vertex positions
-            const polyline2Shape = createPolylineFromVertices(
-                [
-                    { x: 15, y: 0, bulge: -0.3 }, // Separated from first polyline
-                    { x: 25, y: 0, bulge: 0.7 }, // Strong arc
-                    { x: 25, y: 10, bulge: 0.3 },
-                    { x: 15, y: 10, bulge: 0.3 },
-                ],
-                true
-            );
-
-            const polyline2 = new Shape(polyline2Shape);
-
-            const shapes: Shape[] = [polyline1, polyline2];
-            const chains = detectShapeChains(shapes, { tolerance: 0.05 });
-
-            // Should detect 2 separate chains since polylines with bulges don't share points
-            expect(chains).toHaveLength(2);
-            expect(chains[0].shapes).toHaveLength(1);
-            expect(chains[1].shapes).toHaveLength(1);
-
-            // Verify each chain contains one polyline
-            expect(chains[0].shapes[0].type).toBe('polyline');
-            expect(chains[1].shapes[0].type).toBe('polyline');
         });
     });
 

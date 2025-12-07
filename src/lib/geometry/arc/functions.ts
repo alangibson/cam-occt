@@ -17,6 +17,8 @@ import {
 } from './constants';
 import { normalizeAngle } from '$lib/geometry/math/functions';
 import { hashObject } from '$lib/geometry/hash/functions';
+import { THREE_HALVES_PI } from '$lib/geometry/bounding-box/constants';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 /**
  * Calculate a point on a circle/arc given center, radius and angle
@@ -606,10 +608,103 @@ export function tessellateArc(
 }
 
 /**
+ * Translate an arc by the given offsets
+ */
+export function translateArc(arc: Arc, dx: number, dy: number): Arc {
+    return {
+        center: { x: arc.center.x + dx, y: arc.center.y + dy },
+        radius: arc.radius,
+        startAngle: arc.startAngle,
+        endAngle: arc.endAngle,
+        clockwise: arc.clockwise,
+    };
+}
+
+/**
  * Generate a content hash for an Arc
  * @param arc - The arc to hash
  * @returns A SHA-256 hash as a hex string
  */
 export async function hashArc(arc: Arc): Promise<string> {
     return hashObject(arc);
+}
+
+export function arcBoundingBox(arc: Arc): BoundingBoxData {
+    if (
+        !arc.center ||
+        !isFinite(arc.center.x) ||
+        !isFinite(arc.center.y) ||
+        !isFinite(arc.radius) ||
+        arc.radius <= 0 ||
+        !isFinite(arc.startAngle) ||
+        !isFinite(arc.endAngle)
+    ) {
+        throw new Error(
+            'Invalid arc: center, radius, and angles must be finite numbers'
+        );
+    }
+
+    const startPoint = calculateArcPoint(
+        arc.center,
+        arc.radius,
+        arc.startAngle
+    );
+    const endPoint = calculateArcPoint(arc.center, arc.radius, arc.endAngle);
+    const startX = startPoint.x;
+    const startY = startPoint.y;
+    const endX = endPoint.x;
+    const endY = endPoint.y;
+
+    let minX: number = Math.min(startX, endX);
+    let maxX: number = Math.max(startX, endX);
+    let minY: number = Math.min(startY, endY);
+    let maxY: number = Math.max(startY, endY);
+
+    const normalizeAngle: (angle: number) => number = (
+        angle: number
+    ): number => {
+        let normalized: number = angle % (2 * Math.PI);
+        if (normalized < 0) normalized += 2 * Math.PI;
+        return normalized;
+    };
+
+    const normStart: number = normalizeAngle(arc.startAngle);
+    const normEnd: number = normalizeAngle(arc.endAngle);
+
+    const isAngleInArc: (testAngle: number) => boolean = (
+        testAngle: number
+    ): boolean => {
+        const normTest: number = normalizeAngle(testAngle);
+
+        if (arc.clockwise) {
+            if (normStart >= normEnd) {
+                return normTest >= normEnd && normTest <= normStart;
+            } else {
+                return normTest >= normEnd || normTest <= normStart;
+            }
+        } else {
+            if (normStart <= normEnd) {
+                return normTest >= normStart && normTest <= normEnd;
+            } else {
+                return normTest >= normStart || normTest <= normEnd;
+            }
+        }
+    };
+
+    const extremeAngles: number[] = [0, Math.PI / 2, Math.PI, THREE_HALVES_PI];
+
+    for (const angle of extremeAngles) {
+        if (isAngleInArc(angle)) {
+            const point = calculateArcPoint(arc.center, arc.radius, angle);
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        }
+    }
+
+    return {
+        min: { x: minX, y: minY },
+        max: { x: maxX, y: maxY },
+    };
 }

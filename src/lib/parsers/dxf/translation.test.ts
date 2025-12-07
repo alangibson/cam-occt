@@ -1,24 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
-import {
-    polylineToPoints,
-    polylineToVertices,
-} from '$lib/geometry/polyline/functions';
+import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
-import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import { getShapePoints } from '$lib/cam/shape/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type {
-    Polyline,
-    PolylineVertex,
-} from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import { Shape } from '$lib/cam/shape/classes';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
+import { Unit } from '$lib/config/units/units';
+import { arcBoundingBox } from '$lib/geometry/arc/functions';
+
+// Helper function to create a Drawing from shapes and apply translation
+function createAndTranslateDrawing(
+    shapes: ShapeData[],
+    units: Unit = Unit.MM
+): Drawing {
+    const drawing = new Drawing({ shapes, units, fileName: 'test.dxf' });
+    translateToPositiveQuadrant(drawing);
+    return drawing;
+}
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: ShapeData[]) {
@@ -81,16 +87,11 @@ EOF`;
             // Parse DXF (no translation in parser)
             const parsed = await parseDXF(mockDXFContent);
 
-            // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing for bounds checking
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                // Recalculate bounds for translated shapes
-                bounds: calculateBounds(translatedShapes),
-            };
+            // Create drawing and apply translation
+            const drawing = createAndTranslateDrawing(
+                parsed.shapes,
+                parsed.units
+            );
 
             // Check that bounds start at origin
             expect(drawing.bounds.min.x).toBe(0);
@@ -152,15 +153,11 @@ EOF`;
             // Parse DXF
             const parsed = await parseDXF(mockDXFContent);
 
-            // Apply translation (should not change anything)
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const translatedDrawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            // Create drawing and apply translation (should not change anything)
+            const translatedDrawing = createAndTranslateDrawing(
+                parsed.shapes,
+                parsed.units
+            );
 
             // Should be identical since already in positive quadrant
             expect(translatedDrawing.bounds).toEqual(
@@ -208,15 +205,11 @@ EOF`;
             // Parse DXF (no translation in parser)
             const parsed = await parseDXF(mockDXFContent);
 
-            // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            // Create drawing and apply translation
+            const drawing = createAndTranslateDrawing(
+                parsed.shapes,
+                parsed.units
+            );
 
             // Should start at origin
             expect(drawing.bounds.min.x).toBe(0);
@@ -247,7 +240,7 @@ EOF`;
     });
 
     describe('Polyline translation', () => {
-        it('should translate simple polylines correctly', async () => {
+        it('should translate simple polylines correctly after decomposition', async () => {
             const mockDXFContent = `0
 SECTION
 2
@@ -276,35 +269,32 @@ EOF`;
             // Parse DXF (no translation in parser)
             const parsed = await parseDXF(mockDXFContent);
 
-            // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
-
-            const polylineShape = drawing.shapes.find(
-                (s: ShapeData) => s.type === 'polyline'
+            // Decompose polylines first, then translate
+            const decomposed = decomposePolylines(
+                parsed.shapes.map((s) => new Shape(s))
             );
-            expect(polylineShape).toBeDefined();
+            const drawing = createAndTranslateDrawing(
+                decomposed.map((s) => s.toData()),
+                parsed.units
+            );
 
-            if (polylineShape) {
-                const geom = polylineShape.geometry as Polyline;
+            // After decomposition, we should have line segments
+            const lines = drawing.shapes.filter(
+                (s: ShapeData) => s.type === 'line'
+            );
+            expect(lines.length).toBeGreaterThan(0);
 
-                // Check points array
-                polylineToPoints(geom).forEach((point: Point2D) => {
-                    expect(point.x).toBeGreaterThanOrEqual(0);
-                    expect(point.y).toBeGreaterThanOrEqual(0);
-                });
-
-                // Vertices are represented as shapes in the Polyline interface
-            }
+            // All decomposed line segments should be in positive quadrant
+            lines.forEach((lineShape: ShapeData) => {
+                const line = lineShape.geometry as Line;
+                expect(line.start.x).toBeGreaterThanOrEqual(0);
+                expect(line.start.y).toBeGreaterThanOrEqual(0);
+                expect(line.end.x).toBeGreaterThanOrEqual(0);
+                expect(line.end.y).toBeGreaterThanOrEqual(0);
+            });
         });
 
-        it('should translate polylines with bulges correctly', async () => {
+        it('should translate polylines with bulges correctly after decomposition', async () => {
             // Create a more complex DXF with bulge data
             const mockDXFContent = `0
 SECTION
@@ -346,42 +336,36 @@ EOF`;
             // Parse DXF (no translation in parser)
             const parsed = await parseDXF(mockDXFContent);
 
-            // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
-
-            const polylineShape = drawing.shapes.find(
-                (s: ShapeData) => s.type === 'polyline'
+            // Decompose polylines first (converts bulges to arcs), then translate
+            const decomposed = decomposePolylines(
+                parsed.shapes.map((s) => new Shape(s))
             );
-            expect(polylineShape).toBeDefined();
+            const drawing = createAndTranslateDrawing(
+                decomposed.map((s) => s.toData()),
+                parsed.units
+            );
 
-            if (polylineShape) {
-                const geom = polylineShape.geometry as Polyline;
+            // After decomposition, we should have line and arc segments
+            const segments = drawing.shapes.filter(
+                (s: ShapeData) => s.type === 'line' || s.type === 'arc'
+            );
+            expect(segments.length).toBeGreaterThan(0);
 
-                // All coordinates should be non-negative
-                polylineToPoints(geom).forEach((point: Point2D) => {
-                    expect(point.x).toBeGreaterThanOrEqual(0);
-                    expect(point.y).toBeGreaterThanOrEqual(0);
-                });
-
-                // Polylines don't have a vertices property in our Polyline type
-                // They have a shapes property containing Line and Arc geometries
-                const vertices = polylineToVertices(geom);
-                vertices.forEach((vertex: PolylineVertex) => {
-                    expect(vertex.x).toBeGreaterThanOrEqual(0);
-                    expect(vertex.y).toBeGreaterThanOrEqual(0);
-                    // Bulge values should be preserved
-                    if (vertex.bulge !== undefined) {
-                        expect(typeof vertex.bulge).toBe('number');
-                    }
-                });
-            }
+            // All decomposed segments should be in positive quadrant
+            segments.forEach((shape: ShapeData) => {
+                if (shape.type === 'line') {
+                    const line = shape.geometry as Line;
+                    expect(line.start.x).toBeGreaterThanOrEqual(0);
+                    expect(line.start.y).toBeGreaterThanOrEqual(0);
+                    expect(line.end.x).toBeGreaterThanOrEqual(0);
+                    expect(line.end.y).toBeGreaterThanOrEqual(0);
+                } else if (shape.type === 'arc') {
+                    const arc = shape.geometry as Arc;
+                    const bounds = arcBoundingBox(arc);
+                    expect(bounds.min.x).toBeGreaterThanOrEqual(0);
+                    expect(bounds.min.y).toBeGreaterThanOrEqual(0);
+                }
+            });
         });
 
         it('should translate decomposed polylines correctly', async () => {
@@ -418,15 +402,13 @@ EOF`;
             const parsed = await parseDXF(mockDXFContent);
 
             // Apply decomposition first, then translation
-            const decomposed = decomposePolylines(parsed.shapes);
-            const translatedShapes = translateToPositiveQuadrant(decomposed);
-
-            // Create final drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            const decomposed = decomposePolylines(
+                parsed.shapes.map((s) => new Shape(s))
+            );
+            const drawing = createAndTranslateDrawing(
+                decomposed.map((s) => s.toData()),
+                parsed.units
+            );
 
             // Should have multiple shapes (decomposed)
             expect(drawing.shapes.length).toBeGreaterThan(1);
@@ -479,23 +461,19 @@ EOF`;
             // Parse DXF (original)
             const originalDrawing = await parseDXF(mockDXFContent);
 
-            // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(
-                originalDrawing.shapes
-            );
-            const translatedDrawing = {
-                ...originalDrawing,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
-
-            // Translation should be (75, 100) to move (-75, -100) to (0, 0)
+            // Calculate bounds BEFORE creating translated drawing to avoid mutation
             const originalBounds = calculateBounds(originalDrawing.shapes);
             const expectedTranslationX = -originalBounds.min.x;
             const expectedTranslationY = -originalBounds.min.y;
 
             expect(expectedTranslationX).toBe(75);
             expect(expectedTranslationY).toBe(100);
+
+            // Apply translation separately
+            const translatedDrawing = createAndTranslateDrawing(
+                originalDrawing.shapes,
+                originalDrawing.units
+            );
 
             // Check that translation was applied correctly
             expect(translatedDrawing.bounds.min.x).toBe(0);
@@ -589,20 +567,16 @@ EOF`;
             const parsed = await parseDXF(emptyDXFContent);
 
             // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            const drawing = createAndTranslateDrawing(
+                parsed.shapes,
+                parsed.units
+            );
 
             expect(drawing.shapes.length).toBe(0);
-            expect(drawing.bounds.min.x).toBe(0);
-            expect(drawing.bounds.min.y).toBe(0);
-            expect(drawing.bounds.max.x).toBe(0);
-            expect(drawing.bounds.max.y).toBe(0);
+            expect(drawing.bounds.min.x).toBe(Infinity);
+            expect(drawing.bounds.min.y).toBe(Infinity);
+            expect(drawing.bounds.max.x).toBe(-Infinity);
+            expect(drawing.bounds.max.y).toBe(-Infinity);
         });
 
         it('should handle drawing at exact origin', async () => {
@@ -629,14 +603,10 @@ EOF`;
             const parsed = await parseDXF(originDXFContent);
 
             // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            const drawing = createAndTranslateDrawing(
+                parsed.shapes,
+                parsed.units
+            );
 
             // Should remain unchanged
             expect(drawing.bounds.min.x).toBe(0);
@@ -669,14 +639,10 @@ EOF`;
             const parsed = await parseDXF(smallNegativeDXFContent);
 
             // Apply translation separately
-            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-
-            // Create translated drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            const drawing = createAndTranslateDrawing(
+                parsed.shapes,
+                parsed.units
+            );
 
             // Should still translate to origin
             expect(drawing.bounds.min.x).toBe(0);
@@ -751,15 +717,13 @@ EOF`;
             const parsed = await parseDXF(mockDXFContent);
 
             // Apply both decomposition and translation separately
-            const decomposed = decomposePolylines(parsed.shapes);
-            const translatedShapes = translateToPositiveQuadrant(decomposed);
-
-            // Create final drawing
-            const drawing = {
-                ...parsed,
-                shapes: translatedShapes,
-                bounds: calculateBounds(translatedShapes),
-            };
+            const decomposed = decomposePolylines(
+                parsed.shapes.map((s) => new Shape(s))
+            );
+            const drawing = createAndTranslateDrawing(
+                decomposed.map((s) => s.toData()),
+                parsed.units
+            );
 
             // Should have decomposed shapes
             expect(drawing.shapes.length).toBeGreaterThan(1);
@@ -802,14 +766,14 @@ function getShapeBounds(shape: ShapeData) {
         case 'arc':
             const arc = shape.geometry as Arc;
             // Use actual arc bounds instead of full circle bounds
-            const arcBounds = getBoundingBoxForArc(arc);
+            const arcBounds = arcBoundingBox(arc);
             minX = arcBounds.min.x;
             maxX = arcBounds.max.x;
             minY = arcBounds.min.y;
             maxY = arcBounds.max.y;
             break;
         case 'polyline':
-            const polyline = shape.geometry as Polyline;
+            const polyline = shape.geometry as DxfPolyline;
             polylineToPoints(polyline).forEach((point: Point2D) => {
                 minX = Math.min(minX, point.x);
                 maxX = Math.max(maxX, point.x);

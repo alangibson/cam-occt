@@ -125,7 +125,7 @@ describe('createCutsFromOperation', () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
-            chainId: 'chain-1',
+            sourceChainId: 'chain-1',
         } as any;
 
         vi.mocked(generateCutsForChainsWithOperation).mockResolvedValue({
@@ -163,7 +163,7 @@ describe('createCutsFromOperation', () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Part Cut',
-            chainId: 'chain-1',
+            sourceChainId: 'chain-1',
         } as any;
 
         vi.mocked(generateCutsForPartsWithOperation).mockResolvedValue({
@@ -205,13 +205,13 @@ describe('createCutsFromOperation', () => {
         const mockCut1 = {
             id: 'cut-1',
             name: 'Cut 1',
-            chainId: 'chain-1',
+            sourceChainId: 'chain-1',
         } as any;
 
         const mockCut2 = {
             id: 'cut-2',
             name: 'Cut 2',
-            chainId: 'chain-2',
+            sourceChainId: 'chain-2',
         } as any;
 
         vi.mocked(generateCutsForChainsWithOperation)
@@ -293,7 +293,7 @@ describe('createCutsFromOperation', () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
-            chainId: 'chain-1',
+            sourceChainId: 'chain-1',
             offset: {
                 originalShapes: mockChain.shapes,
                 offsetShapes: mockChain.shapes,
@@ -329,7 +329,7 @@ describe('createCutsFromOperation', () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
-            chainId: 'chain-1',
+            sourceChainId: 'chain-1',
         } as any;
 
         vi.mocked(generateCutsForChainsWithOperation).mockResolvedValue({
@@ -350,7 +350,7 @@ describe('createCutsFromOperation', () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
-            chainId: 'chain-1',
+            sourceChainId: 'chain-1',
         } as any;
 
         vi.mocked(generateCutsForChainsWithOperation).mockResolvedValue({
@@ -403,7 +403,7 @@ describe('createCutsFromOperation', () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
-            chainId: 'missing-chain',
+            sourceChainId: 'missing-chain',
         } as any;
 
         vi.mocked(generateCutsForChainsWithOperation).mockResolvedValue({

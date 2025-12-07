@@ -1,8 +1,8 @@
 <script lang="ts">
     import { untrack } from 'svelte';
     import { parseDXF } from '$lib/parsers/dxf/functions';
-    import { drawingStore } from '$lib/stores/drawing/store';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { drawingStore } from '$lib/stores/drawing/store.svelte';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { Unit, measurementSystemToUnit } from '$lib/config/units/units';
     import type { DrawingData } from '$lib/cam/drawing/interfaces';
     import { Drawing } from '$lib/cam/drawing/classes.svelte';
@@ -76,8 +76,8 @@
     let originalDrawing: DrawingData | null = $state(null);
     let settingsEffectInitialized = $state(false);
 
-    let fileName = $derived($drawingStore.drawing?.fileName ?? null);
-    let settings = $derived($settingsStore.settings);
+    let fileName = $derived(drawingStore.drawing?.fileName ?? null);
+    let settings = $derived(settingsStore.settings);
 
     // Reset originalUnits and originalDrawing when no file is loaded
     $effect(() => {

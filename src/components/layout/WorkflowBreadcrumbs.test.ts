@@ -1,17 +1,19 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
+import { SvelteSet } from 'svelte/reactivity';
+
+// Import after mocks
 import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
-import { workflowStore } from '$lib/stores/workflow/store';
+import { workflowStore } from '$lib/stores/workflow/store.svelte';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { uiStore } from '$lib/stores/ui/store';
+import { uiStore } from '$lib/stores/ui/store.svelte';
 
 // Mock the stores with corrected paths
-vi.mock('$lib/stores/workflow/store', () => ({
+vi.mock('$lib/stores/workflow/store.svelte', () => ({
     workflowStore: {
-        subscribe: vi.fn(),
         currentStage: 'import',
-        completedStages: new Set(),
+        completedStages: new SvelteSet(),
         canAdvanceTo: vi.fn().mockReturnValue(true),
         setStage: vi.fn(),
     },
@@ -20,8 +22,6 @@ vi.mock('$lib/stores/workflow/store', () => ({
 vi.mock('$lib/stores/workflow/enums', () => ({
     WorkflowStage: {
         IMPORT: 'import',
-        EDIT: 'edit',
-        PREPARE: 'prepare',
         PROGRAM: 'program',
         SIMULATE: 'simulate',
         EXPORT: 'export',
@@ -32,8 +32,6 @@ vi.mock('$lib/stores/workflow/functions', () => ({
     getStageDisplayName: vi.fn((stage: string) => {
         const names = {
             import: 'Import',
-            edit: 'Edit',
-            prepare: 'Prepare',
             program: 'Program',
             simulate: 'Simulate',
             export: 'Export',
@@ -42,46 +40,31 @@ vi.mock('$lib/stores/workflow/functions', () => ({
     }),
 }));
 
-vi.mock('$lib/stores/ui/store', () => ({
+vi.mock('$lib/stores/ui/store.svelte', () => ({
     uiStore: {
+        toolTableVisible: false,
+        settingsVisible: false,
+        showToolTable: vi.fn(),
         hideToolTable: vi.fn(),
+        showSettings: vi.fn(),
         hideSettings: vi.fn(),
+        toggleToolTable: vi.fn(),
+        toggleSettings: vi.fn(),
+        restore: vi.fn(),
     },
 }));
 
-vi.mock('$lib/stores/settings/store', () => ({
+vi.mock('$lib/stores/settings/store.svelte', () => ({
     settingsStore: {
-        subscribe: vi.fn((callback) => {
-            callback({
-                settings: {
-                    enabledStages: [
-                        'import',
-                        'edit',
-                        'prepare',
-                        'program',
-                        'simulate',
-                        'export',
-                    ],
-                },
-            });
-            return () => {};
-        }),
+        settings: {
+            enabledStages: ['import', 'program', 'simulate', 'export'],
+        },
     },
 }));
 
 describe('WorkflowBreadcrumbs Component', () => {
     beforeEach(async () => {
         vi.clearAllMocks();
-
-        // Mock store subscription
-        vi.mocked(workflowStore.subscribe).mockImplementation((callback) => {
-            callback({
-                currentStage: WorkflowStage.IMPORT,
-                completedStages: new Set(),
-                canAdvanceTo: workflowStore.canAdvanceTo,
-            });
-            return () => {}; // Unsubscribe function
-        });
     });
 
     it('should render without errors', () => {
@@ -93,8 +76,6 @@ describe('WorkflowBreadcrumbs Component', () => {
         const { getByText } = render(WorkflowBreadcrumbs);
 
         expect(getByText('Import')).toBeDefined();
-        expect(getByText('Edit')).toBeDefined();
-        expect(getByText('Prepare')).toBeDefined();
         expect(getByText('Program')).toBeDefined();
         expect(getByText('Simulate')).toBeDefined();
         expect(getByText('Export')).toBeDefined();
@@ -111,11 +92,13 @@ describe('WorkflowBreadcrumbs Component', () => {
         vi.mocked(workflowStore.canAdvanceTo).mockReturnValue(true);
 
         const { getByText } = render(WorkflowBreadcrumbs);
-        const editButton = getByText('Edit').closest('button');
+        const programButton = getByText('Program').closest('button');
 
-        await fireEvent.click(editButton!);
+        await fireEvent.click(programButton!);
 
-        expect(workflowStore.setStage).toHaveBeenCalledWith(WorkflowStage.EDIT);
+        expect(workflowStore.setStage).toHaveBeenCalledWith(
+            WorkflowStage.PROGRAM
+        );
         expect(uiStore.hideToolTable).toHaveBeenCalled();
         expect(uiStore.hideSettings).toHaveBeenCalled();
     });
@@ -136,7 +119,7 @@ describe('WorkflowBreadcrumbs Component', () => {
             (stage: string) => {
                 return (
                     stage === WorkflowStage.IMPORT ||
-                    stage === WorkflowStage.EDIT
+                    stage === WorkflowStage.PROGRAM
                 );
             }
         );
@@ -144,35 +127,27 @@ describe('WorkflowBreadcrumbs Component', () => {
         const { getByText } = render(WorkflowBreadcrumbs);
 
         const importButton = getByText('Import').closest('button');
-        const editButton = getByText('Edit').closest('button');
-        const prepareButton = getByText('Prepare').closest('button');
+        const programButton = getByText('Program').closest('button');
+        const simulateButton = getByText('Simulate').closest('button');
 
         expect(importButton?.disabled).toBe(false);
-        expect(editButton?.disabled).toBe(false);
-        expect(prepareButton?.disabled).toBe(true);
+        expect(programButton?.disabled).toBe(false);
+        expect(simulateButton?.disabled).toBe(true);
     });
 
     it('should show completed stages with appropriate styling', async () => {
-        vi.mocked(workflowStore.subscribe).mockImplementation((callback) => {
-            callback({
-                currentStage: WorkflowStage.PREPARE,
-                completedStages: new Set([
-                    WorkflowStage.IMPORT,
-                    WorkflowStage.EDIT,
-                ]),
-                canAdvanceTo: workflowStore.canAdvanceTo,
-            });
-            return () => {};
-        });
+        // Update the mock to show completed stages
+        vi.mocked(workflowStore).currentStage = WorkflowStage.PROGRAM;
+        vi.mocked(workflowStore).completedStages = new SvelteSet([
+            WorkflowStage.IMPORT,
+        ]);
 
         const { getByText } = render(WorkflowBreadcrumbs);
 
         const importButton = getByText('Import').closest('button');
-        const editButton = getByText('Edit').closest('button');
-        const prepareButton = getByText('Prepare').closest('button');
+        const programButton = getByText('Program').closest('button');
 
         expect(importButton?.classList.contains('completed')).toBe(true);
-        expect(editButton?.classList.contains('completed')).toBe(true);
-        expect(prepareButton?.classList.contains('current')).toBe(true);
+        expect(programButton?.classList.contains('current')).toBe(true);
     });
 });

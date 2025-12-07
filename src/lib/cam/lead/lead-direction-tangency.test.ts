@@ -4,11 +4,13 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { createPolylineFromVertices } from '$lib/geometry/dxf-polyline/functions';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { convertLeadGeometryToPoints } from './functions';
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
+import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('Lead Direction and Cut Direction Tangency', () => {
     // Create a simple circular chain for testing
@@ -57,12 +59,15 @@ describe('Lead Direction and Cut Direction Tangency', () => {
                   { x, y, bulge: 0 }, // Close the rectangle
               ];
 
+        const polyline = createPolylineFromVertices(vertices, true, {
+            id: 'rect-1',
+        });
+        const decomposed = decomposePolylines([new Shape(polyline)]);
+
         return {
             id: 'test-rectangle',
             name: 'test-rectangle',
-            shapes: [
-                createPolylineFromVertices(vertices, true, { id: 'rect-1' }),
-            ],
+            shapes: decomposed,
         };
     }
 

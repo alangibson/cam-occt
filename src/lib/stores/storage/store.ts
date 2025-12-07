@@ -4,7 +4,6 @@
  * Coordinates saving and restoring state across all stores
  */
 
-import { get } from 'svelte/store';
 import {
     clearPersistedState,
     debouncedSave,
@@ -15,80 +14,86 @@ import { type PersistedState } from './interfaces';
 import { Unit } from '$lib/config/units/units';
 
 // Import all stores
-import { drawingStore } from '$lib/stores/drawing/store';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import type { DrawingState } from '$lib/stores/drawing/interfaces';
-import { workflowStore } from '$lib/stores/workflow/store';
+import { workflowStore } from '$lib/stores/workflow/store.svelte';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { WorkflowState } from '$lib/stores/workflow/interfaces';
-import { chainStore } from '$lib/stores/chains/store';
-import type { ChainStore } from '$lib/stores/chains/interfaces';
-import { partStore } from '$lib/stores/parts/store';
-import type { PartStore } from '$lib/stores/parts/interfaces';
-import { rapidStore } from '$lib/stores/rapids/store';
-import type { RapidsState } from '$lib/stores/rapids/interfaces';
-import { uiStore } from '$lib/stores/ui/store';
+import { chainStore } from '$lib/stores/chains/store.svelte';
+import { partStore } from '$lib/stores/parts/store.svelte';
+import { rapidStore } from '$lib/stores/rapids/store.svelte';
+import { uiStore } from '$lib/stores/ui/store.svelte';
 import type { UIState } from '$lib/stores/ui/interfaces';
-import { tessellationStore } from '$lib/stores/tessellation/store';
-import type { TessellationState } from '$lib/stores/tessellation/interfaces';
-import { overlayStore } from '$lib/stores/overlay/store';
+import { tessellationStore } from '$lib/stores/tessellation/store.svelte';
+import { overlayStore } from '$lib/stores/overlay/store.svelte';
 import type { OverlayState } from '$lib/stores/overlay/interfaces';
-import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
-import { operationsStore } from '$lib/stores/operations/store';
+import { operationsStore } from '$lib/stores/operations/store.svelte';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';
 import { Cut } from '$lib/cam/cut/classes.svelte';
-import { planStore } from '$lib/stores/plan/store';
-import { cutStore } from '$lib/stores/cuts/store';
+import { planStore } from '$lib/stores/plan/store.svelte';
+import { cutStore } from '$lib/stores/cuts/store.svelte';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
-import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
+import { toolStore, createDefaultTool } from '$lib/stores/tools/store.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import { settingsStore } from '$lib/stores/settings/store';
-import type { SettingsState } from '$lib/config/settings/interfaces';
-import { kerfStore } from '$lib/stores/kerfs/store';
-import { selectionStore } from '$lib/stores/selection/store';
+import { settingsStore } from '$lib/stores/settings/store.svelte';
+import { kerfStore } from '$lib/stores/kerfs/store.svelte';
+import { selectionStore } from '$lib/stores/selection/store.svelte';
 import type { SelectionState } from '$lib/stores/selection/interfaces';
 
 /**
  * Collect current state from all stores
  */
 function collectCurrentState(): PersistedState {
-    const drawing: DrawingState = get(drawingStore);
-    const workflow: WorkflowState = get(workflowStore);
-    const chains: ChainStore = get(chainStore);
-    const parts: PartStore = get(partStore);
-    const ui: UIState = get(uiStore);
-    const tessellation: TessellationState = get(tessellationStore);
-    const overlay: OverlayState = get(overlayStore);
-    const prepareStage: PrepareStageState = get(prepareStageStore);
-    const operations: OperationData[] = get(operationsStore).map((op) =>
+    const workflow: WorkflowState = {
+        currentStage: workflowStore.currentStage,
+        completedStages: workflowStore.completedStages,
+        canAdvanceTo: workflowStore.canAdvanceTo.bind(workflowStore),
+    };
+    const ui: UIState = {
+        showToolTable: uiStore.toolTableVisible,
+        showSettings: uiStore.settingsVisible,
+    };
+    const overlay: OverlayState = {
+        currentStage: overlayStore.currentStage,
+        overlays: overlayStore.overlays,
+    };
+    const operations: OperationData[] = operationsStore.operations.map((op) =>
         op.toData()
     );
-    const plan = get(planStore).plan;
-    const cutsUIState: CutsState = get(cutStore);
-    const tools: Tool[] = get(toolStore);
-    const settings: SettingsState = get(settingsStore);
-    const rapidUIState: RapidsState = get(rapidStore);
-    const selection: SelectionState = get(selectionStore);
+    const plan = planStore.plan;
+    const cutsUIState: CutsState = {
+        showCutNormals: cutStore.showCutNormals,
+        showCutDirections: cutStore.showCutDirections,
+        showCutPaths: cutStore.showCutPaths,
+        showCutStartPoints: cutStore.showCutStartPoints,
+        showCutEndPoints: cutStore.showCutEndPoints,
+        showCutTangentLines: cutStore.showCutTangentLines,
+    };
+    const tools: Tool[] = toolStore.tools;
+    const settings = settingsStore.settings;
+    const rapidUIState = {
+        showRapids: rapidStore.showRapids,
+        showRapidDirections: rapidStore.showRapidDirections,
+    };
+    const selection: SelectionState = selectionStore.getState();
 
     // Collect chains from drawing layers
     const allChains =
-        drawing.drawing && drawing.drawing.layers
-            ? Object.values(drawing.drawing.layers).flatMap(
+        drawingStore.drawing && drawingStore.drawing.layers
+            ? Object.values(drawingStore.drawing.layers).flatMap(
                   (layer) => layer.chains
               )
             : [];
 
     return {
         // Drawing state
-        drawing: drawing.drawing ? drawing.drawing.toData() : null,
-        scale: drawing.scale,
-        offset: drawing.offset,
-        fileName: drawing.drawing?.fileName ?? '',
-        layerVisibility: drawing.layerVisibility,
-        displayUnit: drawing.displayUnit as 'mm' | 'inch',
+        drawing: drawingStore.drawing ? drawingStore.drawing.toData() : null,
+        scale: drawingStore.scale,
+        offset: drawingStore.offset,
+        fileName: drawingStore.drawing?.fileName ?? '',
+        layerVisibility: drawingStore.layerVisibility,
+        displayUnit: drawingStore.displayUnit as 'mm' | 'inch',
 
         // Workflow state
         currentStage: workflow.currentStage,
@@ -96,15 +101,15 @@ function collectCurrentState(): PersistedState {
 
         // Chains state
         chains: allChains,
-        tolerance: chains.tolerance,
+        tolerance: chainStore.tolerance,
 
         // Parts state - get from drawing layers
-        parts: drawing.drawing
-            ? Object.values(drawing.drawing.layers).flatMap(
+        parts: drawingStore.drawing
+            ? Object.values(drawingStore.drawing.layers).flatMap(
                   (layer) => layer.parts
               )
             : [],
-        partWarnings: parts.warnings,
+        partWarnings: partStore.warnings,
 
         // Rapids UI state (rapids data is now in Cut.rapidIn)
         showRapids: rapidUIState.showRapids,
@@ -113,15 +118,12 @@ function collectCurrentState(): PersistedState {
         showToolTable: ui.showToolTable,
 
         // Tessellation state
-        tessellationActive: tessellation.isActive,
-        tessellationPoints: tessellation.points,
+        tessellationActive: tessellationStore.isActive,
+        tessellationPoints: tessellationStore.points,
 
         // Overlay state
         overlayStage: overlay.currentStage,
         overlays: overlay.overlays,
-
-        // Prepare stage state
-        prepareStageState: prepareStage,
 
         // Operations, cuts, and tools
         operations: operations,
@@ -129,7 +131,7 @@ function collectCurrentState(): PersistedState {
         tools: tools,
 
         // Application settings
-        applicationSettings: settings.settings,
+        applicationSettings: settings,
 
         // Cut visualization state
         showCutNormals: cutsUIState.showCutNormals,
@@ -349,45 +351,6 @@ function restoreStateToStores(state: PersistedState): void {
             });
         }
 
-        // Restore prepare stage state
-        if (state.prepareStageState) {
-            // Merge with defaults to ensure all properties exist
-            const mergedAlgorithmParams = {
-                ...DEFAULT_ALGORITHM_PARAMETERS_MM,
-                ...state.prepareStageState.algorithmParams,
-                // Ensure nested objects are also merged properly
-                chainDetection: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.chainDetection,
-                    ...(state.prepareStageState.algorithmParams
-                        ?.chainDetection || {}),
-                },
-                chainNormalization: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.chainNormalization,
-                    ...(state.prepareStageState.algorithmParams
-                        ?.chainNormalization || {}),
-                },
-                partDetection: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.partDetection,
-                    ...(state.prepareStageState.algorithmParams
-                        ?.partDetection || {}),
-                },
-                joinColinearLines: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.joinColinearLines,
-                    ...(state.prepareStageState.algorithmParams
-                        ?.joinColinearLines || {}),
-                },
-            };
-
-            prepareStageStore.setAlgorithmParams(mergedAlgorithmParams);
-            prepareStageStore.setChainNormalizationResults(
-                state.prepareStageState.chainNormalizationResults
-            );
-            prepareStageStore.setColumnWidths(
-                state.prepareStageState.leftColumnWidth,
-                state.prepareStageState.rightColumnWidth
-            );
-        }
-
         // Restore operations and cuts using reorder methods to avoid side effects
         if (state.operations && Array.isArray(state.operations)) {
             operationsStore.reorderOperations(
@@ -404,7 +367,7 @@ function restoreStateToStores(state: PersistedState): void {
 
         if (state.cuts && Array.isArray(state.cuts)) {
             // Restore cuts to Plan (convert CutData[] to Cut[])
-            const plan = get(planStore).plan;
+            const plan = planStore.plan;
             plan.cuts = state.cuts.map((cutData) => {
                 // Validate that cut has required fields
                 if (!cutData.id) {
@@ -488,7 +451,6 @@ export function resetApplicationToDefaults(): void {
     uiStore.hideToolTable();
     tessellationStore.clearTessellation();
     overlayStore.clearAllOverlays();
-    prepareStageStore.reset();
     operationsStore.reset();
     cutStore.reset();
     toolStore.reset();
@@ -502,38 +464,15 @@ export function resetApplicationToDefaults(): void {
 
 /**
  * Setup auto-save subscriptions for all stores
+ * Note: drawingStore, chainStore, partStore, operationsStore, cutStore, tessellationStore, overlayStore,
+ * toolStore, selectionStore, workflowStore, rapidStore, and uiStore use Svelte 5 runes and should be watched with $effect in the component
  */
 export function setupAutoSave(): () => void {
     // Subscribe to all stores and trigger auto-save on changes
     const unsubscribers: Array<() => void> = [];
 
-    unsubscribers.push(
-        drawingStore.subscribe(() => autoSaveApplicationState())
-    );
-    unsubscribers.push(
-        workflowStore.subscribe(() => autoSaveApplicationState())
-    );
-    unsubscribers.push(chainStore.subscribe(() => autoSaveApplicationState()));
-    unsubscribers.push(partStore.subscribe(() => autoSaveApplicationState()));
-    unsubscribers.push(rapidStore.subscribe(() => autoSaveApplicationState()));
-    unsubscribers.push(uiStore.subscribe(() => autoSaveApplicationState()));
-    unsubscribers.push(
-        tessellationStore.subscribe(() => autoSaveApplicationState())
-    );
-    unsubscribers.push(
-        overlayStore.subscribe(() => autoSaveApplicationState())
-    );
-    unsubscribers.push(
-        prepareStageStore.subscribe(() => autoSaveApplicationState())
-    );
-    unsubscribers.push(
-        operationsStore.subscribe(() => autoSaveApplicationState())
-    );
-    unsubscribers.push(cutStore.subscribe(() => autoSaveApplicationState()));
-    unsubscribers.push(toolStore.subscribe(() => autoSaveApplicationState()));
-    unsubscribers.push(
-        selectionStore.subscribe(() => autoSaveApplicationState())
-    );
+    // NOTE: All stores are now Svelte 5 runes-based stores.
+    // They should be watched with $effect in the component that calls setupAutoSave.
 
     // Return cleanup function
     return () => {

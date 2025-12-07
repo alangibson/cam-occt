@@ -4,19 +4,19 @@
  * Applies preprocessing steps automatically after file import based on user settings
  */
 
-import { get } from 'svelte/store';
-import { settingsStore } from '$lib/stores/settings/store';
-import { drawingStore } from '$lib/stores/drawing/store';
-import { prepareStageStore } from '$lib/stores/prepare-stage/store';
+import { settingsStore } from '$lib/stores/settings/store.svelte';
+import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { PreprocessingStep } from '$lib/config/settings/enums';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import { deduplicateShapes } from '$lib/cam/preprocess/dedupe-shapes/functions';
 import { joinColinearLines } from '$lib/cam/preprocess/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { AlgorithmParameters } from '$lib/cam/preprocess/algorithm-parameters';
 import { Shape } from '$lib/cam/shape/classes';
+import { resetDownstreamStages } from '$lib/stores/drawing/functions';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 /**
  * Apply all enabled preprocessing steps in order
@@ -24,16 +24,23 @@ import { Shape } from '$lib/cam/shape/classes';
 const STEP_DELAY_MS = 50;
 
 export async function applyAutoPreprocessing(): Promise<void> {
-    const settings = get(settingsStore);
-    const enabledSteps = settings.settings.enabledPreprocessingSteps;
+    const enabledSteps = settingsStore.settings.enabledPreprocessingSteps;
 
     console.log(
         'Starting auto-preprocessing with enabled steps:',
         enabledSteps
     );
 
-    // Get algorithm parameters from store
-    const algorithmParams = get(prepareStageStore).algorithmParams;
+    // Get algorithm parameters from defaults
+    const defaults = getDefaults();
+    const algorithmParams: AlgorithmParameters = {
+        chainDetection: defaults.chain.detectionParameters,
+        chainNormalization: defaults.chain.normalizationParameters,
+        partDetection: defaults.algorithm.partDetectionParameters,
+        joinColinearLines: defaults.algorithm.joinColinearLinesParameters,
+        startPointOptimization:
+            defaults.algorithm.startPointOptimizationParameters,
+    };
 
     // Apply each enabled step in order
     for (const step of enabledSteps) {
@@ -57,7 +64,7 @@ async function applyPreprocessingStep(
     step: PreprocessingStep,
     algorithmParams: AlgorithmParameters
 ): Promise<void> {
-    const drawing = get(drawingStore).drawing;
+    const drawing = drawingStore.drawing;
 
     if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
         console.warn(`No drawing available for step ${step}`);
@@ -67,97 +74,92 @@ async function applyPreprocessingStep(
     switch (step) {
         case PreprocessingStep.DecomposePolylines:
             console.log('Applying: Decompose Polylines');
-            const decomposedShapes = decomposePolylines(drawing.shapes);
-            drawingStore.replaceAllShapes(decomposedShapes);
+            Object.values(drawing.layers).forEach((layer) => {
+                const decomposedShapes = decomposePolylines(layer.shapes);
+                layer.shapes = decomposedShapes;
+            });
+            resetDownstreamStages(WorkflowStage.PROGRAM);
             break;
 
         case PreprocessingStep.DeduplicateShapes:
             console.log('Applying: Deduplicate Shapes');
-            const deduplicatedShapes = await deduplicateShapes(drawing.shapes);
-            drawingStore.replaceAllShapes(deduplicatedShapes);
+            for (const layer of Object.values(drawing.layers)) {
+                const deduplicatedShapes = await deduplicateShapes(
+                    layer.shapes
+                );
+                layer.shapes = deduplicatedShapes;
+            }
+            resetDownstreamStages(WorkflowStage.PROGRAM);
             break;
 
         case PreprocessingStep.JoinColinearLines:
             console.log('Applying: Join Co-linear Lines');
-            // First detect chains from current shapes
-            const chainsForJoin = detectShapeChains(
-                drawing.shapes.map((s) => new Shape(s)),
-                {
-                    tolerance: algorithmParams.chainDetection.tolerance,
-                }
-            );
+            Object.values(drawing.layers).forEach((layer) => {
+                // Join collinear lines in the layer's chains
+                const joinedChains = joinColinearLines(
+                    layer.chains,
+                    algorithmParams.joinColinearLines
+                );
 
-            // Join collinear lines in the chains
-            const joinedChains = joinColinearLines(
-                chainsForJoin,
-                algorithmParams.joinColinearLines
-            );
+                // Extract all shapes from the joined chains
+                const joinedShapes = joinedChains.flatMap(
+                    (chain) => chain.shapes
+                );
 
-            // Extract all shapes from the joined chains
-            const allJoinedShapes = joinedChains.flatMap(
-                (chain) => chain.shapes
-            );
-
-            // Update the drawing with the joined shapes
-            drawingStore.replaceAllShapes(allJoinedShapes);
+                // Update the layer with the joined shapes
+                layer.shapes = joinedShapes;
+            });
+            resetDownstreamStages(WorkflowStage.PROGRAM);
             break;
 
         case PreprocessingStep.TranslateToPositive:
             console.log('Applying: Translate to Positive');
-            const currentDrawing = get(drawingStore).drawing;
-            if (currentDrawing && currentDrawing.shapes) {
-                const translatedShapes = translateToPositiveQuadrant(
-                    currentDrawing.shapes
-                );
-                drawingStore.replaceAllShapes(translatedShapes);
-            }
+            translateToPositiveQuadrant(drawing);
+            resetDownstreamStages(WorkflowStage.PROGRAM);
             break;
 
         case PreprocessingStep.OptimizeStarts:
             console.log('Applying: Optimize Starts');
-            const currentDrawing4 = get(drawingStore).drawing;
-            if (!currentDrawing4) {
-                console.warn('No drawing available. Skipping optimization.');
-                return;
-            }
 
-            // Get chains from drawing layers
-            const detectedChains2 = Object.values(
-                currentDrawing4.layers
-            ).flatMap((layer) => layer.chains);
-            if (detectedChains2.length === 0) {
+            // Get all chains from all layers
+            const allChains = Object.values(drawing.layers).flatMap(
+                (layer) => layer.chains
+            );
+
+            if (allChains.length === 0) {
                 console.warn('No chains detected. Skipping optimization.');
                 return;
             }
 
-            if (currentDrawing4.shapes) {
-                // Save original state before optimization
-                prepareStageStore.saveOriginalStateForOptimization(
-                    currentDrawing4.shapes,
-                    detectedChains2
-                );
+            // Optimize start points for all chains
+            const optimizedShapes = optimizeStartPoints(
+                allChains,
+                algorithmParams.startPointOptimization
+            );
 
-                // Optimize start points for all chains
-                const optimizedShapes = optimizeStartPoints(
-                    detectedChains2,
-                    algorithmParams.startPointOptimization
-                );
+            // Group optimized shapes by layer
+            const optimizedByLayer: Record<string, Shape[]> = {};
+            optimizedShapes.forEach((shape) => {
+                const layerName = shape.layer || '0';
+                if (!optimizedByLayer[layerName]) {
+                    optimizedByLayer[layerName] = [];
+                }
+                optimizedByLayer[layerName].push(shape);
+            });
 
-                // Update the drawing store with optimized shapes
-                drawingStore.replaceAllShapes(optimizedShapes);
+            // Update each layer with its optimized shapes
+            Object.entries(optimizedByLayer).forEach(([layerName, shapes]) => {
+                const layer = drawing.layers[layerName];
+                if (layer) {
+                    layer.shapes = shapes;
+                }
+            });
 
-                // Chains auto-regenerate from layers after shapes are replaced
-                const updatedDrawing2 = get(drawingStore).drawing;
-                const optimizedChains = updatedDrawing2
-                    ? Object.values(updatedDrawing2.layers).flatMap(
-                          (layer) => layer.chains
-                      )
-                    : [];
+            resetDownstreamStages(WorkflowStage.PROGRAM);
 
-                console.log(
-                    `Optimized start points. Re-detected ${optimizedChains.length} chains.`
-                );
-            }
+            console.log(
+                `Optimized start points. Re-detected ${allChains.length} chains.`
+            );
             break;
 
         default:

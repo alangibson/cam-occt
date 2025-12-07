@@ -1,19 +1,18 @@
 <script lang="ts">
-    import { selectionStore } from '$lib/stores/selection/store';
-    import { planStore } from '$lib/stores/plan/store';
+    import { selectionStore } from '$lib/stores/selection/store.svelte';
+    import { planStore } from '$lib/stores/plan/store.svelte';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive rapid data
-    const selection = $derived($selectionStore);
-    const cuts = $derived($planStore.plan.cuts);
+    const cuts = $derived(planStore.plan.cuts);
     const rapids = $derived(
         cuts.map((cut) => cut.rapidIn).filter((rapid) => rapid !== undefined)
     );
-    const selectedRapidIds = $derived(selection.rapids.selected);
+    const selectedRapidIds = $derived(selectionStore.rapids.selected);
     const selectedRapidId = $derived(
         selectedRapidIds.size === 1 ? Array.from(selectedRapidIds)[0] : null
     );
-    const highlightedRapidId = $derived(selection.rapids.highlighted);
+    const highlightedRapidId = $derived(selectionStore.rapids.highlighted);
     const activeRapidId = $derived(selectedRapidId || highlightedRapidId);
     const selectedRapid = $derived(
         activeRapidId

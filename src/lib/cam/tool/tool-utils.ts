@@ -3,8 +3,7 @@
  */
 
 import type { Tool } from './interfaces';
-import { settingsStore } from '$lib/stores/settings/store';
-import { get } from 'svelte/store';
+import { settingsStore } from '$lib/stores/settings/store.svelte';
 import { MeasurementSystem } from '$lib/config/settings/enums';
 
 /**
@@ -20,8 +19,8 @@ export function getToolValue(
         | 'puddleJumpHeight'
         | 'plungeRate'
 ): number {
-    const settings = get(settingsStore).settings;
-    const isMetric = settings.measurementSystem === MeasurementSystem.Metric;
+    const isMetric =
+        settingsStore.settings.measurementSystem === MeasurementSystem.Metric;
 
     // Check for unit-specific fields
     const metricField = `${field}Metric` as keyof Tool;

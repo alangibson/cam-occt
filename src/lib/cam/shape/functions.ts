@@ -5,9 +5,10 @@ import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { hashPoint2D } from '$lib/geometry/point/functions';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
+    circleBoundingBox,
     generateCirclePoints,
     getCircleEndPoint,
     getCirclePointAt,
@@ -15,23 +16,28 @@ import {
     hashCircle,
     reverseCircle,
     tessellateCircle,
+    translateCircle,
 } from '$lib/geometry/circle/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import {
+    arcBoundingBox,
     getArcEndPoint,
     getArcPointAt,
     getArcStartPoint,
     hashArc,
     reverseArc,
     tessellateArc,
+    translateArc,
 } from '$lib/geometry/arc/functions';
 import {
     getLineEndPoint,
     getLinePointAt,
     getLineStartPoint,
     hashLine,
+    lineBoundingBox,
     reverseLine,
     tessellateLine,
+    translateLine,
 } from '$lib/geometry/line/functions';
 import {
     createAdaptiveTessellationConfig,
@@ -40,7 +46,9 @@ import {
     getSplineStartPoint,
     hashSpline,
     reverseSpline,
+    splineBoundingBox,
     tessellateSpline,
+    translateSpline,
 } from '$lib/geometry/spline/functions';
 import {
     getEllipseEndPoint,
@@ -48,9 +56,11 @@ import {
     getEllipseStartPoint,
     hashEllipse,
     isEllipseClosed,
+    translateEllipse,
     reverseEllipse,
     sampleEllipse,
     tessellateEllipse,
+    ellipseBoundingBox,
 } from '$lib/geometry/ellipse/functions';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
 import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
@@ -61,10 +71,11 @@ import {
     getPolylinePointAt,
     getPolylineStartPoint,
     hashPolyline,
+    polylineBoundingBox,
     polylineToPoints,
     polylineToVertices,
     reversePolyline,
-} from '$lib/geometry/polyline/functions';
+} from '$lib/geometry/dxf-polyline/functions';
 import { MIDPOINT_T, QUARTER_CIRCLE_QUADRANTS } from '$lib/geometry/constants';
 import {
     normalizeVector,
@@ -80,7 +91,6 @@ import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/constants';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
 import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline/constants';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
-import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
     splitArcAtMidpoint,
     splitLineAtMidpoint,
@@ -89,6 +99,8 @@ import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
 import { HIGH_RESOLUTION_CIRCLE_SEGMENTS } from './constants';
 import { GeometryType } from '$lib/geometry/enums';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
+import { combineBoundingBoxes } from '$lib/geometry/bounding-box/functions';
 
 /**
  * TODO get rid of this giant function. Break it down by use case.
@@ -192,7 +204,7 @@ export function getShapePoints(
 
             if (mode === 'BOUNDS') {
                 // Use actual arc bounds instead of full circle bounds
-                const arcBounds = getBoundingBoxForArc(arc);
+                const arcBounds = arcBoundingBox(arc);
                 return [arcBounds.min, arcBounds.max];
             }
 
@@ -295,7 +307,7 @@ export function getShapePoints(
             );
 
         case GeometryType.POLYLINE:
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             // Always return a copy to prevent mutation
             return [...polylineToPoints(polyline)];
 
@@ -485,7 +497,7 @@ export function tessellateShape(
             break;
 
         case GeometryType.POLYLINE:
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             const vertices: { x: number; y: number }[] | null =
                 polylineToVertices(polyline);
             if (vertices && vertices.length > 0) {
@@ -539,7 +551,7 @@ export function getShapeStartPoint(shape: Shape): Point2D {
         case 'arc':
             return getArcStartPoint(shape.geometry as Arc);
         case 'polyline':
-            return getPolylineStartPoint(shape.geometry as Polyline);
+            return getPolylineStartPoint(shape.geometry as DxfPolyline);
         case 'spline':
             return getSplineStartPoint(shape.geometry as Spline);
         case 'ellipse':
@@ -563,7 +575,7 @@ export function getShapeEndPoint(shape: Shape): Point2D {
         case 'arc':
             return getArcEndPoint(shape.geometry as Arc);
         case 'polyline':
-            return getPolylineEndPoint(shape.geometry as Polyline);
+            return getPolylineEndPoint(shape.geometry as DxfPolyline);
         case 'spline':
             return getSplineEndPoint(shape.geometry as Spline);
         case 'ellipse':
@@ -576,33 +588,30 @@ export function getShapeEndPoint(shape: Shape): Point2D {
 /**
  * Reverses a shape (swaps start and end points)
  */
-export function reverseShape(shape: Shape): Shape {
-    const shapeData = shape.toData();
-    const reversed: ShapeData = { ...shapeData };
+export function reverseShape(shape: Shape): void {
     switch (shape.type) {
         case 'point':
-            // Points have no direction, return as-is
+            // Points have no direction, no change needed
             break;
         case 'line':
-            reversed.geometry = reverseLine(shape.geometry as Line);
+            shape.geometry = reverseLine(shape.geometry as Line);
             break;
         case 'arc':
-            reversed.geometry = reverseArc(shape.geometry as Arc);
+            shape.geometry = reverseArc(shape.geometry as Arc);
             break;
         case 'polyline':
-            reversed.geometry = reversePolyline(shape.geometry as Polyline);
+            shape.geometry = reversePolyline(shape.geometry as DxfPolyline);
             break;
         case 'circle':
-            reversed.geometry = reverseCircle(shape.geometry as Circle);
+            shape.geometry = reverseCircle(shape.geometry as Circle);
             break;
         case 'ellipse':
-            reversed.geometry = reverseEllipse(shape.geometry as Ellipse);
+            shape.geometry = reverseEllipse(shape.geometry as Ellipse);
             break;
         case 'spline':
-            reversed.geometry = reverseSpline(shape.geometry as Spline);
+            shape.geometry = reverseSpline(shape.geometry as Spline);
             break;
     }
-    return new Shape(reversed);
 }
 /**
  * Get a point on a shape at parameter t (0-1)
@@ -618,7 +627,7 @@ export function getShapePointAt(shape: Shape, t: number): Point2D {
         case 'circle':
             return getCirclePointAt(shape.geometry as Circle, t);
         case 'polyline':
-            return getPolylinePointAt(shape.geometry as Polyline, t);
+            return getPolylinePointAt(shape.geometry as DxfPolyline, t);
         case 'spline':
             return getSplinePointAt(shape.geometry as Spline, t);
         case 'ellipse':
@@ -650,7 +659,7 @@ export function getShapeLength(shape: Shape): number {
             return 2 * Math.PI * circle.radius;
 
         case 'polyline':
-            const polyline = shape.geometry as Polyline;
+            const polyline = shape.geometry as DxfPolyline;
             if (!polyline.shapes || polyline.shapes.length === 0) return 0;
             return polyline.shapes.reduce(
                 (total, shapeData) =>
@@ -857,7 +866,7 @@ export function scaleShape(
             break;
 
         case 'polyline':
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             scaled.geometry = {
                 ...polyline,
                 shapes: polyline.shapes.map((shape) => {
@@ -967,7 +976,7 @@ export function rotateShape(
             break;
 
         case 'polyline':
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             rotated.geometry = {
                 ...polyline,
                 shapes: polyline.shapes.map((shape) => {
@@ -1059,7 +1068,7 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
             break;
 
         case 'polyline':
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             moved.geometry = {
                 ...polyline,
                 shapes: polyline.shapes.map((shape) => {
@@ -1246,7 +1255,7 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
             return true;
 
         case GeometryType.POLYLINE:
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             const points: Point2D[] = polylineToPoints(polyline);
             if (!points || points.length < POLYGON_POINTS_MIN) return false;
 
@@ -1420,7 +1429,7 @@ export function transformShape(
             break;
 
         case GeometryType.POLYLINE:
-            const polyline: Polyline = clonedShape.geometry as Polyline;
+            const polyline: DxfPolyline = clonedShape.geometry as DxfPolyline;
             // Transform all shapes
             polyline.shapes = polyline.shapes.map((shape) => {
                 const segment = shape.geometry;
@@ -1494,7 +1503,7 @@ export function getShapeOrigin(shape: Shape): Point2D | null {
             const circle: Circle = shape.geometry as Circle | Arc;
             return circle.center;
         case 'polyline':
-            const polyline: Polyline = shape.geometry as Polyline;
+            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             const points: Point2D[] = polylineToPoints(polyline);
             return points.length > 0 ? points[0] : null;
         case 'ellipse':
@@ -1503,6 +1512,38 @@ export function getShapeOrigin(shape: Shape): Point2D | null {
         default:
             return null;
     }
+}
+
+/**
+ * Translate a single shape by the given offsets
+ */
+export function translateShape(shape: Shape, dx: number, dy: number): Shape {
+    switch (shape.type) {
+        case GeometryType.LINE:
+            shape.geometry = translateLine(shape.geometry as Line, dx, dy);
+            break;
+        case GeometryType.CIRCLE:
+            shape.geometry = translateCircle(shape.geometry as Circle, dx, dy);
+            break;
+        case GeometryType.ARC:
+            shape.geometry = translateArc(shape.geometry as Arc, dx, dy);
+            break;
+        case GeometryType.ELLIPSE:
+            shape.geometry = translateEllipse(
+                shape.geometry as Ellipse,
+                dx,
+                dy
+            );
+            break;
+        case GeometryType.SPLINE:
+            shape.geometry = translateSpline(shape.geometry as Spline, dx, dy);
+            break;
+        default:
+            // No translation needed for unknown types
+            break;
+    }
+
+    return shape;
 }
 
 /**
@@ -1525,7 +1566,7 @@ export async function hashShape(shape: Shape): Promise<string> {
             return hashArc(shape.geometry as Arc);
 
         case GeometryType.POLYLINE:
-            return hashPolyline(shape.geometry as Polyline);
+            return hashPolyline(shape.geometry as DxfPolyline);
 
         case GeometryType.ELLIPSE:
             return hashEllipse(shape.geometry as Ellipse);
@@ -1536,4 +1577,36 @@ export async function hashShape(shape: Shape): Promise<string> {
         default:
             throw new Error(`Unknown shape type: ${shape.type}`);
     }
+}
+
+export function shapeBoundingBox(shape: ShapeData): BoundingBoxData {
+    switch (shape.type) {
+        case GeometryType.LINE:
+            return lineBoundingBox(shape.geometry as Line);
+        case GeometryType.ARC:
+            return arcBoundingBox(shape.geometry as Arc);
+        case GeometryType.CIRCLE:
+            return circleBoundingBox(shape.geometry as Circle);
+        case GeometryType.POLYLINE:
+            return polylineBoundingBox(shape.geometry as DxfPolyline);
+        case GeometryType.ELLIPSE:
+            return ellipseBoundingBox(shape.geometry as Ellipse);
+        case GeometryType.SPLINE:
+            return splineBoundingBox(shape.geometry as Spline);
+        default:
+            throw new Error(`Unsupported shape type: ${shape.type}`);
+    }
+}
+
+export function shapesBoundingBox(shapes: ShapeData[]): BoundingBoxData {
+    if (shapes.length === 0) {
+        throw new Error(
+            'Cannot calculate bounding box for empty array of shapes'
+        );
+    }
+
+    const boundingBoxes: BoundingBoxData[] = shapes.map((shape) =>
+        shapeBoundingBox(shape)
+    );
+    return combineBoundingBoxes(boundingBoxes);
 }

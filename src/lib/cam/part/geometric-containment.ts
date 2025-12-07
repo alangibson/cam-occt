@@ -9,16 +9,21 @@
  * shapes within shapes, and polygon containment hierarchies.
  */
 
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
-import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
+import {
+    calculatePolygonArea,
+    isPointInPolygon,
+} from '$lib/geometry/polygon/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
-import { calculateChainArea, isChainClosed } from '$lib/cam/chain/functions';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import {
+    calculateChainArea,
+    isChainClosed,
+    chainBoundingBox,
+} from '$lib/cam/chain/functions';
 import type { PartDetectionParameters } from './interfaces';
 import {
-    isPointInPolygon,
     ROUNDED_RECTANGLE_SHAPE_COUNT,
     GEOMETRIC_CONTAINMENT_AREA_RATIO_THRESHOLD,
     BOUNDING_BOX_CONTAINMENT_MARGIN,
@@ -42,7 +47,7 @@ export function detectPolygonContainment(
         .map((polygon, index) => ({
             polygon,
             index,
-            area: calculatePolygonArea(polygon),
+            area: calculatePolygonArea({ points: polygon }),
         }))
         .sort((a, b) => b.area - a.area); // Sort by area (largest first)
 
@@ -62,7 +67,7 @@ export function detectPolygonContainment(
             // Check if all points of current polygon are inside potential parent
             let allPointsInside = true;
             for (const point of current.polygon) {
-                if (!isPointInPolygon(point, potential.polygon)) {
+                if (!isPointInPolygon(point, { points: potential.polygon })) {
                     allPointsInside = false;
                     break;
                 }
@@ -110,7 +115,7 @@ export async function buildContainmentHierarchy(
         .map((chain) => ({
             chain,
             area: calculateChainArea(chain, tolerance, params),
-            boundingBox: calculateChainBoundingBox(chain),
+            boundingBox: chainBoundingBox(chain),
         }))
         .sort((a, b) => b.area - a.area); // Largest first
 

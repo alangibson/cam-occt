@@ -56,6 +56,9 @@ export interface ApplicationSettings {
     /** Preprocessing steps that are enabled */
     enabledPreprocessingSteps: PreprocessingStep[];
 
+    /** Program steps that are enabled */
+    enabledProgramSteps: PreprocessingStep[];
+
     /** Optimization settings */
     optimizationSettings: OptimizationSettings;
 
@@ -64,11 +67,4 @@ export interface ApplicationSettings {
 
     /** CAM settings */
     camSettings: CamSettings;
-}
-/**
- * Settings store state interface
- */
-
-export interface SettingsState {
-    settings: ApplicationSettings;
 }

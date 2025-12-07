@@ -1,4 +1,4 @@
-import { Chain } from '$lib/cam/chain/classes';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { describe, expect, it } from 'vitest';
 import { isChainGeometricallyContained } from '$lib/cam/chain/functions';
 import { GeometryType } from '$lib/geometry/enums';
@@ -7,7 +7,6 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 
@@ -349,27 +348,6 @@ describe('isChainGeometricallyContained', () => {
         };
         const outerChain = createTestChain('outer', outerRect);
         const innerChain = createTestChain('inner', [splineWithNoFitPoints]);
-
-        expect(
-            isChainGeometricallyContained(
-                new Chain(innerChain),
-                new Chain(outerChain)
-            )
-        ).toBe(true);
-    });
-
-    it('should handle polylines', () => {
-        const outerRect = createRectangle(0, 0, 20, 20);
-        const polyline: ShapeData = {
-            id: 'polyline',
-            type: GeometryType.POLYLINE,
-            geometry: {
-                closed: false,
-                shapes: createRectangle(5, 5, 10, 10), // Inner rectangle as polyline shapes
-            } as Polyline,
-        };
-        const outerChain = createTestChain('outer', outerRect);
-        const innerChain = createTestChain('inner', [polyline]);
 
         expect(
             isChainGeometricallyContained(
