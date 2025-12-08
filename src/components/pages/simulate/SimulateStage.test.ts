@@ -20,9 +20,7 @@ vi.mock('$lib/stores/settings/store.svelte', () => ({
 import { workflowStore } from '$lib/stores/workflow/store.svelte';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { planStore } from '$lib/stores/plan/store.svelte';
-import { cutStore } from '$lib/stores/cuts/store.svelte';
-import { rapidStore } from '$lib/stores/rapids/store.svelte';
-import { chainStore } from '$lib/stores/chains/store.svelte';
+import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import { OperationAction } from '$lib/cam/operation/enums';
@@ -32,9 +30,9 @@ describe('SimulateStage store subscription cleanup', () => {
     beforeEach(() => {
         // Reset all stores
         workflowStore.reset();
-        cutStore.reset();
-        rapidStore.reset();
-        chainStore.setTolerance(0.1);
+        visualizationStore.resetCuts();
+        visualizationStore.resetRapids();
+        visualizationStore.setTolerance(0.1);
     });
 
     it('should properly manage store subscriptions without memory leaks', () => {
@@ -45,7 +43,7 @@ describe('SimulateStage store subscription cleanup', () => {
         workflowStore.completeStage(WorkflowStage.PROGRAM);
         workflowStore.setStage(WorkflowStage.SIMULATE);
 
-        // Note: chainStore, cutStore, and rapidStore are now Svelte 5 runes-based stores and don't have a subscribe method
+        // Note: visualizationStore are now Svelte 5 runes-based stores and don't have a subscribe method
         // Components use $effect to watch these stores instead
 
         // Verify we can still navigate without errors
@@ -87,7 +85,7 @@ describe('SimulateStage store subscription cleanup', () => {
         workflowStore.setStage(WorkflowStage.SIMULATE);
         expect(workflowStore.currentStage).toBe(WorkflowStage.SIMULATE);
 
-        // Note: drawingStore, chainStore, cutStore, operationsStore, rapidStore, and uiStore use Svelte 5 and don't need subscription
+        // Note: drawingStore, visualizationStore, operationsStore, and uiStore use Svelte 5 and don't need subscription
         // Components use $effect to watch these stores instead
 
         // Navigate back to program
@@ -111,7 +109,7 @@ describe('SimulateStage store subscription cleanup', () => {
             workflowStore.setStage(WorkflowStage.SIMULATE);
             expect(workflowStore.currentStage).toBe(WorkflowStage.SIMULATE);
 
-            // Note: rapidStore is a Svelte 5 store and doesn't need subscription
+            // Note: visualizationStore is a Svelte 5 store and doesn't need subscription
             // Components use $effect to watch it instead
 
             // Go back to program

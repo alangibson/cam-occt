@@ -158,7 +158,7 @@ export async function generateCutsForChainsWithOperation(
         kerfCompensation: kerfCompensation,
         kerfWidth: kerfWidth,
         offset: calculatedOffset,
-        chain: cutChain.clone().toData(),
+        chain: cutChain.toData(),
         isHole: false,
         holeUnderspeedPercent: undefined,
         normal: cutNormalResult.normal,

@@ -4,13 +4,15 @@ import type {
     ShapePoint,
     TessellationPoint,
 } from './interfaces';
-import { generateChainEndpoints } from '$lib/stores/chains/functions';
-import { generateShapePoints } from '$lib/stores/shape/functions';
+import {
+    generateChainEndpoints,
+    generateShapePoints,
+} from '$lib/stores/visualization/functions';
 import { overlayStore } from './store.svelte';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes.svelte';
 import { GeometryType } from '$lib/geometry/enums';
 
 describe('overlayStore', () => {
@@ -328,11 +330,9 @@ describe('generateShapePoints', () => {
 });
 
 describe('generateChainEndpoints', () => {
-    const createTestChain = (id: string, shapes: ShapeData[]): ChainData => ({
-        id,
-        name: id,
-        shapes,
-    });
+    const createTestChain = (id: string, shapesData: ShapeData[]): Chain => {
+        return new Chain({ id, name: id, shapes: shapesData });
+    };
 
     const createLineShape = (
         id: string,
@@ -354,7 +354,7 @@ describe('generateChainEndpoints', () => {
             createLineShape('line-1', 0, 0, 10, 0),
             createLineShape('line-2', 10, 0, 20, 0),
         ];
-        const chains: ChainData[] = [createTestChain('chain-1', shapes)];
+        const chains: Chain[] = [createTestChain('chain-1', shapes)];
 
         const endpoints = generateChainEndpoints(chains);
 
@@ -380,7 +380,7 @@ describe('generateChainEndpoints', () => {
             createLineShape('line-3', 10, 10, 0, 10),
             createLineShape('line-4', 0, 10, 0, 0), // Closes the loop
         ];
-        const chains: ChainData[] = [createTestChain('chain-1', shapes)];
+        const chains: Chain[] = [createTestChain('chain-1', shapes)];
 
         const endpoints = generateChainEndpoints(chains);
 
@@ -394,7 +394,7 @@ describe('generateChainEndpoints', () => {
     });
 
     it('should skip empty chains', () => {
-        const chains: ChainData[] = [
+        const chains: Chain[] = [
             createTestChain('empty-chain', []),
             createTestChain('chain-1', [
                 createLineShape('line-1', 0, 0, 10, 0),
@@ -409,7 +409,7 @@ describe('generateChainEndpoints', () => {
 
     it('should handle chains with single shape', () => {
         const shapes: ShapeData[] = [createLineShape('line-1', 0, 0, 10, 10)];
-        const chains: ChainData[] = [createTestChain('chain-1', shapes)];
+        const chains: Chain[] = [createTestChain('chain-1', shapes)];
 
         const endpoints = generateChainEndpoints(chains);
 
@@ -435,7 +435,7 @@ describe('generateChainEndpoints', () => {
         const chain2Shapes: ShapeData[] = [
             createLineShape('line-2', 20, 0, 30, 0),
         ];
-        const chains: ChainData[] = [
+        const chains: Chain[] = [
             createTestChain('chain-1', chain1Shapes),
             createTestChain('chain-2', chain2Shapes),
         ];

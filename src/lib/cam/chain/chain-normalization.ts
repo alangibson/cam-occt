@@ -520,8 +520,8 @@ function buildChainFromStartingShape(
             if (usedIndices.has(i)) continue;
 
             const candidateShape: Shape = shapes[i];
-            const candidateStart: Point2D = getShapeStartPoint(candidateShape);
-            const candidateEnd: Point2D = getShapeEndPoint(candidateShape);
+            const candidateStart: Point2D = candidateShape.startPoint;
+            const candidateEnd: Point2D = candidateShape.endPoint;
 
             // Calculate distances for both potential connections
             if (candidateStart) {

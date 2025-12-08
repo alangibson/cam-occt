@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/cam/preprocess/algorithm-parameters';
@@ -6,7 +7,6 @@ import { Shape } from '$lib/cam/shape/classes';
 import type { LayerData } from './interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { Part } from '$lib/cam/part/classes.svelte';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
@@ -16,6 +16,7 @@ export class Layer implements LayerData {
     #shapes: Shape[] = $state([]);
     #chains: Chain[] = $state([]);
     #parts: Part[] = $state([]);
+    #chainsGenerated: boolean = false;
     #partsGenerated: boolean = false;
 
     constructor(data: LayerData) {
@@ -24,14 +25,12 @@ export class Layer implements LayerData {
         // Convert ShapeData[] to Shape[] and store
         this.#shapes = data.shapes.map((s) => new Shape(s));
 
-        // Detect and normalize chains
-        this.#generateChains();
-
-        // Generate parts immediately in constructor
-        this.#generateParts();
+        // Chains and parts are generated lazily via getters
     }
 
     #generateChains() {
+        if (this.#chainsGenerated) return;
+
         const layerName = this.#data.name ?? '0';
 
         // Clear existing chains
@@ -60,27 +59,37 @@ export class Layer implements LayerData {
                 return normalizedChain;
             })
         );
+
+        this.#chainsGenerated = true;
     }
 
     async #generateParts() {
         if (this.#partsGenerated) return;
 
+        // Mark as generated immediately to prevent multiple concurrent calls
+        this.#partsGenerated = true;
+
         const layerName = this.#data.name ?? '0';
         try {
+            // Ensure chains are generated first (parts depend on chains)
+            if (!this.#chainsGenerated) {
+                this.#generateChains();
+            }
+
             const result = await detectParts(
                 this.#chains,
                 CHAIN_CLOSURE_TOLERANCE,
-                DEFAULT_PART_DETECTION_PARAMETERS,
                 layerName
             );
-            this.#parts = result.parts;
-            this.#partsGenerated = true;
+
+            // Clear and repopulate to ensure reactivity
+            this.#parts.length = 0;
+            this.#parts.push(...result.parts);
         } catch (error) {
             console.error(
                 `Error generating parts for layer ${layerName}:`,
                 error
             );
-            this.#partsGenerated = true; // Mark as generated even if it failed to avoid retrying
         }
     }
 
@@ -92,16 +101,26 @@ export class Layer implements LayerData {
         this.#shapes = value;
         this.#data.shapes = value.map((s) => s.toData());
         // Regenerate chains and parts when shapes change
+        this.#chainsGenerated = false;
         this.#partsGenerated = false;
-        this.#generateChains();
-        this.#generateParts();
     }
 
     get chains() {
+        // Lazy generation: generate chains on first access
+        // Use untrack to avoid state mutation errors in reactive contexts
+        if (!this.#chainsGenerated) {
+            untrack(() => this.#generateChains());
+        }
         return this.#chains;
     }
 
     get parts() {
+        // Lazy generation: generate parts on first access
+        // Since parts generation is async, we trigger it but return current state
+        // Use untrack to avoid state mutation errors in reactive contexts
+        if (!this.#partsGenerated) {
+            untrack(() => this.#generateParts());
+        }
         return this.#parts;
     }
 
@@ -129,7 +148,13 @@ export class Layer implements LayerData {
 
         // Trigger Svelte 5 reactivity by reassigning the $state arrays
         this.#shapes = [...this.#shapes];
-        this.#chains = [...this.#chains];
-        this.#parts = [...this.#parts];
+
+        // Only reassign chains/parts if they've been generated (to avoid triggering lazy generation)
+        if (this.#chainsGenerated) {
+            this.#chains = [...this.#chains];
+        }
+        if (this.#partsGenerated) {
+            this.#parts = [...this.#parts];
+        }
     }
 }

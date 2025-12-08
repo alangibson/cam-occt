@@ -187,7 +187,7 @@ describe('buildContainmentHierarchy', () => {
         const innerChain = createTestChain('inner', innerShapes);
 
         const chains = [outerChain, innerChain];
-        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains);
 
         expect(hierarchy.get('inner')).toBe('outer');
     });
@@ -197,7 +197,7 @@ describe('buildContainmentHierarchy', () => {
         const chain = createTestChain('single', shapes);
         const chains = [chain];
 
-        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains);
 
         expect(hierarchy.size).toBe(0);
     });
@@ -218,7 +218,7 @@ describe('buildContainmentHierarchy', () => {
         const closedChain = createTestChain('closed', closedShapes);
 
         const chains = [openChain, closedChain];
-        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains);
 
         expect(hierarchy.size).toBe(0);
     });
@@ -234,7 +234,7 @@ describe('buildContainmentHierarchy', () => {
         const smallChain = createTestChain('small', smallShapes);
 
         const chains = [largeChain, mediumChain, smallChain];
-        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains);
 
         expect(hierarchy.get('medium')).toBe('large');
         expect(hierarchy.get('small')).toBe('medium'); // Should find smallest container
@@ -292,7 +292,7 @@ describe('identifyShells', () => {
         containmentMap.set('chain3', 'chain2'); // level 2 (shell)
         // chain4 has no parent (level 0, shell)
 
-        const shells = identifyShells(chains, containmentMap, 0.1);
+        const shells = identifyShells(chains, containmentMap);
         const shellIds = shells.map((s) => s.id).sort();
 
         expect(shellIds).toEqual(['chain1', 'chain3', 'chain4']);
@@ -317,7 +317,7 @@ describe('identifyShells', () => {
         const chains = [openChain, closedChain];
         const containmentMap = new Map<string, string>();
 
-        const shells = identifyShells(chains, containmentMap, 0.1);
+        const shells = identifyShells(chains, containmentMap);
 
         expect(shells).toHaveLength(1);
         expect(shells[0].id).toBe('closed');
@@ -339,7 +339,7 @@ describe('identifyShells', () => {
         const chains = [openChain];
         const containmentMap = new Map<string, string>();
 
-        const shells = identifyShells(chains, containmentMap, 0.1);
+        const shells = identifyShells(chains, containmentMap);
 
         expect(shells).toHaveLength(0);
     });

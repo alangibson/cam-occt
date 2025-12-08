@@ -1,5 +1,12 @@
 import type { ShapeData, TessellationCache } from './interfaces';
-import { hashShape, tessellateShape, translateShape } from './functions';
+import {
+    hashShape,
+    tessellateShape,
+    translateShape,
+    getShapeStartPoint,
+    getShapeEndPoint,
+    getShapePoints,
+} from './functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Geometry } from '$lib/geometry/types';
 import { GeometryType } from '$lib/geometry/enums';
@@ -7,19 +14,34 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { PointGeometry } from '$lib/geometry/point/interfaces';
+import type { Point2D, PointGeometry } from '$lib/geometry/point/interfaces';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 
 export class Shape implements ShapeData {
     #data: ShapeData;
     #tessellationCache?: TessellationCache;
+    #tessellated?: Point2D[];
+    #startPoint?: Point2D;
+    #endPoint?: Point2D;
+    #points?: Point2D[];
 
     constructor(data: ShapeData) {
         if (!data.id) {
             console.error('Shape constructor called with invalid data:', data);
         }
         this.#data = data;
+    }
+
+    /**
+     * Invalidate all caches when geometry changes
+     */
+    #invalidateCaches(): void {
+        this.#tessellationCache = undefined;
+        this.#tessellated = undefined;
+        this.#startPoint = undefined;
+        this.#endPoint = undefined;
+        this.#points = undefined;
     }
 
     get id(): string {
@@ -36,6 +58,7 @@ export class Shape implements ShapeData {
 
     set geometry(geometry: Geometry) {
         this.#data.geometry = geometry;
+        this.#invalidateCaches();
     }
 
     get layer(): string | undefined {
@@ -58,8 +81,42 @@ export class Shape implements ShapeData {
         return this.#tessellationCache;
     }
 
+    get tessellated(): Point2D[] {
+        if (!this.#tessellated) {
+            this.#tessellated = tessellateShape(
+                this,
+                DEFAULT_PART_DETECTION_PARAMETERS
+            );
+        }
+        return this.#tessellated;
+    }
+
+    get startPoint(): Point2D {
+        if (!this.#startPoint) {
+            this.#startPoint = getShapeStartPoint(this);
+        }
+        return this.#startPoint;
+    }
+
+    get endPoint(): Point2D {
+        if (!this.#endPoint) {
+            this.#endPoint = getShapeEndPoint(this);
+        }
+        return this.#endPoint;
+    }
+
+    get points(): Point2D[] {
+        if (!this.#points) {
+            this.#points = getShapePoints(this, {
+                mode: 'CHAIN_DETECTION',
+            });
+        }
+        return this.#points;
+    }
+
     translate(dx: number, dy: number): void {
         translateShape(this, dx, dy);
+        this.#invalidateCaches();
     }
 
     toData(): ShapeData {

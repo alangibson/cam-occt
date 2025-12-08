@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { operationsStore } from './store.svelte';
 import { planStore } from '$lib/stores/plan/store.svelte';
-import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { toolStore } from '$lib/stores/tools/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
@@ -86,7 +86,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
     beforeEach(() => {
         // Reset all stores
         operationsStore.reset();
-        cutStore.reset();
+        visualizationStore.resetCuts();
         drawingStore.reset();
         toolStore.reset();
 

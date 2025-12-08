@@ -1,4 +1,11 @@
-- Add ability to delete shapes from Drawing tree in LayersPanel
+# Fix
+
+- Hole underspeed should be available for isCyclic chains
+- Persist cuts to local storage or rebuild on refresh
+- Changing Application Measurement Units does nothing after Import clicked
+- Bring back kerf visualization
+- Replace TSP with deterministic 3rd party library
+- Settings page should always be available no matter what for Application Reset
 
 ## Fix UI
 
@@ -8,16 +15,6 @@
 - Place cut direction chevrons at regular intervals around Path
 - Add chevrons to Rapid
 - Dont display "Shapes in Chain" in InspectPanel for Chain type
-
-## Fix
-
-- Get getSplineTangent should use NurbsCurve.tangent(u : Float)
-- Spline length should use NurbsCurve.length()
-- tessellateWithVerbNurbs ignores requested point count?
-- getSplinePointAt should not tesselate the whole point every time
-  Use NurbsCurve.point(u : Float)
-- Tesselate functions should take a tolerance parameter.
-  Sample functions should take a count parameter.
 
 ## Features
 

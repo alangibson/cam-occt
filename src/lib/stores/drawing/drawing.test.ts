@@ -6,7 +6,7 @@ import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/enums';
 import { overlayStore } from '$lib/stores/overlay/store.svelte';
-import { cutStore } from '$lib/stores/cuts/store.svelte';
+import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 import { operationsStore } from '$lib/stores/operations/store.svelte';
 import { workflowStore } from '$lib/stores/workflow/store.svelte';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -27,26 +27,17 @@ vi.mock('../overlay/store.svelte', () => ({
     },
 }));
 
-vi.mock('../tessellation/store.svelte', () => ({
-    tessellationStore: {
-        clearTessellation: vi.fn(),
-    },
-}));
-
-vi.mock('../cuts/store.svelte', () => ({
-    cutStore: {
+vi.mock('../visualization/classes.svelte', () => ({
+    visualizationStore: {
         reset: vi.fn(),
+        resetCuts: vi.fn(),
+        resetRapids: vi.fn(),
+        clearTessellation: vi.fn(),
     },
 }));
 
 vi.mock('../operations/store.svelte', () => ({
     operationsStore: {
-        reset: vi.fn(),
-    },
-}));
-
-vi.mock('../rapids/store.svelte', () => ({
-    rapidStore: {
         reset: vi.fn(),
     },
 }));
@@ -129,7 +120,7 @@ describe('drawingStore', () => {
             expect(overlayStore.clearStageOverlay).toHaveBeenCalledWith(
                 WorkflowStage.PROGRAM
             );
-            expect(cutStore.reset).toHaveBeenCalled();
+            expect(visualizationStore.reset).toHaveBeenCalled();
             expect(operationsStore.reset).toHaveBeenCalled();
             expect(
                 workflowStore.invalidateDownstreamStages

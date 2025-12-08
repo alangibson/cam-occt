@@ -4,7 +4,7 @@
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { partStore } from '$lib/stores/parts/store.svelte';
     import { overlayStore } from '$lib/stores/overlay/store.svelte';
-    import { tessellationStore } from '$lib/stores/tessellation/store.svelte';
+    import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
     import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { drawingStore } from '$lib/stores/drawing/store.svelte';
     import {
@@ -40,7 +40,7 @@
         // Chains are auto-generated from drawing layers, no need to clear them
         partStore.clearParts();
         overlayStore.clearAllOverlays();
-        tessellationStore.clearTessellation();
+        visualizationStore.clearTessellation();
 
         // Update import unit setting based on the file's original units
         const { originalUnits } = detail;

@@ -40,8 +40,7 @@ describe('Diagnostic - Clipper2 Containment', () => {
         if (chain1 && chain3) {
             const isContained = await isChainContainedInChainClipper2(
                 chain1,
-                chain3,
-                0.1
+                chain3
             );
             console.log(
                 `\nchain-1 (${chain1.shapes.map((s) => s.type).join(', ')}) contained in chain-3: ${isContained}`
@@ -54,8 +53,7 @@ describe('Diagnostic - Clipper2 Containment', () => {
         if (chain2 && chain3) {
             const isContained = await isChainContainedInChainClipper2(
                 chain2,
-                chain3,
-                0.1
+                chain3
             );
             console.log(
                 `\nchain-2 (${chain2.shapes.map((s) => s.type).join(', ')}) contained in chain-3: ${isContained}`
@@ -103,8 +101,7 @@ describe('Diagnostic - Clipper2 Containment', () => {
             if (chain && chain5) {
                 const isContained = await isChainContainedInChainClipper2(
                     chain,
-                    chain5,
-                    0.1
+                    chain5
                 );
                 console.log(
                     `\nchain-${idx} (${chain.shapes.map((s) => s.type).join(', ')}) contained in chain-5: ${isContained}`

@@ -108,10 +108,6 @@ class OverlayStore {
                 visible: true,
             },
         };
-        console.log(
-            '[OverlayStore] toolHead after set:',
-            $state.snapshot(this.overlays[stage].toolHead)
-        );
     }
 
     clearToolHead(stage: WorkflowStage) {

@@ -25,6 +25,7 @@ import {
 import {
     AREA_RATIO_THRESHOLD,
     CHAIN_CLOSURE_TOLERANCE,
+    CONTAINMENT_AREA_RATIO_THRESHOLD,
     POLYGON_POINTS_MIN,
 } from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
@@ -53,12 +54,10 @@ import { getSplineTangent } from '$lib/geometry/spline/functions';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { getClipper2 } from '$lib/cam/offset/clipper-init';
-import {
-    toClipper2Paths,
-    calculateClipper2PathsArea,
-} from '$lib/cam/offset/convert';
+import { calculateClipper2PathsArea } from '$lib/cam/offset/convert';
 import type { ChainData } from './interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
+import type { Paths64 } from '$lib/wasm/clipper2z';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -570,69 +569,46 @@ export function isChainContainedInChain(
  */
 export async function isChainContainedInChainClipper2(
     innerChain: Chain,
-    outerChain: Chain,
-    tolerance: number,
-    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
+    outerChain: Chain
 ): Promise<boolean> {
     // Only closed chains can contain other chains
-    if (!isChainClosed(outerChain, tolerance)) {
+    if (!outerChain.isClosed) {
         return false;
     }
 
-    try {
-        const clipper = await getClipper2();
+    // Get Clipper2 paths from chains (cached)
+    const innerPaths: Paths64 = await innerChain.paths64();
+    const outerPaths: Paths64 = await outerChain.paths64();
 
-        // Tessellate both chains
-        const innerPoints = tessellateChain(innerChain, params);
-        const outerPoints = tessellateChain(outerChain, params);
+    // Calculate inner area before intersection (cached)
+    const innerArea: number = await innerChain.areaClipper2();
 
-        // Check minimum points
-        const MIN_POLYGON_POINTS = 3;
-        if (
-            innerPoints.length < MIN_POLYGON_POINTS ||
-            outerPoints.length < MIN_POLYGON_POINTS
-        ) {
-            return false;
-        }
-
-        // Convert to Clipper2 format
-        const innerPaths = toClipper2Paths([innerPoints], clipper);
-        const outerPaths = toClipper2Paths([outerPoints], clipper);
-
-        // Calculate inner area before intersection
-        const innerArea = calculateClipper2PathsArea(innerPaths);
-
-        if (innerArea === 0) {
-            innerPaths.delete();
-            outerPaths.delete();
-            return false;
-        }
-
-        // Perform intersection: if inner is fully inside outer, intersection = inner
-        const intersection = clipper.Intersect64(
-            innerPaths,
-            outerPaths,
-            clipper.FillRule.NonZero
-        );
-
-        // Calculate intersection area
-        const intersectionArea = calculateClipper2PathsArea(intersection);
-
-        // Clean up Clipper2 memory
-        innerPaths.delete();
-        outerPaths.delete();
-        intersection.delete();
-
-        // If intersection area ≈ inner area (within 90%), inner is contained
-        // Use 90% threshold to handle tessellation differences and edge precision
-        // This is more lenient than 95% to handle complex spline geometries
-        const CONTAINMENT_AREA_RATIO_THRESHOLD = 0.9;
-        const areaRatio = intersectionArea / innerArea;
-        return areaRatio > CONTAINMENT_AREA_RATIO_THRESHOLD;
-    } catch (error) {
-        console.warn('Error in Clipper2 containment detection:', error);
+    if (innerArea === 0) {
         return false;
     }
+
+    // console.log(`ip=${innerPaths.get(0).size()} op=${outerPaths.get(0).size()}`);
+
+    // Get clipper instance for intersection operation
+    const clipper = await getClipper2();
+    // Perform intersection: if inner is fully inside outer, intersection = inner
+    const intersection: Paths64 = clipper.Intersect64(
+        innerPaths,
+        outerPaths,
+        clipper.FillRule.NonZero
+    );
+
+    // Calculate intersection area
+    const intersectionArea: number = calculateClipper2PathsArea(intersection);
+
+    // Clean up Clipper2 memory
+    intersection.delete();
+
+    // If intersection area ≈ inner area (within 90%), inner is contained
+    // Use 90% threshold to handle tessellation differences and edge precision
+    // This is more lenient than 95% to handle complex spline geometries
+    const areaRatio = intersectionArea / innerArea;
+    return areaRatio > CONTAINMENT_AREA_RATIO_THRESHOLD;
 }
 
 /**

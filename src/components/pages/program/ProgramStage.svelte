@@ -71,8 +71,9 @@
 
     // Automatically recalculate rapids when cuts or optimization settings change
     // We only react to lead-related changes, not order changes to avoid loops
-
     $effect(() => {
+        performance.mark('programstage-effect-start');
+
         // Include properties that affect lead geometry and cut start/end positions
         // Sort by ID to make hash order-independent (so reordering cuts doesn't trigger recalculation)
         const cutsHash = cuts
@@ -109,6 +110,13 @@
                 }, 100);
             }, 0);
         }
+
+        performance.mark('programstage-effect-end');
+        performance.measure(
+            'ProgramStage Effect',
+            'programstage-effect-start',
+            'programstage-effect-end'
+        );
     });
 
     function handleNext() {
@@ -126,6 +134,8 @@
 
     // Handle cut order optimization
     function handleOptimizeCutOrder() {
+        performance.mark('handleOptimizeCutOrder-start');
+
         if (!drawing || chains.length === 0 || cuts.length === 0) {
             console.warn(
                 'No drawing, chains, or cuts available for optimization'
@@ -148,13 +158,21 @@
             console.log(
                 'Rapid optimization disabled, generating rapids from current cut order'
             );
+            performance.mark('generateRapids-start');
             // Generate rapids from existing cut order without optimization
             result = generateRapidsFromCutOrder(cuts, chainMap, parts, {
                 x: 0,
                 y: 0,
             });
+            performance.mark('generateRapids-end');
+            performance.measure(
+                'generateRapidsFromCutOrder',
+                'generateRapids-start',
+                'generateRapids-end'
+            );
         } else {
             // Optimize the cut order with cutHolesFirst setting
+            performance.mark('optimizeCutOrder-start');
             result = optimizeCutOrder(
                 cuts,
                 chainMap,
@@ -162,10 +180,17 @@
                 { x: 0, y: 0 },
                 optimizationSettings.cutHolesFirst
             );
+            performance.mark('optimizeCutOrder-end');
+            performance.measure(
+                'optimizeCutOrder',
+                'optimizeCutOrder-start',
+                'optimizeCutOrder-end'
+            );
         }
 
         // Update the cut order in the store with corrected order property
         // Rapids are already attached to cuts by optimize/generate functions
+        performance.mark('updateCuts-start');
         const orderedCutsWithUpdatedOrder = result.orderedCuts.map(
             (cut, index: number) => ({
                 ...cut.toData(),
@@ -173,6 +198,12 @@
             })
         );
         planStore.updateCuts(orderedCutsWithUpdatedOrder);
+        performance.mark('updateCuts-end');
+        performance.measure(
+            'planStore.updateCuts',
+            'updateCuts-start',
+            'updateCuts-end'
+        );
 
         // Count rapids for logging
         const rapidCount = result.orderedCuts.filter(
@@ -181,6 +212,13 @@
 
         console.log(
             `${optimizationSettings.rapidOptimizationAlgorithm === 'none' ? 'Generated' : 'Optimized'} cut order: ${result.orderedCuts.length} cuts, ${rapidCount} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
+        );
+
+        performance.mark('handleOptimizeCutOrder-end');
+        performance.measure(
+            'handleOptimizeCutOrder',
+            'handleOptimizeCutOrder-start',
+            'handleOptimizeCutOrder-end'
         );
     }
 </script>

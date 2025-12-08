@@ -1,5 +1,9 @@
+/**
+ * Interfaces for kerf generation pipeline
+ */
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { CacheableLead } from '$lib/cam/lead/interfaces';
+import type { OffsetChain } from '$lib/cam/offset/types';
 
 /**
  * Kerf represents the material removed by a cutting tool
@@ -51,16 +55,16 @@ export interface KerfData {
     leadOut?: CacheableLead;
 
     /** Inner kerf chain for lead-in (left side offset) */
-    leadInInnerChain?: ChainData;
+    leadInInnerChain?: OffsetChain;
 
     /** Outer kerf chain for lead-in (right side offset) */
-    leadInOuterChain?: ChainData;
+    leadInOuterChain?: OffsetChain;
 
     /** Inner kerf chain for lead-out (left side offset) */
-    leadOutInnerChain?: ChainData;
+    leadOutInnerChain?: OffsetChain;
 
     /** Outer kerf chain for lead-out (right side offset) */
-    leadOutOuterChain?: ChainData;
+    leadOutOuterChain?: OffsetChain;
 
     /** Whether lead-in kerf overlaps with the cut's underlying chain */
     leadInKerfOverlapsChain?: boolean;

@@ -6,22 +6,37 @@ import { GeometryType } from '$lib/geometry/enums';
 import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
 import { calculateSquaredDistance } from '$lib/geometry/math/functions';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
-import { getChainCentroid } from './functions';
+import {
+    getChainCentroid,
+    calculateChainArea,
+    isChainClosed,
+    tessellateChain,
+} from './functions';
+import {
+    CHAIN_CLOSURE_TOLERANCE,
+    CIRCLE_FIT_EPSILON,
+    CYCLIC_CHECK_TOLERANCE,
+    MIN_CIRCLE_POINTS,
+} from './constants';
 import { BoundingBox } from '$lib/geometry/bounding-box/classes';
 import { shapesBoundingBox } from '$lib/cam/shape/functions';
-
-// Minimum number of points required to define a circle
-const MIN_CIRCLE_POINTS = 3;
-// Tolerance for matrix determinant in circle fitting
-const CIRCLE_FIT_EPSILON = 1e-10;
-// Tolerance for checking if points lie on a circle (in drawing units)
-// More relaxed than CONTAINMENT_AREA_TOLERANCE to account for numerical precision
-const CYCLIC_CHECK_TOLERANCE = 0.01;
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
+import type { Paths64 } from '$lib/wasm/clipper2z';
+import { getClipper2 } from '$lib/cam/offset/clipper-init';
+import {
+    toClipper2Paths,
+    calculateClipper2PathsArea,
+} from '$lib/cam/offset/convert';
 
 export class Chain implements ChainData {
     #data: ChainData;
     #shapes = $state<Shape[]>([]);
     #boundary?: BoundingBox;
+    #area?: number;
+    #isClosed?: boolean;
+    #tessellated?: Point2D[];
+    #paths64?: Paths64;
+    #areaClipper2?: number;
 
     constructor(data: ChainData) {
         this.#data = data;
@@ -88,11 +103,91 @@ export class Chain implements ChainData {
      * @returns BoundingBox instance for spatial operations
      */
     get boundary(): BoundingBox {
+        // TODO use chainBoundingBox(chain) instead?
         if (!this.#boundary) {
             const boundingBoxData = shapesBoundingBox(this.#data.shapes);
             this.#boundary = new BoundingBox(boundingBoxData);
         }
         return this.#boundary;
+    }
+
+    /**
+     * Get the area of this chain
+     * Lazily calculates and caches the area on first access
+     * Uses default tolerance and parameters
+     *
+     * @returns The area of the chain, or 0 if chain is not closed
+     */
+    get area(): number {
+        if (this.#area === undefined) {
+            this.#area = calculateChainArea(
+                this,
+                CHAIN_CLOSURE_TOLERANCE,
+                DEFAULT_PART_DETECTION_PARAMETERS
+            );
+        }
+        return this.#area;
+    }
+
+    /**
+     * Check if this chain is closed
+     * Lazily calculates and caches the result on first access
+     * Uses default tolerance
+     *
+     * @returns true if the chain is closed, false otherwise
+     */
+    get isClosed(): boolean {
+        if (this.#isClosed === undefined) {
+            this.#isClosed = isChainClosed(this, CHAIN_CLOSURE_TOLERANCE);
+        }
+        return this.#isClosed;
+    }
+
+    /**
+     * Get tessellated points for this chain
+     * Lazily calculates and caches the result on first access
+     * Uses default part detection parameters
+     *
+     * @returns Array of tessellated points
+     */
+    get tessellated(): Point2D[] {
+        if (this.#tessellated === undefined) {
+            this.#tessellated = tessellateChain(
+                this,
+                DEFAULT_PART_DETECTION_PARAMETERS
+            );
+        }
+        return this.#tessellated;
+    }
+
+    /**
+     * Get Clipper2 Paths64 for this chain
+     * Lazily calculates and caches the result on first access
+     * Uses tessellated points converted to Clipper2 format
+     *
+     * @returns Promise<Paths64> Clipper2 path representation
+     */
+    async paths64(): Promise<Paths64> {
+        if (this.#paths64 === undefined) {
+            const clipper = await getClipper2();
+            this.#paths64 = toClipper2Paths([this.tessellated], clipper);
+        }
+        return this.#paths64;
+    }
+
+    /**
+     * Get Clipper2 area for this chain
+     * Lazily calculates and caches the result on first access
+     * Uses Clipper2 path representation for robust area calculation
+     *
+     * @returns Promise<number> Area in squared units
+     */
+    async areaClipper2(): Promise<number> {
+        if (this.#areaClipper2 === undefined) {
+            const paths = await this.paths64();
+            this.#areaClipper2 = calculateClipper2PathsArea(paths);
+        }
+        return this.#areaClipper2;
     }
 
     /**
@@ -321,8 +416,11 @@ export class Chain implements ChainData {
         for (const shape of this.shapes) {
             shape.translate(dx, dy);
         }
-        // Clear boundary cache as it's now invalid
+        // Clear caches as they're now invalid
         this.#boundary = undefined;
+        this.#tessellated = undefined;
+        this.#paths64 = undefined;
+        this.#areaClipper2 = undefined;
         // Reassign array to trigger Svelte 5 $state reactivity
         this.#shapes = [...this.#shapes];
     }

@@ -11,24 +11,13 @@
 
 import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import {
     calculatePolygonArea,
     isPointInPolygon,
 } from '$lib/geometry/polygon/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
-import {
-    calculateChainArea,
-    isChainClosed,
-    chainBoundingBox,
-} from '$lib/cam/chain/functions';
-import type { PartDetectionParameters } from './interfaces';
-import {
-    ROUNDED_RECTANGLE_SHAPE_COUNT,
-    GEOMETRIC_CONTAINMENT_AREA_RATIO_THRESHOLD,
-    BOUNDING_BOX_CONTAINMENT_MARGIN,
-    MAX_CONTAINMENT_NESTING_LEVEL,
-} from './constants';
+import { MAX_CONTAINMENT_NESTING_LEVEL } from './constants';
+import { isChainContainedInChainClipper2 } from '$lib/cam/chain/functions';
 
 /**
  * Detect containment relationships between multiple polygons
@@ -97,37 +86,29 @@ export function detectPolygonContainment(
  * Now uses Clipper2 for robust containment detection of complex tessellated geometry
  */
 export async function buildContainmentHierarchy(
-    chains: Chain[],
-    tolerance: number,
-    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
+    chains: Chain[]
 ): Promise<Map<string, string>> {
     const containmentMap: Map<string, string> = new Map<string, string>(); // child -> parent
 
     // Only work with closed chains (only they can contain others)
-    const closedChains = chains.filter((chain) =>
-        isChainClosed(chain, tolerance)
-    );
+    const closedChains = chains.filter((chain) => chain.isClosed);
 
     if (closedChains.length < 2) return containmentMap;
 
-    // Calculate areas and sort by area (largest first)
-    const chainsWithArea = closedChains
-        .map((chain) => ({
-            chain,
-            area: calculateChainArea(chain, tolerance, params),
-            boundingBox: chainBoundingBox(chain),
-        }))
-        .sort((a, b) => b.area - a.area); // Largest first
+    // Sort by area (largest first)
+    const chainsSortedByArea = [...closedChains].sort(
+        (a, b) => b.area - a.area
+    );
 
     // For each chain, find its smallest containing parent
-    for (let i = 1; i < chainsWithArea.length; i++) {
-        const current = chainsWithArea[i];
-        let bestParent: typeof current | null = null;
+    for (let i = 1; i < chainsSortedByArea.length; i++) {
+        const current = chainsSortedByArea[i];
+        let bestParent: Chain | null = null;
         let smallestArea = Infinity;
 
         // Only check larger chains (earlier in sorted array) as potential parents
         for (let j = 0; j < i; j++) {
-            const potential = chainsWithArea[j];
+            const potential = chainsSortedByArea[j];
 
             // PERFORMANCE: Skip if potential parent has same or smaller area
             // A chain cannot be contained by a chain with less or equal area
@@ -141,66 +122,10 @@ export async function buildContainmentHierarchy(
             }
 
             // Do full geometric containment check using Clipper2
-            const { isChainContainedInChainClipper2 } = await import(
-                '$lib/cam/chain/functions'
+            const isContained = await isChainContainedInChainClipper2(
+                current,
+                potential
             );
-            let isContained = await isChainContainedInChainClipper2(
-                current.chain,
-                potential.chain,
-                tolerance,
-                params
-            );
-
-            // ATT00079.dxf specific fix: Handle rounded rectangles (line-arc-line-arc pattern)
-            // These small rounded rectangles are consistently failing JSTS geometric containment
-            if (!isContained) {
-                const shapePattern = current.chain.shapes
-                    .map((s) => s.type)
-                    .join(',');
-                const problemChains = [
-                    'chain-29',
-                    'chain-34',
-                    'chain-65',
-                    'chain-70',
-                    'chain-85',
-                    'chain-90',
-                ];
-
-                if (problemChains.includes(current.chain.id)) {
-                    if (
-                        shapePattern === 'line,arc,line,arc' &&
-                        current.chain.shapes.length ===
-                            ROUNDED_RECTANGLE_SHAPE_COUNT
-                    ) {
-                        // Check if this small rounded rectangle is positioned within a larger chain's bounds
-                        const areaRatio = current.area / potential.area;
-
-                        if (
-                            areaRatio <
-                            GEOMETRIC_CONTAINMENT_AREA_RATIO_THRESHOLD
-                        ) {
-                            // Increased threshold to be more permissive
-                            // Use loose bounding box containment for these specific rounded rectangles
-                            const innerBounds = current.boundingBox;
-                            const outerBounds = potential.boundingBox;
-
-                            const margin = BOUNDING_BOX_CONTAINMENT_MARGIN; // Even more generous margin
-                            const contained =
-                                innerBounds.min.x >=
-                                    outerBounds.min.x - margin &&
-                                innerBounds.max.x <=
-                                    outerBounds.max.x + margin &&
-                                innerBounds.min.y >=
-                                    outerBounds.min.y - margin &&
-                                innerBounds.max.y <= outerBounds.max.y + margin;
-
-                            if (contained) {
-                                isContained = true;
-                            }
-                        }
-                    }
-                }
-            }
 
             if (isContained) {
                 if (potential.area < smallestArea) {
@@ -212,7 +137,7 @@ export async function buildContainmentHierarchy(
 
         // If we found a parent, record the relationship
         if (bestParent) {
-            containmentMap.set(current.chain.id, bestParent.chain.id);
+            containmentMap.set(current.id, bestParent.id);
         }
     }
 
@@ -248,15 +173,12 @@ export function calculateNestingLevel(
  */
 export function identifyShells(
     chains: Chain[],
-    containmentMap: Map<string, string>,
-    tolerance: number
+    containmentMap: Map<string, string>
 ): Chain[] {
     const shells: Chain[] = [];
 
     // Only closed chains can be shells
-    const closedChains = chains.filter((chain) =>
-        isChainClosed(chain, tolerance)
-    );
+    const closedChains = chains.filter((chain) => chain.isClosed);
 
     for (const chain of closedChains) {
         const nestingLevel = calculateNestingLevel(chain.id, containmentMap);

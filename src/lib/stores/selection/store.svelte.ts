@@ -409,13 +409,6 @@ class SelectionStore {
         };
     }
 
-    clearKerfSelection() {
-        this.kerfs = {
-            ...this.kerfs,
-            selected: null,
-        };
-    }
-
     clearKerfHighlight() {
         this.kerfs = {
             ...this.kerfs,

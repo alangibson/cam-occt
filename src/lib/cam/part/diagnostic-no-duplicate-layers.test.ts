@@ -39,10 +39,7 @@ describe('Diagnostic - Part Detection Without Duplicate Layers', () => {
         console.log(`Closed chains: ${closedChains.length}`);
 
         // Build containment hierarchy
-        const containmentMap = await buildContainmentHierarchy(
-            closedChains,
-            0.1
-        );
+        const containmentMap = await buildContainmentHierarchy(closedChains);
 
         console.log(`\nContainment relationships: ${containmentMap.size}`);
         for (const [childId, parentId] of containmentMap.entries()) {
@@ -104,10 +101,7 @@ describe('Diagnostic - Part Detection Without Duplicate Layers', () => {
         console.log(`Closed chains: ${closedChains.length}`);
 
         // Build containment hierarchy
-        const containmentMap = await buildContainmentHierarchy(
-            closedChains,
-            0.1
-        );
+        const containmentMap = await buildContainmentHierarchy(closedChains);
 
         console.log(`\nContainment relationships: ${containmentMap.size}`);
         for (const [childId, parentId] of containmentMap.entries()) {

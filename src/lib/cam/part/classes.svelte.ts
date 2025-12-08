@@ -13,7 +13,9 @@ import { PartType } from './enums';
 export class Part {
     #data: PartData;
     #shellChain: Chain | null = null;
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     #voidChains: Map<string, Chain> = new Map();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     #slotChains: Map<string, Chain> = new Map();
 
     constructor(data: PartData) {

@@ -123,7 +123,7 @@ describe('Translate to Positive - Cut Positioning', () => {
         operation.setTargets([chain]);
 
         // Generate cuts
-        const result = await createCutsFromOperation(operation, 0.05, false);
+        const result = await createCutsFromOperation(operation, 0.05);
 
         expect(result.cuts).toHaveLength(1);
         const cut = result.cuts[0];
@@ -270,11 +270,7 @@ describe('Translate to Positive - Cut Positioning', () => {
             operation.setTool(tool);
             operation.setTargets([chain]);
 
-            const result = await createCutsFromOperation(
-                operation,
-                0.05,
-                false
-            );
+            const result = await createCutsFromOperation(operation, 0.05);
             allCuts.push(...result.cuts);
         }
 

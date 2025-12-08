@@ -28,8 +28,8 @@ import {
     type OffsetOptions,
 } from '$lib/cam/offset/clipper-offset';
 import {
-    reconstructChain,
-    createOffsetChain,
+    reconstructChain as makeShapes,
+    createOffsetChain as makeOffsetChain,
 } from '$lib/cam/offset/reconstruct';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { getClipper2 } from '$lib/cam/offset/clipper-init';
@@ -41,42 +41,18 @@ import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 import type { CacheableLead } from '$lib/cam/lead/interfaces';
-
-/**
- * Algorithm version for kerf generation
- * Increment when algorithm changes to invalidate old cached kerfs
- */
-const KERF_VERSION = '1.0.0';
-
-/**
- * Default tolerance for chain closure detection
- */
-const DEFAULT_TOLERANCE = 0.001;
-
-/**
- * Tolerance for validating chain closure (stricter than DEFAULT_TOLERANCE)
- */
-const CLOSURE_VALIDATION_TOLERANCE = 0.01;
-
-/**
- * Number of decimal places for displaying coordinates in error messages
- */
-const DECIMAL_PLACES = 3;
-
-/**
- * Number of decimal places for displaying interval distances in log messages
- */
-const INTERVAL_DECIMAL_PLACES = 3;
-
-/**
- * Default step size for adjusting cut start point (10% increments)
- */
-const DEFAULT_STEP_SIZE = 0.1;
-
-/**
- * Default maximum number of attempts when adjusting cut start point
- */
-const DEFAULT_MAX_ATTEMPTS = 10;
+import { assignLeadsToCut } from '$lib/cam/pipeline/operations/part-operations';
+import {
+    CIRCLE_POINTS,
+    CLOSURE_VALIDATION_TOLERANCE,
+    DECIMAL_PLACES,
+    DECIMAL_PRECISION,
+    DEFAULT_MAX_ATTEMPTS,
+    DEFAULT_STEP_SIZE,
+    DEFAULT_TOLERANCE,
+    INTERVAL_DECIMAL_PLACES,
+    KERF_VERSION,
+} from './constants';
 
 /**
  * Validate that a kerf offset chain is properly closed
@@ -148,12 +124,8 @@ function validateChainClosure(
  * @returns Promise resolving to a Kerf object with inner and outer offset chains
  * @throws Error if cut is missing cutChain or tool is missing kerfWidth
  */
-export async function cutToKerf(
-    cut: Cut,
-    tool: Tool,
-    checkOverlap: boolean = false
-): Promise<KerfData> {
-    console.log(`[Kerf Gen] Running for cut "${cut.name}"`);
+export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
+    performance.mark(`cutToKerf-${cut.id}-start`);
 
     // Validation
     if (!cut.chain) {
@@ -163,21 +135,18 @@ export async function cutToKerf(
         throw new Error('Tool must have a positive kerfWidth to generate kerf');
     }
 
-    const cutChain = cut.chain;
-
     // Calculate offset distance (half kerf width in each direction)
     // Use getToolValue to get the correct unit-adjusted kerf width
     const kerfWidth = getToolValue(tool, 'kerfWidth');
     const offsetDistance = kerfWidth / 2;
 
     // Determine if chain is closed
-    const isClosed = isChainClosed(cutChain, DEFAULT_TOLERANCE);
+    const isClosed = isChainClosed(cut.chain, DEFAULT_TOLERANCE);
 
     // Tessellate the cut chain to a single polyline for Clipper2
-    const CIRCLE_POINTS = 32;
-    const DECIMAL_PRECISION = 3;
+    performance.mark(`cutToKerf-${cut.id}-tessellate-start`);
 
-    const shapePointArrays = tessellateChainToShapes(cutChain, {
+    const shapePointArrays: Point2D[][] = tessellateChainToShapes(cut.chain, {
         circleTessellationPoints: CIRCLE_POINTS,
         tessellationTolerance: getDefaults().geometry.tessellationTolerance,
         decimalPrecision: DECIMAL_PRECISION,
@@ -189,6 +158,7 @@ export async function cutToKerf(
     for (const points of shapePointArrays) {
         chainPoints.push(...points);
     }
+    performance.mark(`cutToKerf-${cut.id}-tessellate-end`);
 
     // Get lead geometry points if present
     const leadInPoints: Point2D[] = cut.leadIn
@@ -224,30 +194,35 @@ export async function cutToKerf(
     };
 
     // Perform bi-directional offset using Clipper2
-    const { inner, outer } = await offsetPaths(
-        pointArrays,
-        offsetDistance,
-        isClosedForOffset,
-        offsetOptions
-    );
+    performance.mark(`cutToKerf-${cut.id}-offset-main-start`);
+    const { inner, outer }: { inner: Point2D[][]; outer: Point2D[][] } =
+        await offsetPaths(
+            pointArrays,
+            offsetDistance,
+            isClosedForOffset,
+            offsetOptions
+        );
+    performance.mark(`cutToKerf-${cut.id}-offset-main-end`);
 
     // Reconstruct chains from Clipper2 results
     // Clipper2 may return multiple polygons (e.g., shell + holes combined in one cut)
     // Each polygon will be properly closed in reconstructChain
-    const innerShapes = reconstructChain(inner);
-    const outerShapes = reconstructChain(outer);
+    performance.mark(`cutToKerf-${cut.id}-reconstruct-main-start`);
+    const innerShapes: Shape[] = makeShapes(inner);
+    const outerShapes: Shape[] = makeShapes(outer);
+    performance.mark(`cutToKerf-${cut.id}-reconstruct-main-end`);
 
     // Build offset chains
-    const innerChain = createOffsetChain(
+    const innerChain: OffsetChain = makeOffsetChain(
         innerShapes,
         isClosedForOffset ? 'inner' : 'left',
-        cutChain.id,
+        cut.chain.id,
         isClosedForOffset
     );
-    const outerChain = createOffsetChain(
+    const outerChain: OffsetChain = makeOffsetChain(
         outerShapes,
         isClosedForOffset ? 'outer' : 'right',
-        cutChain.id,
+        cut.chain.id,
         isClosedForOffset
     );
 
@@ -258,34 +233,36 @@ export async function cutToKerf(
     }
 
     // Calculate kerf for leads separately if they exist
+    performance.mark(`cutToKerf-${cut.id}-offset-leads-start`);
     let leadInInnerChain: OffsetChain | undefined;
     let leadInOuterChain: OffsetChain | undefined;
     let leadOutInnerChain: OffsetChain | undefined;
     let leadOutOuterChain: OffsetChain | undefined;
 
     if (leadInPoints.length > 1) {
-        const leadInOffset = await offsetPaths(
-            [leadInPoints],
-            offsetDistance,
-            false, // Leads are always open paths
-            {
-                joinType: JoinType.Round,
-                endType: EndType.Round,
-                arcTolerance: 0.1,
-            }
-        );
-        const leadInInnerShapes = reconstructChain(leadInOffset.inner);
-        const leadInOuterShapes = reconstructChain(leadInOffset.outer);
-        leadInInnerChain = createOffsetChain(
+        const leadInOffset: { inner: Point2D[][]; outer: Point2D[][] } =
+            await offsetPaths(
+                [leadInPoints],
+                offsetDistance,
+                false, // Leads are always open paths
+                {
+                    joinType: JoinType.Round,
+                    endType: EndType.Round,
+                    arcTolerance: 0.1,
+                }
+            );
+        const leadInInnerShapes = makeShapes(leadInOffset.inner);
+        const leadInOuterShapes = makeShapes(leadInOffset.outer);
+        leadInInnerChain = makeOffsetChain(
             leadInInnerShapes,
             'left',
-            `${cutChain.id}-leadIn`,
+            `${cut.chain.id}-leadIn`,
             false
         );
-        leadInOuterChain = createOffsetChain(
+        leadInOuterChain = makeOffsetChain(
             leadInOuterShapes,
             'right',
-            `${cutChain.id}-leadIn`,
+            `${cut.chain.id}-leadIn`,
             false
         );
     }
@@ -301,66 +278,26 @@ export async function cutToKerf(
                 arcTolerance: 0.1,
             }
         );
-        const leadOutInnerShapes = reconstructChain(leadOutOffset.inner);
-        const leadOutOuterShapes = reconstructChain(leadOutOffset.outer);
-        leadOutInnerChain = createOffsetChain(
+        const leadOutInnerShapes = makeShapes(leadOutOffset.inner);
+        const leadOutOuterShapes = makeShapes(leadOutOffset.outer);
+        leadOutInnerChain = makeOffsetChain(
             leadOutInnerShapes,
             'left',
-            `${cutChain.id}-leadOut`,
+            `${cut.chain.id}-leadOut`,
             false
         );
-        leadOutOuterChain = createOffsetChain(
+        leadOutOuterChain = makeOffsetChain(
             leadOutOuterShapes,
             'right',
-            `${cutChain.id}-leadOut`,
+            `${cut.chain.id}-leadOut`,
             false
         );
     }
+    performance.mark(`cutToKerf-${cut.id}-offset-leads-end`);
 
-    // Check if lead kerfs overlap with the ORIGINAL chain (before offset)
-    // Only perform this check if requested (when avoidLeadKerfOverlap is enabled)
-    let leadInKerfOverlapsChain = false;
-    let leadOutKerfOverlapsChain = false;
-
-    if (checkOverlap) {
-        // Get the original chain shapes (before any offset was applied)
-        const originalShapes = cut.offset?.originalShapes || cutChain.shapes;
-        const originalChain: ChainData = {
-            id: cutChain.id,
-            name: cutChain.name || cutChain.id,
-            shapes: originalShapes,
-        };
-
-        if (leadInOuterChain) {
-            console.log(
-                `[Kerf Gen] Checking lead-in kerf overlap for cut "${cut.name}"`
-            );
-            // Check if original chain intersects with the lead-in kerf zone
-            // Sampling interval scales with kerf width for unit independence
-            leadInKerfOverlapsChain = doesLeadKerfOverlapChain(
-                leadInOuterChain,
-                originalChain,
-                kerfWidth
-            );
-        }
-
-        if (leadOutOuterChain) {
-            console.log(
-                `[Kerf Gen] Checking lead-out kerf overlap for cut "${cut.name}"`
-            );
-            // Check if original chain intersects with the lead-out kerf zone
-            // Sampling interval scales with kerf width for unit independence
-            leadOutKerfOverlapsChain = doesLeadKerfOverlapChain(
-                leadOutOuterChain,
-                originalChain,
-                kerfWidth
-            );
-        }
-
-        console.log(
-            `[Kerf Gen] Lead kerf overlap summary for "${cut.name}": leadIn=${leadInKerfOverlapsChain}, leadOut=${leadOutKerfOverlapsChain}`
-        );
-    }
+    // Overlap detection is not performed here - it's done in adjustKerfForLeadOverlap if needed
+    const leadInKerfOverlapsChain = false;
+    const leadOutKerfOverlapsChain = false;
 
     // Create Kerf object with lead geometry from the cut
     const kerf: KerfData = {
@@ -384,7 +321,34 @@ export async function cutToKerf(
         version: KERF_VERSION,
     };
 
-    console.log(`[Kerf Gen] Done running for cut "${cut.name}"`);
+    performance.mark(`cutToKerf-${cut.id}-end`);
+
+    // Measure all phases
+    performance.measure(
+        `cutToKerf-tessellate`,
+        `cutToKerf-${cut.id}-tessellate-start`,
+        `cutToKerf-${cut.id}-tessellate-end`
+    );
+    performance.measure(
+        `cutToKerf-offset-main`,
+        `cutToKerf-${cut.id}-offset-main-start`,
+        `cutToKerf-${cut.id}-offset-main-end`
+    );
+    performance.measure(
+        `cutToKerf-reconstruct-main`,
+        `cutToKerf-${cut.id}-reconstruct-main-start`,
+        `cutToKerf-${cut.id}-reconstruct-main-end`
+    );
+    performance.measure(
+        `cutToKerf-offset-leads`,
+        `cutToKerf-${cut.id}-offset-leads-start`,
+        `cutToKerf-${cut.id}-offset-leads-end`
+    );
+    performance.measure(
+        `cutToKerf-total`,
+        `cutToKerf-${cut.id}-start`,
+        `cutToKerf-${cut.id}-end`
+    );
 
     return kerf;
 }
@@ -412,9 +376,11 @@ export function doesLeadKerfOverlapChain(
 ): boolean {
     // For leads, only the outer chain exists (it's a closed polygon from Clipper2)
     if (!leadKerfOuterChain) {
-        console.log(
-            `[Overlap Check] No lead kerf outer chain - returning false`
-        );
+        if (import.meta.env.DEV) {
+            console.log(
+                `[Overlap Check] No lead kerf outer chain - returning false`
+            );
+        }
         return false;
     }
 
@@ -432,9 +398,11 @@ export function doesLeadKerfOverlapChain(
         );
 
         if (!leadKerfBBox.overlaps(originalBBox)) {
-            console.log(
-                `[Overlap Check] ✓ Bounding boxes don't overlap - fast exit for chain "${originalChain.id}"`
-            );
+            if (import.meta.env.DEV) {
+                console.log(
+                    `[Overlap Check] ✓ Bounding boxes don't overlap - fast exit for chain "${originalChain.id}"`
+                );
+            }
             return false;
         }
     }
@@ -453,13 +421,17 @@ export function doesLeadKerfOverlapChain(
         false
     );
 
-    console.log(
-        `[Overlap Check] Checking chain "${originalChain.id}" with ${samples.length} sample points (interval: ${sampleInterval.toFixed(INTERVAL_DECIMAL_PLACES)} units, kerf: ${kerfWidth.toFixed(INTERVAL_DECIMAL_PLACES)} units)`
-    );
+    if (import.meta.env.DEV) {
+        console.log(
+            `[Overlap Check] Checking chain "${originalChain.id}" with ${samples.length} sample points (interval: ${sampleInterval.toFixed(INTERVAL_DECIMAL_PLACES)} units, kerf: ${kerfWidth.toFixed(INTERVAL_DECIMAL_PLACES)} units)`
+        );
+    }
 
     // If no samples, no overlap is possible
     if (samples.length === 0) {
-        console.log(`[Overlap Check] No samples - returning false`);
+        if (import.meta.env.DEV) {
+            console.log(`[Overlap Check] No samples - returning false`);
+        }
         return false;
     }
 
@@ -476,12 +448,14 @@ export function doesLeadKerfOverlapChain(
         const point = sample.point;
         try {
             if (isPointInsideChainExact(point, leadKerfPolygon)) {
-                console.log(
-                    `[Overlap Check] ✗ Test point (${point.x.toFixed(2)}, ${point.y.toFixed(2)}) is INSIDE lead kerf polygon`
-                );
-                console.log(
-                    `[Overlap Check] OVERLAP DETECTED for chain "${originalChain.id}"`
-                );
+                if (import.meta.env.DEV) {
+                    console.log(
+                        `[Overlap Check] ✗ Test point (${point.x.toFixed(2)}, ${point.y.toFixed(2)}) is INSIDE lead kerf polygon`
+                    );
+                    console.log(
+                        `[Overlap Check] OVERLAP DETECTED for chain "${originalChain.id}"`
+                    );
+                }
                 return true; // Found overlap - original chain passes through kerf
             }
         } catch (error) {
@@ -496,9 +470,11 @@ export function doesLeadKerfOverlapChain(
     }
 
     // No sampled points were inside the Lead Kerf
-    console.log(
-        `[Overlap Check] ✓ No overlap detected for chain "${originalChain.id}" (tested ${samples.length} points)`
-    );
+    if (import.meta.env.DEV) {
+        console.log(
+            `[Overlap Check] ✓ No overlap detected for chain "${originalChain.id}" (tested ${samples.length} points)`
+        );
+    }
     return false;
 }
 
@@ -526,12 +502,16 @@ export async function adjustCutStartPointForLeadKerfOverlap(
     stepSize: number = DEFAULT_STEP_SIZE,
     maxAttempts: number = DEFAULT_MAX_ATTEMPTS
 ): Promise<boolean> {
-    console.log(
-        `[Start Adjust] Starting adjustment for cut "${cut.name}" (max attempts: ${maxAttempts}, step size: ${stepSize})`
-    );
+    if (import.meta.env.DEV) {
+        console.log(
+            `[Start Adjust] Starting adjustment for cut "${cut.name}" (max attempts: ${maxAttempts}, step size: ${stepSize})`
+        );
+    }
 
     if (!cut.chain) {
-        console.log(`[Start Adjust] No cutChain - returning false`);
+        if (import.meta.env.DEV) {
+            console.log(`[Start Adjust] No cutChain - returning false`);
+        }
         return false;
     }
 
@@ -546,24 +526,30 @@ export async function adjustCutStartPointForLeadKerfOverlap(
     // Find part context for this cut's chain (needed for correct normal calculation)
     const part = findPartContainingChain(cut.sourceChainId, parts);
     if (part) {
-        console.log(
-            `[Start Adjust] Found part context (part ID: "${part.id}") for chain "${cut.sourceChainId}"`
-        );
+        if (import.meta.env.DEV) {
+            console.log(
+                `[Start Adjust] Found part context (part ID: "${part.id}") for chain "${cut.sourceChainId}"`
+            );
+        }
     }
 
     // Try different positions along the chain
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         const t = attempt * stepSize;
         if (t >= 1.0) {
-            console.log(
-                `[Start Adjust] Stopping at attempt ${attempt} (t=${t.toFixed(2)} >= 1.0)`
-            );
+            if (import.meta.env.DEV) {
+                console.log(
+                    `[Start Adjust] Stopping at attempt ${attempt} (t=${t.toFixed(2)} >= 1.0)`
+                );
+            }
             break; // Don't go past the end
         }
 
-        console.log(
-            `[Start Adjust] Attempt ${attempt}/${maxAttempts}: trying position t=${t.toFixed(2)}`
-        );
+        if (import.meta.env.DEV) {
+            console.log(
+                `[Start Adjust] Attempt ${attempt}/${maxAttempts}: trying position t=${t.toFixed(2)}`
+            );
+        }
 
         try {
             // Get point at this position
@@ -577,9 +563,11 @@ export async function adjustCutStartPointForLeadKerfOverlap(
                 t
             );
             if (!rotatedChain) {
-                console.log(
-                    `[Start Adjust] Failed to rotate chain to t=${t.toFixed(2)} - skipping`
-                );
+                if (import.meta.env.DEV) {
+                    console.log(
+                        `[Start Adjust] Failed to rotate chain to t=${t.toFixed(2)} - skipping`
+                    );
+                }
                 continue;
             }
 
@@ -610,20 +598,7 @@ export async function adjustCutStartPointForLeadKerfOverlap(
             const originalLeadOut: CacheableLead | undefined = cut.leadOut;
 
             cut.chain = rotatedChainInstance;
-            if (leadResult.leadIn) {
-                cut.leadIn = {
-                    ...leadResult.leadIn,
-                    generatedAt: new Date().toISOString(),
-                    version: '1.0.0',
-                };
-            }
-            if (leadResult.leadOut) {
-                cut.leadOut = {
-                    ...leadResult.leadOut,
-                    generatedAt: new Date().toISOString(),
-                    version: '1.0.0',
-                };
-            }
+            assignLeadsToCut(cut, leadResult.leadIn, leadResult.leadOut);
 
             // Generate kerf for test cut
             const testKerf = await cutToKerf(cut, tool);
@@ -633,15 +608,19 @@ export async function adjustCutStartPointForLeadKerfOverlap(
                 testKerf.leadInKerfOverlapsChain ||
                 testKerf.leadOutKerfOverlapsChain;
 
-            console.log(
-                `[Start Adjust] Position t=${t.toFixed(2)}: overlap=${hasOverlap} (leadIn=${testKerf.leadInKerfOverlapsChain}, leadOut=${testKerf.leadOutKerfOverlapsChain})`
-            );
+            if (import.meta.env.DEV) {
+                console.log(
+                    `[Start Adjust] Position t=${t.toFixed(2)}: overlap=${hasOverlap} (leadIn=${testKerf.leadInKerfOverlapsChain}, leadOut=${testKerf.leadOutKerfOverlapsChain})`
+                );
+            }
 
             if (!hasOverlap) {
                 // Success! Keep the mutated values
-                console.log(
-                    `[Start Adjust] ✓ SUCCESS! Adjusted cut start point for "${cut.name}" to t=${t.toFixed(2)} to avoid lead kerf overlap`
-                );
+                if (import.meta.env.DEV) {
+                    console.log(
+                        `[Start Adjust] ✓ SUCCESS! Adjusted cut start point for "${cut.name}" to t=${t.toFixed(2)} to avoid lead kerf overlap`
+                    );
+                }
                 cut.normal = normalResult.normal;
                 cut.normalConnectionPoint = normalResult.connectionPoint;
                 cut.normalSide = normalResult.normalSide;
@@ -690,9 +669,11 @@ function rotateChainToPoint(
     _startPoint: Point2D,
     t: number
 ): ChainData | null {
-    console.log(
-        `[Chain Rotate] Rotating chain "${chain.id}" to position t=${t.toFixed(2)}`
-    );
+    if (import.meta.env.DEV) {
+        console.log(
+            `[Chain Rotate] Rotating chain "${chain.id}" to position t=${t.toFixed(2)}`
+        );
+    }
 
     // For simplicity, just start at the nearest shape boundary
     // Calculate which shape contains the target point
@@ -720,9 +701,11 @@ function rotateChainToPoint(
         accumulatedDistance = nextDistance;
     }
 
-    console.log(
-        `[Chain Rotate] Target shape index: ${shapeIndex}/${chain.shapes.length - 1} (distance: ${targetDistance.toFixed(2)}/${totalLength.toFixed(2)})`
-    );
+    if (import.meta.env.DEV) {
+        console.log(
+            `[Chain Rotate] Target shape index: ${shapeIndex}/${chain.shapes.length - 1} (distance: ${targetDistance.toFixed(2)}/${totalLength.toFixed(2)})`
+        );
+    }
 
     // Reorder shapes to start at this index
     const reorderedShapes = [
@@ -730,12 +713,154 @@ function rotateChainToPoint(
         ...chain.shapes.slice(0, shapeIndex),
     ];
 
-    console.log(
-        `[Chain Rotate] Reordered ${chain.shapes.length} shapes to start at index ${shapeIndex}`
-    );
+    if (import.meta.env.DEV) {
+        console.log(
+            `[Chain Rotate] Reordered ${chain.shapes.length} shapes to start at index ${shapeIndex}`
+        );
+    }
 
     return {
         ...chain,
         shapes: reorderedShapes,
     };
 }
+
+/**
+ * Adjust kerf to avoid lead overlap with the original chain
+ *
+ * This function:
+ * 1. Checks if initial kerf has lead overlap
+ * 2. Attempts to adjust start point if overlap detected
+ * 3. Regenerates kerf with adjusted cut
+ *
+ * @param cut - The cut to generate kerf for (may be modified if adjustment succeeds)
+ * @param tool - The tool providing kerf width
+ * @param originalChain - The original chain before any offset
+ * @param tolerance - Tolerance for chain closure detection
+ * @param parts - Array of parts for determining part context (needed for correct normal calculation)
+ * @param initialKerf - The initial kerf to check for overlap
+ * @returns Result indicating whether adjustment was attempted and succeeded
+ */
+// export async function adjustKerfForLeadOverlap(
+//     cut: Cut,
+//     tool: Tool,
+//     originalChain: Chain,
+//     tolerance: number,
+//     parts: Part[],
+//     initialKerf: KerfData
+// ): Promise<{
+//     adjustmentAttempted: boolean;
+//     adjustmentSucceeded: boolean;
+//     kerf: KerfData;
+// }> {
+//     // Get tool kerf width
+//     const kerfWidth = getToolValue(tool, 'kerfWidth');
+
+//     // Create original chain data from the chain
+//     const originalChainData: ChainData = {
+//         id: originalChain.id,
+//         name: originalChain.name || originalChain.id,
+//         shapes: originalChain.shapes,
+//     };
+
+//     // Check if lead kerfs overlap with the original chain
+//     let leadInKerfOverlapsChain = false;
+//     let leadOutKerfOverlapsChain = false;
+
+//     if (initialKerf.leadInOuterChain) {
+//         if (import.meta.env.DEV) {
+//             console.log(
+//                 `[Kerf Gen] Checking lead-in kerf overlap for cut "${cut.name}"`
+//             );
+//         }
+//         // Check if original chain intersects with the lead-in kerf zone
+//         // Sampling interval scales with kerf width for unit independence
+//         leadInKerfOverlapsChain = doesLeadKerfOverlapChain(
+//             initialKerf.leadInOuterChain,
+//             originalChainData,
+//             kerfWidth
+//         );
+//     }
+
+//     if (initialKerf.leadOutOuterChain) {
+//         if (import.meta.env.DEV) {
+//             console.log(
+//                 `[Kerf Gen] Checking lead-out kerf overlap for cut "${cut.name}"`
+//             );
+//         }
+//         // Check if original chain intersects with the lead-out kerf zone
+//         // Sampling interval scales with kerf width for unit independence
+//         leadOutKerfOverlapsChain = doesLeadKerfOverlapChain(
+//             initialKerf.leadOutOuterChain,
+//             originalChainData,
+//             kerfWidth
+//         );
+//     }
+
+//     const hasOverlap = leadInKerfOverlapsChain || leadOutKerfOverlapsChain;
+
+//     if (import.meta.env.DEV) {
+//         console.log(
+//             `[Operation] Lead kerf overlap summary for "${cut.name}": leadIn=${leadInKerfOverlapsChain}, leadOut=${leadOutKerfOverlapsChain}`
+//         );
+//     }
+
+//     if (hasOverlap) {
+//         // Try to adjust start point to avoid overlap
+//         if (import.meta.env.DEV) {
+//             console.log(
+//                 `[Operation] Attempting to adjust start point for cut "${cut.name}"`
+//             );
+//         }
+
+//         const wasAdjusted = await adjustCutStartPointForLeadKerfOverlap(
+//             cut,
+//             tool,
+//             tolerance,
+//             parts
+//         );
+
+//         if (wasAdjusted) {
+//             // Cut was adjusted in place
+//             if (import.meta.env.DEV) {
+//                 console.log(
+//                     `[Operation] ✓ Start point adjustment SUCCEEDED for "${cut.name}"`
+//                 );
+//             }
+
+//             // Regenerate kerf with the adjusted cut
+//             if (import.meta.env.DEV) {
+//                 console.log(`[Operation] Regenerating kerf with adjusted cut`);
+//             }
+//             const adjustedKerf = await cutToKerf(cut, tool);
+
+//             return {
+//                 adjustmentAttempted: true,
+//                 adjustmentSucceeded: true,
+//                 kerf: adjustedKerf,
+//             };
+//         } else {
+//             // No solution found, use original kerf
+//             console.warn(
+//                 `[Operation] ✗ Start point adjustment FAILED for "${cut.name}" - using original cut with overlap`
+//             );
+
+//             return {
+//                 adjustmentAttempted: true,
+//                 adjustmentSucceeded: false,
+//                 kerf: initialKerf,
+//             };
+//         }
+//     } else {
+//         // No overlap
+//         if (import.meta.env.DEV) {
+//             console.log(`[Operation] No overlap detected for "${cut.name}"`);
+//         }
+
+//         return {
+//             adjustmentAttempted: false,
+//             adjustmentSucceeded: false,
+//             kerf: initialKerf,
+//         };
+//     }
+// }

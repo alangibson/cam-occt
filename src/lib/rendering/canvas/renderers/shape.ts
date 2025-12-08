@@ -23,7 +23,7 @@ import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     getShapeChainId,
     getChainShapeIds,
-} from '$lib/stores/chains/functions';
+} from '$lib/stores/visualization/functions';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { distanceFromEllipsePerimeter } from '$lib/geometry/ellipse/functions';
 import {

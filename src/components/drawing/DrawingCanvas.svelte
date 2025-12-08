@@ -1,24 +1,19 @@
 <script lang="ts">
     import { onMount, onDestroy, untrack } from 'svelte';
+    import { SvelteSet } from 'svelte/reactivity';
     import { drawingStore } from '$lib/stores/drawing/store.svelte';
-    import { chainStore } from '$lib/stores/chains/store.svelte';
+    import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
     import { planStore } from '$lib/stores/plan/store.svelte';
-    import { cutStore } from '$lib/stores/cuts/store.svelte';
     import { operationsStore } from '$lib/stores/operations/store.svelte';
-    import { tessellationStore } from '$lib/stores/tessellation/store.svelte';
     import { overlayStore } from '$lib/stores/overlay/store.svelte';
-    import { rapidStore } from '$lib/stores/rapids/store.svelte';
-    import { kerfStore } from '$lib/stores/kerfs/store.svelte';
-    import { shapeVisualizationStore } from '$lib/stores/shape/store.svelte';
-    import { leadStore } from '$lib/stores/leads/store.svelte';
     import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { selectionStore } from '$lib/stores/selection/store.svelte';
-    import { generateChainEndpoints } from '$lib/stores/chains/functions';
-    import { generateShapePoints } from '$lib/stores/shape/functions';
     import {
+        generateChainEndpoints,
+        generateShapePoints,
         getShapeChainId,
         getChainShapeIds,
-    } from '$lib/stores/chains/functions';
+    } from '$lib/stores/visualization/functions';
     import type { ShapeData } from '$lib/cam/shape/interfaces';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { SelectionMode } from '$lib/config/settings/enums';
@@ -51,17 +46,22 @@
 
     // Renderable objects
     const drawing: Drawing | null = $derived(drawingStore.drawing);
-    const chains: Chain[] = $derived(
-        drawing
-            ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
-            : []
-    );
+
+    // Optimized: Only recalculate when drawing.layers actually changes
+    const chains: Chain[] = $derived.by(() => {
+        if (!drawing) return [];
+        const layers = drawing.layers; // Track layers object
+        return Object.values(layers).flatMap((layer) => layer.chains);
+    });
+
     const cuts: Cut[] = $derived(planStore.plan.cuts);
-    const parts = $derived(
-        drawing
-            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
-            : []
-    );
+
+    // Optimized: Only recalculate when drawing.layers actually changes
+    const parts = $derived.by(() => {
+        if (!drawing) return [];
+        const layers = drawing.layers; // Track layers object
+        return Object.values(layers).flatMap((layer) => layer.parts);
+    });
     const rapids: Rapid[] = $derived(
         cuts.map((cut) => cut.rapidIn).filter((rapid) => rapid !== undefined)
     );
@@ -96,55 +96,47 @@
     const highlightedRapidId = $derived(selectionStore.rapids.highlighted);
 
     const cutsState = $derived({
-        showCutNormals: cutStore.showCutNormals,
-        showCutDirections: cutStore.showCutDirections,
-        showCutPaths: cutStore.showCutPaths,
-        showCutStartPoints: cutStore.showCutStartPoints,
-        showCutEndPoints: cutStore.showCutEndPoints,
-        showCutTangentLines: cutStore.showCutTangentLines,
+        showCutNormals: visualizationStore.showCutNormals,
+        showCutDirections: visualizationStore.showCutDirections,
+        showCutPaths: visualizationStore.showCutPaths,
+        showCutStartPoints: visualizationStore.showCutStartPoints,
+        showCutEndPoints: visualizationStore.showCutEndPoints,
+        showCutTangentLines: visualizationStore.showCutTangentLines,
     });
     const operations = $derived(operationsStore.operations);
-    // Only show chains as having cuts if their associated operations are enabled
-    const chainsWithCuts = $derived(
-        cuts && operations
-            ? [
-                  ...new Set(
-                      cuts
-                          .filter((cut) => {
-                              // Find the operation for this cut
-                              const operation = operations.find(
-                                  (op) => op.id === cut.sourceOperationId
-                              );
-                              // Only include cut if operation exists and is enabled
-                              return (
-                                  operation && operation.enabled && cut.enabled
-                              );
-                          })
-                          .map((c) => c.sourceChainId)
-                  ),
-              ]
-            : []
-    );
-    const tessellationState = $derived(tessellationStore);
-    const currentOverlay = $derived(overlayStore.overlays[currentStage]);
+
+    // Optimized: Single-pass filter with operation lookup map
+    const chainsWithCuts = $derived.by(() => {
+        if (!cuts || !operations) return [];
+
+        // Build operation lookup map once
+        const enabledOps = new Map(
+            operations.filter((op) => op.enabled).map((op) => [op.id, op])
+        );
+
+        // Single pass filter+map
+        const chainIds = new SvelteSet<string>();
+        for (const cut of cuts) {
+            if (cut.enabled && enabledOps.has(cut.sourceOperationId)) {
+                chainIds.add(cut.sourceChainId);
+            }
+        }
+
+        return Array.from(chainIds);
+    });
+    const tessellationState = $derived(visualizationStore);
     // Direct tracking of toolHead to trigger reactivity when it changes
     // Must bypass currentOverlay to avoid broken reactivity chain
     const currentToolHead = $derived(
         overlayStore.overlays[currentStage]?.toolHead
     );
 
-    // Debug: Log when currentToolHead changes
-    $effect(() => {
-        console.log(
-            '[DrawingCanvas] currentToolHead changed:',
-            $state.snapshot(currentToolHead)
-        );
-    });
-
     // Visibility
-    const showRapids = $derived(rapidStore.showRapids);
-    const showRapidDirections = $derived(rapidStore.showRapidDirections);
-    const shapeVisualization = $derived(shapeVisualizationStore);
+    const showRapids = $derived(visualizationStore.showRapids);
+    const showRapidDirections = $derived(
+        visualizationStore.showRapidDirections
+    );
+    const shapeVisualization = $derived(visualizationStore);
     const showShapePaths = $derived(shapeVisualization.showShapePaths);
     const showShapeStartPoints = $derived(
         shapeVisualization.showShapeStartPoints
@@ -160,25 +152,33 @@
     const showShapeTessellation = $derived(
         shapeVisualization.showShapeTessellation
     );
-    const showChainPaths = $derived(chainStore.showChainPaths);
-    const showChainStartPoints = $derived(chainStore.showChainStartPoints);
-    const showChainEndPoints = $derived(chainStore.showChainEndPoints);
-    const showChainTangentLines = $derived(chainStore.showChainTangentLines);
-    const showChainNormals = $derived(chainStore.showChainNormals);
-    const showChainDirections = $derived(chainStore.showChainDirections);
-    const showChainTessellation = $derived(chainStore.showChainTessellation);
+    const showChainPaths = $derived(visualizationStore.showChainPaths);
+    const showChainStartPoints = $derived(
+        visualizationStore.showChainStartPoints
+    );
+    const showChainEndPoints = $derived(visualizationStore.showChainEndPoints);
+    const showChainTangentLines = $derived(
+        visualizationStore.showChainTangentLines
+    );
+    const showChainNormals = $derived(visualizationStore.showChainNormals);
+    const showChainDirections = $derived(
+        visualizationStore.showChainDirections
+    );
+    const showChainTessellation = $derived(
+        visualizationStore.showChainTessellation
+    );
     const showCutNormals = $derived(cutsState.showCutNormals);
     const showCutDirections = $derived(cutsState.showCutDirections);
     const showCutPaths = $derived(cutsState.showCutPaths);
-    const showCutter = $derived(kerfStore.showCutter);
+    const showCutter = $derived(visualizationStore.showCutter);
     const showCutStartPoints = $derived(cutsState.showCutStartPoints);
     const showCutEndPoints = $derived(cutsState.showCutEndPoints);
     const showCutTangentLines = $derived(cutsState.showCutTangentLines);
-    const showLeadNormals = $derived(leadStore.showLeadNormals);
-    const showLeadPaths = $derived(leadStore.showLeadPaths);
-    const showLeadKerfs = $derived(leadStore.showLeadKerfs);
-    const kerfs: KerfData[] = $derived(kerfStore.kerfs);
-    const showKerfPaths = $derived(kerfStore.showKerfPaths);
+    const showLeadNormals = $derived(visualizationStore.showLeadNormals);
+    const showLeadPaths = $derived(visualizationStore.showLeadPaths);
+    const showLeadKerfs = $derived(visualizationStore.showLeadKerfs);
+    const kerfs: KerfData[] = $derived([]); // Kerf calculation currently disabled
+    const showKerfPaths = $derived(visualizationStore.showKerfPaths);
 
     // Compute effective interaction mode based on selection mode and current stage
     const interactionMode = $derived.by(() => {
@@ -223,14 +223,59 @@
         })
     );
 
-    // Universal overlay management - works for all stages
+    // GROUP 1: Core geometry data (drawing, shapes)
     $effect(() => {
-        // This will trigger whenever any of these reactive values change
-        const shouldUpdate =
-            currentStage && (shapeVisualization || chainStore || chains);
-        if (shouldUpdate) {
-            updateOverlaysForCurrentStage();
+        performance.mark('canvas-effect-group1-start');
+
+        // Access shapes to create reactive dependency on layer shape arrays
+        // When Layer.translate() reassigns its $state arrays, this will trigger
+        const _shapes = drawing?.shapes;
+        if (drawing) {
+            renderingPipeline.updateState({
+                drawing: drawing,
+                selectionMode: selectionMode,
+            });
         }
+
+        performance.mark('canvas-effect-group1-end');
+        performance.measure(
+            'Canvas Effect Group 1',
+            'canvas-effect-group1-start',
+            'canvas-effect-group1-end'
+        );
+    });
+
+    // GROUP 2: Derived collections (chains, parts, cuts, operations, rapids, kerfs)
+    $effect(() => {
+        performance.mark('canvas-effect-group2-start');
+
+        if (
+            chains ||
+            parts ||
+            cuts ||
+            operations ||
+            offsetCalculationHash ||
+            rapids ||
+            kerfs
+        ) {
+            renderingPipeline.updateState({
+                chains: chains || [],
+                parts: parts || [],
+                cuts: cuts || [],
+                cutsState: cutsState,
+                operations: operations,
+                chainsWithCuts: chainsWithCuts,
+                rapids: rapids || [],
+                kerfs: kerfs || [],
+            });
+        }
+
+        performance.mark('canvas-effect-group2-end');
+        performance.measure(
+            'Canvas Effect Group 2',
+            'canvas-effect-group2-start',
+            'canvas-effect-group2-end'
+        );
     });
 
     // Universal overlay update function for any stage
@@ -280,8 +325,8 @@
             let filteredEndpoints: typeof allEndpoints = [];
 
             if (
-                chainStore.showChainStartPoints ||
-                chainStore.showChainEndPoints
+                visualizationStore.showChainStartPoints ||
+                visualizationStore.showChainEndPoints
             ) {
                 filteredEndpoints = allEndpoints.filter(
                     (
@@ -289,13 +334,13 @@
                     ) => {
                         if (
                             endpoint.type === 'start' &&
-                            chainStore.showChainStartPoints
+                            visualizationStore.showChainStartPoints
                         ) {
                             return true;
                         }
                         if (
                             endpoint.type === 'end' &&
-                            chainStore.showChainEndPoints
+                            visualizationStore.showChainEndPoints
                         ) {
                             return true;
                         }
@@ -331,21 +376,10 @@
             : ''
     );
 
-    // Geometry changes (shapes, drawing structure)
+    // GROUP 3: Transform (pan, zoom, units)
     $effect(() => {
-        // Access shapes to create reactive dependency on layer shape arrays
-        // When Layer.translate() reassigns its $state arrays, this will trigger
-        const _shapes = drawing?.shapes;
-        if (drawing) {
-            renderingPipeline.updateState({
-                drawing: drawing,
-                selectionMode: selectionMode,
-            });
-        }
-    });
+        performance.mark('canvas-effect-group3-start');
 
-    // Transform changes (pan, zoom, units)
-    $effect(() => {
         if (
             zoomScale !== undefined &&
             panOffset !== undefined &&
@@ -354,11 +388,19 @@
             // Use pipeline's single updateTransform method to ensure coordinator stays in sync
             renderingPipeline.updateTransform(zoomScale, panOffset, unitScale);
         }
+
+        performance.mark('canvas-effect-group3-end');
+        performance.measure(
+            'Canvas Effect Group 3',
+            'canvas-effect-group3-start',
+            'canvas-effect-group3-end'
+        );
     });
 
-    // Selection, hover, and visibility changes
-    // Reactive to all these values to trigger updates when any change
+    // GROUP 4: Selection, hover, and visibility
     $effect(() => {
+        performance.mark('canvas-effect-group4-start');
+
         if (renderingPipeline) {
             renderingPipeline.updateState({
                 selection: {
@@ -416,64 +458,70 @@
                 respectLayerVisibility: canvasConfig.respectLayerVisibility,
             });
         }
+
+        performance.mark('canvas-effect-group4-end');
+        performance.measure(
+            'Canvas Effect Group 4',
+            'canvas-effect-group4-start',
+            'canvas-effect-group4-end'
+        );
     });
 
-    // Cut and operation changes
+    // GROUP 5a: Update rendering pipeline when overlays change
     $effect(() => {
-        if (cuts || cutsState || operations || offsetCalculationHash) {
-            renderingPipeline.updateState({
-                cuts: cuts || [],
-                cutsState: cutsState,
-                operations: operations,
-                chainsWithCuts: chainsWithCuts,
-            });
-        }
-    });
+        performance.mark('canvas-effect-group5a-start');
 
-    // Overlay and stage changes
-    $effect(() => {
-        if (
-            tessellationState !== undefined ||
-            currentOverlay !== undefined ||
-            currentStage !== undefined ||
-            currentToolHead !== undefined
-        ) {
+        // Track these explicitly to trigger when they change
+        const stage = currentStage;
+        const _toolHead = currentToolHead;
+        const _tessState = tessellationState;
+
+        // Read overlay OUTSIDE untrack so toolHead changes propagate to renderer
+        if (stage !== undefined) {
+            const overlay = overlayStore.overlays[stage];
             renderingPipeline.updateState({
                 overlays: overlayStore.overlays,
-                currentOverlay: currentOverlay,
-                stage: currentStage,
+                currentOverlay: overlay,
+                stage: stage,
             });
         }
+
+        performance.mark('canvas-effect-group5a-end');
+        performance.measure(
+            'Canvas Effect Group 5a',
+            'canvas-effect-group5a-start',
+            'canvas-effect-group5a-end'
+        );
     });
 
-    // Chains and parts data changes
+    // GROUP 5b: Generate overlays when visualization settings or geometry changes
+    // This effect only runs for shape/chain overlays, NOT toolHead
     $effect(() => {
-        if (chains || parts) {
-            renderingPipeline.updateState({
-                chains: chains || [],
-                parts: parts || [],
-            });
+        performance.mark('canvas-effect-group5b-start');
+
+        // Only track inputs that should trigger overlay regeneration
+        // Don't track currentStage to avoid running when just switching stages
+        const shouldGenerate =
+            drawing?.shapes &&
+            (shapeVisualization.showShapeStartPoints ||
+                shapeVisualization.showShapeEndPoints ||
+                visualizationStore.showChainStartPoints ||
+                visualizationStore.showChainEndPoints);
+
+        if (shouldGenerate && currentStage) {
+            // Use untrack to prevent reading overlays during generation
+            untrack(() => updateOverlaysForCurrentStage());
         }
+
+        performance.mark('canvas-effect-group5b-end');
+        performance.measure(
+            'Canvas Effect Group 5b',
+            'canvas-effect-group5b-start',
+            'canvas-effect-group5b-end'
+        );
     });
 
-    // Rapids data changes
-    $effect(() => {
-        if (rapids !== undefined) {
-            renderingPipeline.updateState({
-                rapids: rapids || [],
-            });
-        }
-    });
-
-    // Kerfs data changes
-    $effect(() => {
-        if (kerfs !== undefined) {
-            renderingPipeline.updateState({
-                kerfs: kerfs || [],
-            });
-        }
-    });
-
+    // Set up RenderingPipeline
     onMount(() => {
         // Get container dimensions
         const rect = canvasContainer.getBoundingClientRect();
@@ -501,6 +549,7 @@
         });
     });
 
+    // Tear down RenderingPipeline
     onDestroy(() => {
         if (hoverTimeout !== null) {
             clearTimeout(hoverTimeout);
@@ -713,7 +762,7 @@
                     selectionStore.selectShape(shape, e.ctrlKey);
                 } else if (interactionMode === 'chains') {
                     // Program mode - allow chain and part selection
-                    const chainId = getShapeChainId(shape.id, chains, cuts);
+                    const chainId = getShapeChainId(shape.id, chains);
                     if (chainId) {
                         // When clicking on a shape outline, always prefer chain selection
                         if (onChainClick) {
@@ -758,7 +807,7 @@
                     }
                 } else if (interactionMode === 'cuts') {
                     // Simulation mode - only allow cut/rapid selection
-                    const chainId = getShapeChainId(shape.id, chains, cuts);
+                    const chainId = getShapeChainId(shape.id, chains);
 
                     // Check if this chain has a cut and handle cut selection
                     if (chainId && chainsWithCuts.includes(chainId)) {

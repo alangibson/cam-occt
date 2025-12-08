@@ -7,13 +7,11 @@ import {
 import { detectParts } from '$lib/cam/part/part-detection';
 import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import { chainStore } from '$lib/stores/chains/store.svelte';
+import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 import { partStore } from '$lib/stores/parts/store.svelte';
 import { planStore } from '$lib/stores/plan/store.svelte';
-import { cutStore } from '$lib/stores/cuts/store.svelte';
 import { operationsStore } from '$lib/stores/operations/store.svelte';
 import { toolStore } from '$lib/stores/tools/store.svelte';
-import { kerfStore } from '$lib/stores/kerfs/store.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
@@ -28,12 +26,12 @@ describe.skip('Spline Rendering Race Condition', () => {
     beforeEach(() => {
         // Reset all stores to clean state
         drawingStore.reset();
-        chainStore.setTolerance(0.1); // Reset to default
+        visualizationStore.setTolerance(0.1); // Reset to default
         partStore.clearParts();
-        cutStore.reset();
+        visualizationStore.resetCuts();
         operationsStore.reset();
         toolStore.reset();
-        kerfStore.clearKerfs();
+        visualizationStore.resetKerfs();
     });
 
     it('should render all offset shapes including splines for single operation', async () => {
@@ -48,7 +46,7 @@ describe.skip('Spline Rendering Race Condition', () => {
 
         // Set tolerance before detecting chains
         const tolerance = 0.01;
-        chainStore.setTolerance(tolerance);
+        visualizationStore.setTolerance(tolerance);
 
         // Detect chains
         const chains = detectShapeChains(
@@ -180,7 +178,7 @@ describe.skip('Spline Rendering Race Condition', () => {
 
         // Set tolerance before detecting chains
         const tolerance = 0.01;
-        chainStore.setTolerance(tolerance);
+        visualizationStore.setTolerance(tolerance);
 
         // Detect chains and parts
         const chains = detectShapeChains(
@@ -365,7 +363,7 @@ describe.skip('Spline Rendering Race Condition', () => {
 
         // Set tolerance before detecting chains
         const tolerance = 0.01;
-        chainStore.setTolerance(tolerance);
+        visualizationStore.setTolerance(tolerance);
 
         const chains = detectShapeChains(
             drawing.shapes.map((s) => new Shape(s)),

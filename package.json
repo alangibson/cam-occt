@@ -21,7 +21,7 @@
     "format:fix": "prettier --write . --log-level error",
     "duplicates": "bash -c 'shopt -s globstar && jscpd --config jscpd.json ./src/**/*.ts'",
     "validate": "npm run format && npm run check && npm run test",
-    "test": "npm run test:unit:coverage",
+    "test": "npm run test:unit:coverage && npm run test:e2e",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "test:verbose": "vitest run --reporter=verbose --silent=false",

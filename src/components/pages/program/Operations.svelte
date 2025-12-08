@@ -2,7 +2,7 @@
     import { operationsStore } from '$lib/stores/operations/store.svelte';
     import { toolStore } from '$lib/stores/tools/store.svelte';
     import type { Tool } from '$lib/cam/tool/interfaces';
-    import { chainStore } from '$lib/stores/chains/store.svelte';
+    import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
     import { drawingStore } from '$lib/stores/drawing/store.svelte';
     import { planStore } from '$lib/stores/plan/store.svelte';
     import { selectionStore } from '$lib/stores/selection/store.svelte';
@@ -28,7 +28,7 @@
     let operations = $derived(operationsStore.operations);
     let draggedOperation = $state<Operation | null>(null);
     let dragOverIndex = $state<number | null>(null);
-    let tolerance = $derived(chainStore.tolerance); // Reactive tolerance from chainStore
+    let tolerance = $derived(visualizationStore.tolerance); // Reactive tolerance from visualizationStore
 
     // Tool search functionality
     let toolSearchTerms = $state<{ [operationId: string]: string }>({});
@@ -193,6 +193,8 @@
         field: K,
         value: OperationData[K]
     ) {
+        performance.mark('updateOperationField-start');
+
         // If changing action to Spot, clear all selected targets
         if (field === 'action' && value === OperationAction.SPOT) {
             operationsStore.updateOperation(id, {
@@ -206,8 +208,22 @@
         // Update plan with the modified operation
         const operation = operations.find((op) => op.id === id);
         if (operation && operation.enabled) {
+            performance.mark('plan-update-start');
             planStore.plan.update(operation, tolerance);
+            performance.mark('plan-update-end');
+            performance.measure(
+                'plan.update',
+                'plan-update-start',
+                'plan-update-end'
+            );
         }
+
+        performance.mark('updateOperationField-end');
+        performance.measure(
+            'updateOperationField',
+            'updateOperationField-start',
+            'updateOperationField-end'
+        );
     }
 
     function toggleTargetSelection(operationId: string, targetId: string) {

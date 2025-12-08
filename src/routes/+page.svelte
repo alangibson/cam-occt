@@ -8,7 +8,9 @@
     import { workflowStore } from '$lib/stores/workflow/store.svelte';
     import { uiStore } from '$lib/stores/ui/store.svelte';
     import { drawingStore } from '$lib/stores/drawing/store.svelte';
-    import { chainStore } from '$lib/stores/chains/store.svelte';
+    import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
+    import { partStore } from '$lib/stores/parts/store.svelte';
+    import { overlayStore } from '$lib/stores/overlay/store.svelte';
     import {
         restoreApplicationState,
         setupAutoSave,
@@ -17,11 +19,8 @@
     } from '$lib/stores/storage/store';
     import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { ImportUnitSetting } from '$lib/config/settings/enums';
-    import { kerfStore } from '$lib/stores/kerfs/store.svelte';
     import { operationsStore } from '$lib/stores/operations/store.svelte';
     import { planStore } from '$lib/stores/plan/store.svelte';
-    import { cutStore } from '$lib/stores/cuts/store.svelte';
-    import { rapidStore } from '$lib/stores/rapids/store.svelte';
     import {
         toolStore,
         createDefaultTool,
@@ -32,66 +31,37 @@
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = $state(false);
 
-    // Auto-save when drawingStore changes (Svelte 5 reactive store)
+    // Consolidated auto-save effect - tracks ALL stores in one place
+    // This ensures collectCurrentState() only runs once (after 1s debounce) instead of 6 times
     $effect(() => {
-        // Access all reactive properties to track them
+        // Drawing store
         void drawingStore.drawing;
         void drawingStore.scale;
         void drawingStore.offset;
         void drawingStore.displayUnit;
         void drawingStore.layerVisibility;
 
-        // Trigger auto-save
-        autoSaveApplicationState();
-    });
+        // Visualization store (chains, cuts, leads, rapids, kerfs, shapes, tessellation)
+        void visualizationStore.tolerance;
+        void visualizationStore.showChainPaths;
+        void visualizationStore.showChainStartPoints;
+        void visualizationStore.showChainEndPoints;
+        void visualizationStore.showChainTangentLines;
+        void visualizationStore.showChainNormals;
+        void visualizationStore.showChainDirections;
+        void visualizationStore.showChainTessellation;
 
-    // Auto-save when chainStore changes (Svelte 5 reactive store)
-    $effect(() => {
-        // Access all reactive properties to track them
-        void chainStore.tolerance;
-        void chainStore.showChainPaths;
-        void chainStore.showChainStartPoints;
-        void chainStore.showChainEndPoints;
-        void chainStore.showChainTangentLines;
-        void chainStore.showChainNormals;
-        void chainStore.showChainDirections;
-        void chainStore.showChainTessellation;
-
-        // Trigger auto-save
-        autoSaveApplicationState();
-    });
-
-    // Auto-save when operationsStore changes (Svelte 5 reactive store)
-    $effect(() => {
-        // Access the operations array to track changes
+        // Operations store
         void operationsStore.operations;
 
-        // Trigger auto-save
-        autoSaveApplicationState();
-    });
-
-    // Auto-save when workflowStore changes (Svelte 5 reactive store)
-    $effect(() => {
-        // Access reactive properties to track them
+        // Workflow store
         void workflowStore.currentStage;
         void workflowStore.completedStages;
 
-        // Trigger auto-save
-        autoSaveApplicationState();
-    });
-
-    // Auto-save when toolStore changes (Svelte 5 reactive store)
-    $effect(() => {
-        // Access reactive properties to track them
+        // Tool store
         void toolStore.tools;
 
-        // Trigger auto-save
-        autoSaveApplicationState();
-    });
-
-    // Auto-save when selectionStore changes (Svelte 5 reactive store)
-    $effect(() => {
-        // Access reactive properties to track them
+        // Selection store
         void selectionStore.shapes;
         void selectionStore.chains;
         void selectionStore.parts;
@@ -100,7 +70,26 @@
         void selectionStore.leads;
         void selectionStore.kerfs;
 
-        // Trigger auto-save
+        // Additional stores used by collectCurrentState (previously missing)
+        void partStore.warnings;
+        void visualizationStore.showRapids;
+        void visualizationStore.showRapidDirections;
+        void uiStore.toolTableVisible;
+        void uiStore.settingsVisible;
+        void visualizationStore.tessellationActive;
+        void visualizationStore.tessellationPoints;
+        void overlayStore.currentStage;
+        void overlayStore.overlays;
+        void visualizationStore.showCutNormals;
+        void visualizationStore.showCutDirections;
+        void visualizationStore.showCutPaths;
+        void visualizationStore.showCutStartPoints;
+        void visualizationStore.showCutEndPoints;
+        void visualizationStore.showCutTangentLines;
+        void planStore.plan;
+        void settingsStore.settings;
+
+        // Trigger debounced auto-save (will only run once after 1s of no changes)
         autoSaveApplicationState();
     });
 
@@ -124,9 +113,7 @@
         // Clear downstream stores (chains are auto-generated from drawing layers)
         operationsStore.reset(); // Clear operations
         planStore.reset(); // Clear cuts (which contain rapids as cut.rapidIn)
-        cutStore.reset(); // Clear cut UI state (selection, highlighting)
-        rapidStore.reset(); // Clear rapid UI state (selection, highlighting)
-        kerfStore.clearKerfs();
+        visualizationStore.reset(); // Clear visualization UI state
 
         // Reset workflow to import stage
         workflowStore.reset();

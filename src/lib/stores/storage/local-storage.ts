@@ -5,11 +5,7 @@
  * Saves all application state to browser localStorage to maintain state across sessions.
  */
 
-import {
-    STATE_VERSION,
-    STATE_STORAGE_KEY,
-    MILLISECONDS_IN_SECOND,
-} from './constants';
+import { STATE_VERSION, STATE_STORAGE_KEY } from './constants';
 import type { PersistedState } from './interfaces';
 
 /**
@@ -108,23 +104,3 @@ export function getPersistedStateSize(): number {
     const savedData: string | null = localStorage.getItem(STATE_STORAGE_KEY);
     return savedData ? new Blob([savedData]).size : 0;
 }
-
-/**
- * Debounce utility for auto-saving
- */
-function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
-    func: T,
-    delay: number
-): (...args: Parameters<T>) => void {
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    return (...args: Parameters<T>) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func(...args), delay);
-    };
-}
-
-/**
- * Create a debounced save function
- */
-export const debouncedSave = debounce(saveState, MILLISECONDS_IN_SECOND); // Save 1 second after last change

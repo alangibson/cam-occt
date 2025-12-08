@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { planStore } from '$lib/stores/plan/store.svelte';
-import { cutStore } from '$lib/stores/cuts/store.svelte';
-import { chainStore } from '$lib/stores/chains/store.svelte';
+import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
@@ -14,7 +13,7 @@ describe.skip('SimulateStage Cut Direction', () => {
     // where chains are auto-detected from Drawing layers and chainStore.setChains() no longer exists
     beforeEach(() => {
         // Reset stores
-        cutStore.reset();
+        visualizationStore.resetCuts();
     });
 
     it('should trace circles clockwise when cut direction is clockwise', () => {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { parseLeadId } from '$lib/stores/leads/store.svelte';
+    import { parseLeadId } from '$lib/stores/visualization/classes.svelte';
     import { selectionStore } from '$lib/stores/selection/store.svelte';
     import { planStore } from '$lib/stores/plan/store.svelte';
     import { operationsStore } from '$lib/stores/operations/store.svelte';

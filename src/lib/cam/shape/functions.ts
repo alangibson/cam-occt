@@ -1492,25 +1492,28 @@ export function transformShape(
     return new Shape(clonedShape);
 }
 
-// Helper function to get the origin point of a shape
-export function getShapeOrigin(shape: Shape): Point2D | null {
+export function getShapeOrigin(shape: ShapeData): Point2D {
     switch (shape.type) {
-        case 'line':
-            const line: Line = shape.geometry as Line;
-            return line.start;
-        case 'circle':
-        case 'arc':
-            const circle: Circle = shape.geometry as Circle | Arc;
-            return circle.center;
-        case 'polyline':
-            const polyline: DxfPolyline = shape.geometry as DxfPolyline;
-            const points: Point2D[] = polylineToPoints(polyline);
-            return points.length > 0 ? points[0] : null;
-        case 'ellipse':
-            const ellipse: Ellipse = shape.geometry as Ellipse;
-            return ellipse.center;
+        case GeometryType.LINE:
+            const line = shape.geometry as Line;
+            return line.start; // Origin is the start point
+
+        case GeometryType.CIRCLE:
+        case GeometryType.ARC:
+            const circle = shape.geometry as Circle;
+            return circle.center; // Origin is the center
+
+        case GeometryType.POLYLINE:
+            const polyline = shape.geometry as DxfPolyline;
+            const points = polylineToPoints(polyline);
+            return points.length > 0 ? points[0] : { x: 0, y: 0 }; // Origin is the first point
+
+        case GeometryType.ELLIPSE:
+            const ellipse = shape.geometry as Ellipse;
+            return ellipse.center; // Origin is the center
+
         default:
-            return null;
+            return { x: 0, y: 0 };
     }
 }
 

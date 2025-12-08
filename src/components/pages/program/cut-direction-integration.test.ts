@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { operationsStore } from '$lib/stores/operations/store.svelte';
 import { planStore } from '$lib/stores/plan/store.svelte';
-import { cutStore } from '$lib/stores/cuts/store.svelte';
-import { chainStore } from '$lib/stores/chains/store.svelte';
+import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
@@ -64,7 +63,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
     // where chains are auto-detected from Drawing layers and chainStore.setChains() no longer exists
     beforeEach(() => {
         operationsStore.reset();
-        cutStore.reset();
+        visualizationStore.resetCuts();
     });
 
     it('should respect user Cut Direction in Program stage (rendering arrows)', async () => {

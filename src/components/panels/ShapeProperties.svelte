@@ -5,17 +5,15 @@
     import { Shape } from '$lib/cam/shape/classes';
     import { GeometryType } from '$lib/geometry/enums';
     import type { Point2D } from '$lib/geometry/point/interfaces';
-    import type { Line } from '$lib/geometry/line/interfaces';
     import type { Arc } from '$lib/geometry/arc/interfaces';
     import type { Circle } from '$lib/geometry/circle/interfaces';
-    import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
     import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
     import type { Spline } from '$lib/geometry/spline/interfaces';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
+        getShapeOrigin,
     } from '$lib/cam/shape/functions';
-    import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
     import InspectProperties from './InspectProperties.svelte';
 
     let drawing = $derived(drawingStore.drawing);
@@ -38,31 +36,6 @@
     let isShowingOffset = $derived(
         displayShape === selectedOffsetShape && selectedOffsetShape !== null
     );
-
-    function getShapeOrigin(shape: ShapeData): Point2D {
-        switch (shape.type) {
-            case GeometryType.LINE:
-                const line = shape.geometry as Line;
-                return line.start; // Origin is the start point
-
-            case GeometryType.CIRCLE:
-            case GeometryType.ARC:
-                const circle = shape.geometry as Circle;
-                return circle.center; // Origin is the center
-
-            case GeometryType.POLYLINE:
-                const polyline = shape.geometry as DxfPolyline;
-                const points = polylineToPoints(polyline);
-                return points.length > 0 ? points[0] : { x: 0, y: 0 }; // Origin is the first point
-
-            case GeometryType.ELLIPSE:
-                const ellipse = shape.geometry as Ellipse;
-                return ellipse.center; // Origin is the center
-
-            default:
-                return { x: 0, y: 0 };
-        }
-    }
 
     function formatPoint(point: Point2D): string {
         return `(${point.x.toFixed(2)}, ${point.y.toFixed(2)})`;

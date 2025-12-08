@@ -1,45 +1,9 @@
 <script lang="ts">
     import AccordionPanel from './AccordionPanel.svelte';
-    import { shapeVisualizationStore } from '$lib/stores/shape/store.svelte';
-    import { chainStore } from '$lib/stores/chains/store.svelte';
-    import { leadStore } from '$lib/stores/leads/store.svelte';
-    import { cutStore } from '$lib/stores/cuts/store.svelte';
-    import { rapidStore } from '$lib/stores/rapids/store.svelte';
-    import { kerfStore } from '$lib/stores/kerfs/store.svelte';
+    import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 
     function resetAll() {
-        // Reset shape visualization
-        shapeVisualizationStore.reset();
-
-        // Reset chain visualization
-        chainStore.setShowChainPaths(true);
-        chainStore.setShowChainStartPoints(false);
-        chainStore.setShowChainEndPoints(false);
-        chainStore.setShowChainTangentLines(false);
-        chainStore.setShowChainNormals(false);
-        chainStore.setShowChainDirections(false);
-        chainStore.setShowChainTessellation(false);
-
-        // Reset cut visualization
-        cutStore.setShowCutNormals(false);
-        cutStore.setShowCutDirections(false);
-        cutStore.setShowCutPaths(true);
-        cutStore.setShowCutStartPoints(false);
-        cutStore.setShowCutEndPoints(false);
-        cutStore.setShowCutTangentLines(false);
-
-        // Reset lead visualization
-        leadStore.setShowLeadNormals(false);
-        leadStore.setShowLeadPaths(true);
-        leadStore.setShowLeadKerfs(false);
-
-        // Reset rapid visualization
-        rapidStore.setShowRapids(true);
-        rapidStore.setShowRapidDirections(false);
-
-        // Reset kerf visualization
-        kerfStore.setShowCutter(false);
-        kerfStore.setShowKerfPaths(false);
+        visualizationStore.reset();
     }
 </script>
 
@@ -50,9 +14,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={shapeVisualizationStore.showShapeWindingDirection}
+                    checked={visualizationStore.showShapeWindingDirection}
                     onchange={(e) =>
-                        shapeVisualizationStore.setShowShapeWindingDirection(
+                        visualizationStore.setShowShapeWindingDirection(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -62,9 +26,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={shapeVisualizationStore.showShapeEndPoints}
+                    checked={visualizationStore.showShapeEndPoints}
                     onchange={(e) =>
-                        shapeVisualizationStore.setShowShapeEndPoints(
+                        visualizationStore.setShowShapeEndPoints(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -74,9 +38,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={shapeVisualizationStore.showShapeNormals}
+                    checked={visualizationStore.showShapeNormals}
                     onchange={(e) =>
-                        shapeVisualizationStore.setShowShapeNormals(
+                        visualizationStore.setShowShapeNormals(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -86,9 +50,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={shapeVisualizationStore.showShapePaths}
+                    checked={visualizationStore.showShapePaths}
                     onchange={(e) =>
-                        shapeVisualizationStore.setShowShapePaths(
+                        visualizationStore.setShowShapePaths(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -98,9 +62,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={shapeVisualizationStore.showShapeStartPoints}
+                    checked={visualizationStore.showShapeStartPoints}
                     onchange={(e) =>
-                        shapeVisualizationStore.setShowShapeStartPoints(
+                        visualizationStore.setShowShapeStartPoints(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -110,9 +74,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={shapeVisualizationStore.showShapeTangentLines}
+                    checked={visualizationStore.showShapeTangentLines}
                     onchange={(e) =>
-                        shapeVisualizationStore.setShowShapeTangentLines(
+                        visualizationStore.setShowShapeTangentLines(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -122,9 +86,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={shapeVisualizationStore.showShapeTessellation}
+                    checked={visualizationStore.showShapeTessellation}
                     onchange={(e) =>
-                        shapeVisualizationStore.setShowShapeTessellation(
+                        visualizationStore.setShowShapeTessellation(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -138,9 +102,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={chainStore.showChainDirections}
+                    checked={visualizationStore.showChainDirections}
                     onchange={(e) =>
-                        chainStore.setShowChainDirections(
+                        visualizationStore.setShowChainDirections(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -150,9 +114,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={chainStore.showChainEndPoints}
+                    checked={visualizationStore.showChainEndPoints}
                     onchange={(e) =>
-                        chainStore.setShowChainEndPoints(
+                        visualizationStore.setShowChainEndPoints(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -162,9 +126,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={chainStore.showChainNormals}
+                    checked={visualizationStore.showChainNormals}
                     onchange={(e) =>
-                        chainStore.setShowChainNormals(e.currentTarget.checked)}
+                        visualizationStore.setShowChainNormals(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Normals
@@ -172,9 +138,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={chainStore.showChainPaths}
+                    checked={visualizationStore.showChainPaths}
                     onchange={(e) =>
-                        chainStore.setShowChainPaths(e.currentTarget.checked)}
+                        visualizationStore.setShowChainPaths(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Paths
@@ -182,9 +150,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={chainStore.showChainStartPoints}
+                    checked={visualizationStore.showChainStartPoints}
                     onchange={(e) =>
-                        chainStore.setShowChainStartPoints(
+                        visualizationStore.setShowChainStartPoints(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -194,9 +162,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={chainStore.showChainTangentLines}
+                    checked={visualizationStore.showChainTangentLines}
                     onchange={(e) =>
-                        chainStore.setShowChainTangentLines(
+                        visualizationStore.setShowChainTangentLines(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -206,9 +174,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={chainStore.showChainTessellation}
+                    checked={visualizationStore.showChainTessellation}
                     onchange={(e) =>
-                        chainStore.setShowChainTessellation(
+                        visualizationStore.setShowChainTessellation(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -222,9 +190,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutStore.showCutDirections}
+                    checked={visualizationStore.showCutDirections}
                     onchange={(e) =>
-                        cutStore.setShowCutDirections(e.currentTarget.checked)}
+                        visualizationStore.setShowCutDirections(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Directions
@@ -232,9 +202,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutStore.showCutEndPoints}
+                    checked={visualizationStore.showCutEndPoints}
                     onchange={(e) =>
-                        cutStore.setShowCutEndPoints(e.currentTarget.checked)}
+                        visualizationStore.setShowCutEndPoints(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Ends
@@ -242,9 +214,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutStore.showCutNormals}
+                    checked={visualizationStore.showCutNormals}
                     onchange={(e) =>
-                        cutStore.setShowCutNormals(e.currentTarget.checked)}
+                        visualizationStore.setShowCutNormals(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Normals
@@ -252,9 +226,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutStore.showCutPaths}
+                    checked={visualizationStore.showCutPaths}
                     onchange={(e) =>
-                        cutStore.setShowCutPaths(e.currentTarget.checked)}
+                        visualizationStore.setShowCutPaths(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Paths
@@ -262,9 +238,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutStore.showCutStartPoints}
+                    checked={visualizationStore.showCutStartPoints}
                     onchange={(e) =>
-                        cutStore.setShowCutStartPoints(e.currentTarget.checked)}
+                        visualizationStore.setShowCutStartPoints(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Starts
@@ -272,9 +250,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutStore.showCutTangentLines}
+                    checked={visualizationStore.showCutTangentLines}
                     onchange={(e) =>
-                        cutStore.setShowCutTangentLines(
+                        visualizationStore.setShowCutTangentLines(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -288,7 +266,7 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    bind:checked={leadStore.showLeadKerfs}
+                    bind:checked={visualizationStore.showLeadKerfs}
                     class="show-checkbox"
                 />
                 Kerf
@@ -296,7 +274,7 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    bind:checked={leadStore.showLeadNormals}
+                    bind:checked={visualizationStore.showLeadNormals}
                     class="show-checkbox"
                 />
                 Normals
@@ -304,7 +282,7 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    bind:checked={leadStore.showLeadPaths}
+                    bind:checked={visualizationStore.showLeadPaths}
                     class="show-checkbox"
                 />
                 Paths
@@ -316,9 +294,9 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={rapidStore.showRapidDirections}
+                    checked={visualizationStore.showRapidDirections}
                     onchange={(e) =>
-                        rapidStore.setShowRapidDirections(
+                        visualizationStore.setShowRapidDirections(
                             e.currentTarget.checked
                         )}
                     class="show-checkbox"
@@ -328,9 +306,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={rapidStore.showRapids}
+                    checked={visualizationStore.showRapids}
                     onchange={(e) =>
-                        rapidStore.setShowRapids(e.currentTarget.checked)}
+                        visualizationStore.setShowRapids(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Paths
@@ -342,9 +322,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={kerfStore.showCutter}
+                    checked={visualizationStore.showCutter}
                     onchange={(e) =>
-                        kerfStore.setShowCutter(e.currentTarget.checked)}
+                        visualizationStore.setShowCutter(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Cutter
@@ -352,9 +334,11 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={kerfStore.showKerfPaths}
+                    checked={visualizationStore.showKerfPaths}
                     onchange={(e) =>
-                        kerfStore.setShowKerfPaths(e.currentTarget.checked)}
+                        visualizationStore.setShowKerfPaths(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Paths

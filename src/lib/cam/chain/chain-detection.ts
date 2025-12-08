@@ -1,7 +1,6 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import { calculateSquaredDistance } from '$lib/geometry/math/functions';
-import { getShapePoints } from '$lib/cam/shape/functions';
 import { detectCutDirection } from '$lib/cam/cut/cut-direction';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
@@ -90,12 +89,8 @@ function areShapesConnected(
     shapeB: Shape,
     tolerance: number
 ): boolean {
-    const pointsA: Point2D[] = getShapePoints(shapeA, {
-        mode: 'CHAIN_DETECTION',
-    });
-    const pointsB: Point2D[] = getShapePoints(shapeB, {
-        mode: 'CHAIN_DETECTION',
-    });
+    const pointsA: Point2D[] = shapeA.points;
+    const pointsB: Point2D[] = shapeB.points;
 
     // Check if any point from shape A is within tolerance of any point from shape B
     for (const pointA of pointsA) {

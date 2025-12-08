@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createCutsFromOperation } from './cut-generation';
 import { generateCutsForChainsWithOperation } from './chain-operations';
 import { generateCutsForPartsWithOperation } from './part-operations';
-import { generateAndAdjustKerf } from '$lib/cam/pipeline/kerfs/kerf-generation';
+import { cutToKerf } from '$lib/cam/kerf/functions';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { OperationData } from '$lib/cam/operation/interface';
@@ -37,7 +37,15 @@ vi.mock('./part-operations', () => ({
 }));
 
 vi.mock('$lib/cam/pipeline/kerfs/kerf-generation', () => ({
-    generateAndAdjustKerf: vi.fn().mockResolvedValue({ success: true }),
+    adjustKerfForLeadOverlap: vi.fn().mockResolvedValue({
+        adjustmentAttempted: false,
+        adjustmentSucceeded: false,
+        kerf: {},
+    }),
+}));
+
+vi.mock('$lib/cam/kerf/functions', () => ({
+    cutToKerf: vi.fn().mockResolvedValue({}),
 }));
 
 describe('createCutsFromOperation', () => {
@@ -289,7 +297,7 @@ describe('createCutsFromOperation', () => {
         expect(result.warnings[1].offsetWarnings[0]).toBe('Warning 2');
     });
 
-    it('should generate kerfs when tool has kerf width', async () => {
+    it('should generate cuts without kerfs (kerf generation happens in Plan.add)', async () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
@@ -306,22 +314,12 @@ describe('createCutsFromOperation', () => {
             warnings: [],
         });
 
-        vi.mocked(generateAndAdjustKerf).mockResolvedValue({} as any);
-
         const operation = createOperation(mockOperation, mockTool, [mockChain]);
         const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
-
-        // Check that generateAndAdjustKerf was called
-        expect(generateAndAdjustKerf).toHaveBeenCalledTimes(1);
-        const callArgs = vi.mocked(generateAndAdjustKerf).mock.calls[0];
-        expect(callArgs[0]).toBe(mockCut);
-        expect(callArgs[1]).toBe(mockTool);
-        // Check that the chain argument has the correct id (it's a Chain instance)
-        expect(callArgs[2].id).toBe('chain-1');
-        expect(callArgs[3]).toBe(tolerance);
-        expect(callArgs[4]).toEqual([]);
+        // Kerf generation no longer happens in createCutsFromOperation
+        expect(cutToKerf).not.toHaveBeenCalled();
     });
 
     it('should not generate kerfs when tool has zero kerf width', async () => {
@@ -343,10 +341,10 @@ describe('createCutsFromOperation', () => {
         const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
-        expect(generateAndAdjustKerf).not.toHaveBeenCalled();
+        expect(cutToKerf).not.toHaveBeenCalled();
     });
 
-    it('should handle kerf generation errors gracefully', async () => {
+    it('should return cuts successfully (kerf errors handled in Plan.add)', async () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
@@ -358,24 +356,11 @@ describe('createCutsFromOperation', () => {
             warnings: [],
         });
 
-        vi.mocked(generateAndAdjustKerf).mockRejectedValue(
-            new Error('Kerf generation failed')
-        );
-
-        const consoleWarnSpy = vi
-            .spyOn(console, 'warn')
-            .mockImplementation(() => {});
-
         const operation = createOperation(mockOperation, mockTool, [mockChain]);
         const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-            'Failed to generate kerf for cut:',
-            expect.any(Error)
-        );
-
-        consoleWarnSpy.mockRestore();
+        // Kerf generation and error handling now happens in Plan.add()
     });
 
     it('should handle unknown target types', async () => {
@@ -399,7 +384,7 @@ describe('createCutsFromOperation', () => {
         expect(generateCutsForPartsWithOperation).not.toHaveBeenCalled();
     });
 
-    it('should warn when chain not found for kerf generation', async () => {
+    it('should return cuts regardless of chain availability (chain validation in Plan.add)', async () => {
         const mockCut = {
             id: 'cut-1',
             name: 'Test Cut',
@@ -411,19 +396,11 @@ describe('createCutsFromOperation', () => {
             warnings: [],
         });
 
-        const consoleWarnSpy = vi
-            .spyOn(console, 'warn')
-            .mockImplementation(() => {});
-
-        const operation = createOperation(mockOperation, mockTool, [mockChain]); // Does not include 'missing-chain'
+        const operation = createOperation(mockOperation, mockTool, [mockChain]);
         const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-            'Cannot find chain missing-chain for cut Test Cut - skipping kerf generation'
-        );
-        expect(generateAndAdjustKerf).not.toHaveBeenCalled();
-
-        consoleWarnSpy.mockRestore();
+        // Kerf generation and chain validation now happens in Plan.add()
+        expect(cutToKerf).not.toHaveBeenCalled();
     });
 });

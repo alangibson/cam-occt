@@ -15,7 +15,7 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import { getChainById } from '$lib/stores/chains/functions';
+import { getChainById } from '$lib/stores/visualization/functions';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { ShapeData } from '$lib/cam/shape/interfaces';

@@ -329,7 +329,7 @@ export class RenderingPipeline {
     }
 
     /**
-     * Update render state and always render
+     * Update render state and schedule batched render
      */
     updateState(newState: Partial<RenderState>): void {
         this.previousState = this.currentState;
@@ -337,7 +337,20 @@ export class RenderingPipeline {
         // Shallow merge - only copy defined, non-null values
         Object.assign(this.currentState, newState);
 
-        // Always render everything
+        // Schedule batched render via requestAnimationFrame
+        this.scheduleRender();
+    }
+
+    /**
+     * Update render state and render immediately (for critical interactions)
+     */
+    updateStateImmediate(newState: Partial<RenderState>): void {
+        this.previousState = this.currentState;
+
+        // Shallow merge - only copy defined, non-null values
+        Object.assign(this.currentState, newState);
+
+        // Render immediately without batching
         this.renderAll();
     }
 

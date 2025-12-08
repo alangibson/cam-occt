@@ -1,16 +1,40 @@
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 import type { Operation } from '$lib/cam/operation/classes.svelte';
 import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
-import { SvelteSet } from 'svelte/reactivity';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { EMPTY_BOUNDS } from '$lib/geometry/bounding-box/constants';
+import type { CutGenerationResult } from '$lib/cam/pipeline/operations/interfaces';
 
 export class Plan {
     cuts = $state<Cut[]>([]);
-    private pendingOperations = new SvelteSet<string>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    private pendingOperations = new Set<string>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    private operationFingerprints = new Map<string, string>();
 
     constructor(cuts: Cut[] = []) {
         this.cuts = cuts;
+    }
+
+    /**
+     * Generate a fingerprint of operation's geometric properties
+     * Only includes fields that affect cut geometry, excluding name/enabled/order
+     */
+    private getGeometricFingerprint(operation: Operation): string {
+        return JSON.stringify({
+            toolId: operation.toolId,
+            targetType: operation.targetType,
+            targetIds: operation.targetIds,
+            action: operation.action,
+            cutDirection: operation.cutDirection,
+            leadInConfig: operation.leadInConfig,
+            leadOutConfig: operation.leadOutConfig,
+            kerfCompensation: operation.kerfCompensation,
+            holeUnderspeedEnabled: operation.holeUnderspeedEnabled,
+            holeUnderspeedPercent: operation.holeUnderspeedPercent,
+            optimizeStarts: operation.optimizeStarts,
+            spotDuration: operation.spotDuration,
+        });
     }
 
     get bounds(): BoundingBoxData {
@@ -59,11 +83,9 @@ export class Plan {
      * Operation already contains tool and targets via setters
      * Idempotent: concurrent calls for the same operation will be ignored
      */
-    async add(
-        operation: Operation,
-        tolerance: number,
-        avoidLeadKerfOverlap: boolean = false
-    ): Promise<void> {
+    async add(operation: Operation, tolerance: number): Promise<void> {
+        performance.mark(`plan-add-${operation.id}-start`);
+
         // Guard: skip if this operation is already being processed
         if (this.pendingOperations.has(operation.id)) {
             console.log(
@@ -83,10 +105,16 @@ export class Plan {
             );
 
             // Generate cuts with leads (async, parallelized)
-            const result = await createCutsFromOperation(
+            performance.mark(`createCuts-${operation.id}-start`);
+            const result: CutGenerationResult = await createCutsFromOperation(
                 operation,
-                tolerance,
-                avoidLeadKerfOverlap
+                tolerance
+            );
+            performance.mark(`createCuts-${operation.id}-end`);
+            performance.measure(
+                `createCutsFromOperation(${operation.id})`,
+                `createCuts-${operation.id}-start`,
+                `createCuts-${operation.id}-end`
             );
 
             // Validate all cuts have IDs
@@ -101,19 +129,62 @@ export class Plan {
             if (result.cuts.length > 0) {
                 this.cuts = [...this.cuts, ...result.cuts];
             }
+
+            // Update fingerprint after successful generation
+            this.operationFingerprints.set(
+                operation.id,
+                this.getGeometricFingerprint(operation)
+            );
         } finally {
             // Always remove from pending set
             this.pendingOperations.delete(operation.id);
+
+            performance.mark(`plan-add-${operation.id}-end`);
+            performance.measure(
+                `Plan.add(${operation.id})`,
+                `plan-add-${operation.id}-start`,
+                `plan-add-${operation.id}-end`
+            );
         }
     }
 
     /**
      * Update cuts for an operation
-     * Removes existing cuts for the operation and generates new ones
-     * Alias for add() - same behavior
+     * Only regenerates if geometric properties changed (skips name/enabled/order changes)
      */
     async update(operation: Operation, tolerance: number): Promise<void> {
+        performance.mark(`plan-update-${operation.id}-start`);
+
+        const newFingerprint = this.getGeometricFingerprint(operation);
+        const oldFingerprint = this.operationFingerprints.get(operation.id);
+
+        // Skip regeneration if geometric properties unchanged
+        if (oldFingerprint === newFingerprint) {
+            if (import.meta.env.DEV) {
+                console.log(
+                    '[Plan] Skipping update - no geometric changes for operation:',
+                    operation.id
+                );
+            }
+            performance.mark(`plan-update-${operation.id}-end`);
+            performance.measure(
+                `Plan.update(${operation.id}) - skipped`,
+                `plan-update-${operation.id}-start`,
+                `plan-update-${operation.id}-end`
+            );
+            return;
+        }
+
+        // Update fingerprint and regenerate cuts
+        this.operationFingerprints.set(operation.id, newFingerprint);
         await this.add(operation, tolerance);
+
+        performance.mark(`plan-update-${operation.id}-end`);
+        performance.measure(
+            `Plan.update(${operation.id})`,
+            `plan-update-${operation.id}-start`,
+            `plan-update-${operation.id}-end`
+        );
     }
 
     /**
@@ -123,6 +194,8 @@ export class Plan {
         this.cuts = this.cuts.filter(
             (cut) => cut.sourceOperationId !== operation.id
         );
+        // Clean up fingerprint
+        this.operationFingerprints.delete(operation.id);
     }
 
     /**

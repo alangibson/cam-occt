@@ -26,10 +26,12 @@ const STEP_DELAY_MS = 50;
 export async function applyAutoPreprocessing(): Promise<void> {
     const enabledSteps = settingsStore.settings.enabledPreprocessingSteps;
 
-    console.log(
-        'Starting auto-preprocessing with enabled steps:',
-        enabledSteps
-    );
+    if (import.meta.env.DEV) {
+        console.log(
+            'Starting auto-preprocessing with enabled steps:',
+            enabledSteps
+        );
+    }
 
     // Get algorithm parameters from defaults
     const defaults = getDefaults();
@@ -54,7 +56,9 @@ export async function applyAutoPreprocessing(): Promise<void> {
         }
     }
 
-    console.log('Auto-preprocessing complete');
+    if (import.meta.env.DEV) {
+        console.log('Auto-preprocessing complete');
+    }
 }
 
 /**
@@ -73,7 +77,9 @@ async function applyPreprocessingStep(
 
     switch (step) {
         case PreprocessingStep.DecomposePolylines:
-            console.log('Applying: Decompose Polylines');
+            if (import.meta.env.DEV) {
+                console.log('Applying: Decompose Polylines');
+            }
             Object.values(drawing.layers).forEach((layer) => {
                 const decomposedShapes = decomposePolylines(layer.shapes);
                 layer.shapes = decomposedShapes;
@@ -82,7 +88,9 @@ async function applyPreprocessingStep(
             break;
 
         case PreprocessingStep.DeduplicateShapes:
-            console.log('Applying: Deduplicate Shapes');
+            if (import.meta.env.DEV) {
+                console.log('Applying: Deduplicate Shapes');
+            }
             for (const layer of Object.values(drawing.layers)) {
                 const deduplicatedShapes = await deduplicateShapes(
                     layer.shapes
@@ -93,7 +101,9 @@ async function applyPreprocessingStep(
             break;
 
         case PreprocessingStep.JoinColinearLines:
-            console.log('Applying: Join Co-linear Lines');
+            if (import.meta.env.DEV) {
+                console.log('Applying: Join Co-linear Lines');
+            }
             Object.values(drawing.layers).forEach((layer) => {
                 // Join collinear lines in the layer's chains
                 const joinedChains = joinColinearLines(
@@ -113,13 +123,17 @@ async function applyPreprocessingStep(
             break;
 
         case PreprocessingStep.TranslateToPositive:
-            console.log('Applying: Translate to Positive');
+            if (import.meta.env.DEV) {
+                console.log('Applying: Translate to Positive');
+            }
             translateToPositiveQuadrant(drawing);
             resetDownstreamStages(WorkflowStage.PROGRAM);
             break;
 
         case PreprocessingStep.OptimizeStarts:
-            console.log('Applying: Optimize Starts');
+            if (import.meta.env.DEV) {
+                console.log('Applying: Optimize Starts');
+            }
 
             // Get all chains from all layers
             const allChains = Object.values(drawing.layers).flatMap(
@@ -157,9 +171,11 @@ async function applyPreprocessingStep(
 
             resetDownstreamStages(WorkflowStage.PROGRAM);
 
-            console.log(
-                `Optimized start points. Re-detected ${allChains.length} chains.`
-            );
+            if (import.meta.env.DEV) {
+                console.log(
+                    `Optimized start points. Re-detected ${allChains.length} chains.`
+                );
+            }
             break;
 
         default:

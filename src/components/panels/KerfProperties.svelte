@@ -1,11 +1,10 @@
 <script lang="ts">
-    import { kerfStore } from '$lib/stores/kerfs/store.svelte';
     import { planStore } from '$lib/stores/plan/store.svelte';
     import { selectionStore } from '$lib/stores/selection/store.svelte';
     import InspectProperties from './InspectProperties.svelte';
 
     // Reactive kerf data
-    let kerfs = $derived(kerfStore.kerfs);
+    let kerfs: import('$lib/cam/kerf/interfaces').KerfData[] = $derived([]); // Kerf calculation currently disabled
     let selectedKerfId = $derived(selectionStore.kerfs.selected);
     let selectedKerf = $derived(
         selectedKerfId ? kerfs.find((kerf) => kerf.id === selectedKerfId) : null

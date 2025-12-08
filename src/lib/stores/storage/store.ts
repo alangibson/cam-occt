@@ -4,12 +4,8 @@
  * Coordinates saving and restoring state across all stores
  */
 
-import {
-    clearPersistedState,
-    debouncedSave,
-    loadState,
-    saveState,
-} from './local-storage';
+import { clearPersistedState, loadState, saveState } from './local-storage';
+import { MILLISECONDS_IN_SECOND } from './constants';
 import { type PersistedState } from './interfaces';
 import { Unit } from '$lib/config/units/units';
 
@@ -19,12 +15,11 @@ import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { workflowStore } from '$lib/stores/workflow/store.svelte';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { WorkflowState } from '$lib/stores/workflow/interfaces';
-import { chainStore } from '$lib/stores/chains/store.svelte';
+import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
+import type { CutsState } from '$lib/stores/visualization/classes.svelte';
 import { partStore } from '$lib/stores/parts/store.svelte';
-import { rapidStore } from '$lib/stores/rapids/store.svelte';
 import { uiStore } from '$lib/stores/ui/store.svelte';
 import type { UIState } from '$lib/stores/ui/interfaces';
-import { tessellationStore } from '$lib/stores/tessellation/store.svelte';
 import { overlayStore } from '$lib/stores/overlay/store.svelte';
 import type { OverlayState } from '$lib/stores/overlay/interfaces';
 import { operationsStore } from '$lib/stores/operations/store.svelte';
@@ -32,12 +27,9 @@ import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import { planStore } from '$lib/stores/plan/store.svelte';
-import { cutStore } from '$lib/stores/cuts/store.svelte';
-import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { toolStore, createDefaultTool } from '$lib/stores/tools/store.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { settingsStore } from '$lib/stores/settings/store.svelte';
-import { kerfStore } from '$lib/stores/kerfs/store.svelte';
 import { selectionStore } from '$lib/stores/selection/store.svelte';
 import type { SelectionState } from '$lib/stores/selection/interfaces';
 
@@ -63,18 +55,18 @@ function collectCurrentState(): PersistedState {
     );
     const plan = planStore.plan;
     const cutsUIState: CutsState = {
-        showCutNormals: cutStore.showCutNormals,
-        showCutDirections: cutStore.showCutDirections,
-        showCutPaths: cutStore.showCutPaths,
-        showCutStartPoints: cutStore.showCutStartPoints,
-        showCutEndPoints: cutStore.showCutEndPoints,
-        showCutTangentLines: cutStore.showCutTangentLines,
+        showCutNormals: visualizationStore.showCutNormals,
+        showCutDirections: visualizationStore.showCutDirections,
+        showCutPaths: visualizationStore.showCutPaths,
+        showCutStartPoints: visualizationStore.showCutStartPoints,
+        showCutEndPoints: visualizationStore.showCutEndPoints,
+        showCutTangentLines: visualizationStore.showCutTangentLines,
     };
     const tools: Tool[] = toolStore.tools;
     const settings = settingsStore.settings;
     const rapidUIState = {
-        showRapids: rapidStore.showRapids,
-        showRapidDirections: rapidStore.showRapidDirections,
+        showRapids: visualizationStore.showRapids,
+        showRapidDirections: visualizationStore.showRapidDirections,
     };
     const selection: SelectionState = selectionStore.getState();
 
@@ -101,7 +93,7 @@ function collectCurrentState(): PersistedState {
 
         // Chains state
         chains: allChains,
-        tolerance: chainStore.tolerance,
+        tolerance: visualizationStore.tolerance,
 
         // Parts state - get from drawing layers
         parts: drawingStore.drawing
@@ -118,8 +110,8 @@ function collectCurrentState(): PersistedState {
         showToolTable: ui.showToolTable,
 
         // Tessellation state
-        tessellationActive: tessellationStore.isActive,
-        tessellationPoints: tessellationStore.points,
+        tessellationActive: visualizationStore.tessellationActive,
+        tessellationPoints: visualizationStore.tessellationPoints,
 
         // Overlay state
         overlayStage: overlay.currentStage,
@@ -187,7 +179,7 @@ function restoreStateToStores(state: PersistedState): void {
     try {
         // Set chain store state
         // Chains are auto-generated from drawing layers, no need to set them
-        chainStore.setTolerance(state.tolerance);
+        visualizationStore.setTolerance(state.tolerance);
 
         // Set part store state (warnings only - parts now come from Drawing.layers)
         partStore.setWarnings(state.partWarnings);
@@ -218,7 +210,7 @@ function restoreStateToStores(state: PersistedState): void {
         );
 
         // Restore rapids UI state (rapids data is now in Cut.rapidIn)
-        rapidStore.setShowRapids(state.showRapids);
+        visualizationStore.setShowRapids(state.showRapids);
 
         // Restore unified selection state
         if (state.selection) {
@@ -312,9 +304,9 @@ function restoreStateToStores(state: PersistedState): void {
 
         // Restore tessellation state
         if (state.tessellationActive && state.tessellationPoints.length > 0) {
-            tessellationStore.setTessellation(state.tessellationPoints);
+            visualizationStore.setTessellation(state.tessellationPoints);
         } else {
-            tessellationStore.clearTessellation();
+            visualizationStore.clearTessellation();
         }
 
         // Restore overlay state
@@ -377,7 +369,7 @@ function restoreStateToStores(state: PersistedState): void {
                 return new Cut(cutData);
             });
 
-            // Restore cuts visualization state to cutStore (selection is in selectionStore)
+            // Restore cuts visualization state to visualizationStore (selection is in selectionStore)
             const cutsUIState: CutsState = {
                 showCutNormals: state.showCutNormals || false,
                 showCutDirections: state.showCutDirections || false,
@@ -389,7 +381,7 @@ function restoreStateToStores(state: PersistedState): void {
                 showCutEndPoints: state.showCutEndPoints || false,
                 showCutTangentLines: state.showCutTangentLines || false,
             };
-            cutStore.restore(cutsUIState);
+            visualizationStore.restoreCuts(cutsUIState);
         }
 
         if (state.tools && Array.isArray(state.tools)) {
@@ -409,11 +401,27 @@ export function saveApplicationState(): void {
 }
 
 /**
+ * Debounced auto-save function that defers expensive serialization
+ * This ensures collectCurrentState() only runs once after the debounce delay
+ */
+const debouncedAutoSave = (() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    return () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            const currentState: PersistedState = collectCurrentState();
+            saveState(currentState);
+        }, MILLISECONDS_IN_SECOND); // 1 second delay
+    };
+})();
+
+/**
  * Save current application state with debouncing
+ * Debounces both the expensive collectCurrentState() serialization AND the localStorage write
  */
 export function autoSaveApplicationState(): void {
-    const currentState: PersistedState = collectCurrentState();
-    debouncedSave(currentState);
+    debouncedAutoSave();
 }
 
 /**
@@ -447,15 +455,12 @@ export function resetApplicationToDefaults(): void {
     workflowStore.reset();
     // Chains auto-clear when drawing is reset
     partStore.clearParts();
-    rapidStore.reset();
+    visualizationStore.reset();
     uiStore.hideToolTable();
-    tessellationStore.clearTessellation();
     overlayStore.clearAllOverlays();
     operationsStore.reset();
-    cutStore.reset();
     toolStore.reset();
     settingsStore.resetToDefaults();
-    kerfStore.clearKerfs();
     selectionStore.reset();
 
     // Create default tool after clearing

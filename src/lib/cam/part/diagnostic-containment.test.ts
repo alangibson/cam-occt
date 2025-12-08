@@ -59,10 +59,7 @@ describe('Diagnostic - Containment Hierarchy', () => {
         console.log(`Closed chains: ${closedChains.length}`);
 
         // Build containment hierarchy manually
-        const containmentMap = await buildContainmentHierarchy(
-            closedChains,
-            0.1
-        );
+        const containmentMap = await buildContainmentHierarchy(closedChains);
 
         console.log(`\nContainment relationships: ${containmentMap.size}`);
         for (const [childId, parentId] of containmentMap.entries()) {
@@ -128,10 +125,7 @@ describe('Diagnostic - Containment Hierarchy', () => {
         console.log(`Closed chains: ${closedChains.length}`);
 
         // Build containment hierarchy manually
-        const containmentMap = await buildContainmentHierarchy(
-            closedChains,
-            0.1
-        );
+        const containmentMap = await buildContainmentHierarchy(closedChains);
 
         console.log(`\nContainment relationships: ${containmentMap.size}`);
         for (const [childId, parentId] of containmentMap.entries()) {

@@ -22,11 +22,9 @@ import { chainBoundingBox, isChainClosed } from '$lib/cam/chain/functions';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type {
     PartData,
-    PartDetectionParameters,
     PartDetectionResult,
     PartDetectionWarning,
 } from './interfaces';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import { PartType } from './enums';
 import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import { Part } from './classes.svelte';
@@ -38,7 +36,6 @@ import { generateId } from '$lib/domain/id';
 export async function detectParts(
     chains: Chain[],
     tolerance: number = CHAIN_CLOSURE_TOLERANCE,
-    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS,
     layerName: string = '0'
 ): Promise<PartDetectionResult> {
     const warnings: PartDetectionWarning[] = [];
@@ -67,11 +64,8 @@ export async function detectParts(
 
     // Build containment hierarchy first to identify part chains
     // (needed for slot detection)
-    const containmentMap: Map<string, string> = await buildContainmentHierarchy(
-        closedChains,
-        tolerance,
-        params
-    );
+    const containmentMap: Map<string, string> =
+        await buildContainmentHierarchy(closedChains);
 
     const allPartChains: Chain[] = identifyPartChains(
         closedChains,

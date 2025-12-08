@@ -7,7 +7,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Part } from '$lib/cam/part/classes.svelte';
-import type { CutsState } from '$lib/stores/cuts/interfaces';
+import type { CutsState } from '$lib/stores/visualization/classes.svelte';
 import type { OperationData } from '$lib/cam/operation/interface';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import { Unit } from '$lib/config/units/units';
