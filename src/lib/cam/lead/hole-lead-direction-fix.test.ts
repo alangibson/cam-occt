@@ -10,7 +10,7 @@ import type { ChainData } from '$lib/cam/chain/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { detectParts } from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection.functions';
 import { Chain } from '$lib/cam/chain/classes.svelte';
 
 describe('Hole Lead Direction Fix', () => {

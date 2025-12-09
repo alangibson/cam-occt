@@ -13,7 +13,7 @@ import {
     type JoinColinearLinesParameters,
     type StartPointOptimizationParameters,
 } from '$lib/cam/preprocess/algorithm-parameters';
-import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
+import { type PartDetectionParameters } from '$lib/cam/part/part-detection.interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 
 export class AlgorithmDefaults {

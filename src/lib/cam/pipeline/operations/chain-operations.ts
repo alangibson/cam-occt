@@ -143,7 +143,8 @@ export async function generateCutsForChainsWithOperation(
 
     // Determine if this chain should be treated as a hole for underspeed purposes
     const isCyclicChain = chain.isCyclic();
-    const shouldApplyUnderspeed = isCyclicChain && operation.holeUnderspeedEnabled;
+    const shouldApplyUnderspeed =
+        isCyclicChain && operation.holeUnderspeedEnabled;
 
     // Create the cut object
     const cutToReturn = new Cut({

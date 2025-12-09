@@ -8,7 +8,7 @@ import { calculateSquaredDistance } from '$lib/geometry/math/functions';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import {
     getChainCentroid,
-    calculateChainArea,
+    getChainPointAt,
     isChainClosed,
     tessellateChain,
 } from './functions';
@@ -27,6 +27,7 @@ import {
     toClipper2Paths,
     calculateClipper2PathsArea,
 } from '$lib/cam/offset/convert';
+import { isChainContainedInChain_Clipper2 } from './chain-containment';
 
 export class Chain implements ChainData {
     #data: ChainData;
@@ -36,7 +37,8 @@ export class Chain implements ChainData {
     #isClosed?: boolean;
     #tessellated?: Point2D[];
     #paths64?: Paths64;
-    #areaClipper2?: number;
+    #centroid?: Point2D;
+    #pointAtCache?: Map<number, Point2D>;
 
     constructor(data: ChainData) {
         this.#data = data;
@@ -112,21 +114,37 @@ export class Chain implements ChainData {
     }
 
     /**
-     * Get the area of this chain
-     * Lazily calculates and caches the area on first access
-     * Uses default tolerance and parameters
+     * Get the centroid (center point) of this chain
+     * Lazily calculates and caches the result on first access
+     * For circles/arcs, returns geometric center
+     * For other shapes, calculates polygon centroid
      *
-     * @returns The area of the chain, or 0 if chain is not closed
+     * @returns The centroid point of the chain
      */
-    get area(): number {
-        if (this.#area === undefined) {
-            this.#area = calculateChainArea(
-                this,
-                CHAIN_CLOSURE_TOLERANCE,
-                DEFAULT_PART_DETECTION_PARAMETERS
-            );
+    get centroid(): Point2D {
+        if (!this.#centroid) {
+            this.#centroid = getChainCentroid(this);
         }
-        return this.#area;
+        return this.#centroid;
+    }
+
+    /**
+     * Get the point at a specific position along the chain
+     * Lazily calculates and caches results
+     *
+     * @param t Parameter value from 0 to 1 (0 = start, 1 = end)
+     * @returns Point at the specified position along the chain
+     */
+    pointAt(t: number): Point2D {
+        if (!this.#pointAtCache) {
+            this.#pointAtCache = new Map();
+        }
+
+        if (!this.#pointAtCache.has(t)) {
+            this.#pointAtCache.set(t, getChainPointAt(this, t));
+        }
+
+        return this.#pointAtCache.get(t)!;
     }
 
     /**
@@ -182,12 +200,27 @@ export class Chain implements ChainData {
      *
      * @returns Promise<number> Area in squared units
      */
-    async areaClipper2(): Promise<number> {
-        if (this.#areaClipper2 === undefined) {
+    async area(): Promise<number> {
+        if (this.#area === undefined) {
             const paths = await this.paths64();
-            this.#areaClipper2 = calculateClipper2PathsArea(paths);
+            this.#area = calculateClipper2PathsArea(paths);
         }
-        return this.#areaClipper2;
+        return this.#area;
+    }
+
+    /**
+     * Check if this chain contains another chain using Clipper2 geometric containment
+     *
+     * @param otherChain The chain to check if it's contained within this chain
+     * @returns Promise<boolean> True if otherChain is contained within this chain
+     */
+    async contains(otherChain: Chain): Promise<boolean> {
+        // Do full geometric containment check using Clipper2
+        const isContained = await isChainContainedInChain_Clipper2(
+            otherChain,
+            this
+        );
+        return isContained;
     }
 
     /**
@@ -418,9 +451,11 @@ export class Chain implements ChainData {
         }
         // Clear caches as they're now invalid
         this.#boundary = undefined;
+        this.#centroid = undefined;
+        this.#pointAtCache = undefined;
         this.#tessellated = undefined;
         this.#paths64 = undefined;
-        this.#areaClipper2 = undefined;
+        this.#area = undefined;
         // Reassign array to trigger Svelte 5 $state reactivity
         this.#shapes = [...this.#shapes];
     }

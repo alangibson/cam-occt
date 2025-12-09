@@ -6,7 +6,7 @@
  */
 
 // Import part detection parameters for combined interface
-import type { PartDetectionParameters } from '$lib/cam/part/interfaces';
+import type { PartDetectionParameters } from '$lib/cam/part/part-detection.interfaces';
 import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 
 /**

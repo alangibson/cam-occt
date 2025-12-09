@@ -477,11 +477,15 @@ describe('Spot Operation End-to-End Integration', () => {
         // Extract rapid section
         const rapidSection = lines.slice(spot1End + 1, spot2Start);
 
-        // Verify rapid section has ONLY G0 moves, no cutting or torch commands
+        // Verify rapid section has ONLY G0 moves and feed rate commands, no cutting or torch commands
         rapidSection.forEach((line) => {
             const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith('(')) {
-                return; // Skip empty lines and comments
+            if (
+                !trimmed ||
+                trimmed.startsWith('(') ||
+                trimmed.startsWith('F')
+            ) {
+                return; // Skip empty lines, comments, and feed rate commands
             }
 
             // Should only have G0 commands

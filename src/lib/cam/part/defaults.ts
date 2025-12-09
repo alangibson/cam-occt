@@ -1,5 +1,5 @@
 import { CURVE_TESSELLATION_TOLERANCE_MM } from '$lib/config/defaults/geometry-defaults';
-import type { PartDetectionParameters } from './interfaces';
+import type { PartDetectionParameters } from './part-detection.interfaces';
 
 /**
  * Static default parameters (in mm, no unit conversion)

@@ -5,7 +5,7 @@ import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/cam/preprocess/a
 import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Shape } from '$lib/cam/shape/classes';
 import type { LayerData } from './interfaces';
-import { detectParts } from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection.functions';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import type { ChainData } from '$lib/cam/chain/interfaces';

@@ -1,4 +1,3 @@
-import { PRECISION_DECIMAL_PLACES } from '$lib/geometry/constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { EPSILON } from './constants';
 
@@ -93,18 +92,6 @@ export function normalizeVector(v: Point2D): Point2D {
     const length: number = Math.sqrt(v.x * v.x + v.y * v.y);
     if (length === 0) return { x: 0, y: 0 };
     return { x: v.x / length, y: v.y / length };
-}
-
-/**
- * Round number to specified decimal places to avoid floating point errors
- */
-export function roundToDecimalPlaces(
-    value: number,
-    places: number = PRECISION_DECIMAL_PLACES
-): number {
-    // eslint-disable-next-line no-magic-numbers
-    const factor = Math.pow(10, places);
-    return Math.round(value * factor) / factor;
 }
 
 /**

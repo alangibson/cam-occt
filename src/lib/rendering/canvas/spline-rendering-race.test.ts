@@ -4,7 +4,7 @@ import {
     detectShapeChains,
     setChainsDirection,
 } from '$lib/cam/chain/chain-detection';
-import { detectParts } from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection.functions';
 import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { visualizationStore } from '$lib/stores/visualization/classes.svelte';

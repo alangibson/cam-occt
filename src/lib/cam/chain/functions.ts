@@ -22,29 +22,19 @@ import {
     sampleShapes,
     shapeBoundingBox,
 } from '$lib/cam/shape/functions';
-import {
-    AREA_RATIO_THRESHOLD,
-    CHAIN_CLOSURE_TOLERANCE,
-    CONTAINMENT_AREA_RATIO_THRESHOLD,
-    POLYGON_POINTS_MIN,
-} from './constants';
+import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import { isEllipseClosed } from '$lib/geometry/ellipse/functions';
 import { WindingDirection } from './enums';
-import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/constants';
 import {
     calculatePerimeter,
     calculateDistanceBetweenPoints,
-    roundToDecimalPlaces,
 } from '$lib/geometry/math/functions';
-import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { combineBoundingBoxes } from '$lib/geometry/bounding-box/functions';
-import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
-import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
+import { type PartDetectionParameters } from '$lib/cam/part/part-detection.interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
     calculateSignedArea,
-    isPolygonContained,
     removeDuplicatePoints,
 } from '$lib/geometry/polygon/functions';
 import { getArcTangent } from '$lib/geometry/arc/functions';
@@ -53,11 +43,8 @@ import { getLineTangent } from '$lib/geometry/line/functions';
 import { getSplineTangent } from '$lib/geometry/spline/functions';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
-import { getClipper2 } from '$lib/cam/offset/clipper-init';
-import { calculateClipper2PathsArea } from '$lib/cam/offset/convert';
 import type { ChainData } from './interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
-import type { Paths64 } from '$lib/wasm/clipper2z';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -370,282 +357,11 @@ export function isChainClosed(
     // Use ONLY the user-set tolerance - no adaptive tolerance calculations allowed
     return distance < tolerance;
 }
-/**
- * Calculate the area of a closed chain using JSTS
- */
 
-export function calculateChainArea(
-    chain: Chain,
-    tolerance: number = CHAIN_CLOSURE_TOLERANCE,
-    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
-): number {
-    if (!isChainClosed(chain, tolerance)) return 0; // Only closed chains have area
-
-    const points = tessellateChain(chain, params);
-    if (points.length < POLYGON_POINTS_MIN) return 0;
-
-    const geometryFactory = new GeometryFactory();
-
-    try {
-        // Convert points to JSTS coordinates with precision rounding
-        const coords = points.map(
-            (p) =>
-                new Coordinate(
-                    roundToDecimalPlaces(p.x, params.decimalPrecision),
-                    roundToDecimalPlaces(p.y, params.decimalPrecision)
-                )
-        );
-
-        // Ensure the ring is closed
-        if (!coords[0].equals(coords[coords.length - 1])) {
-            coords.push(coords[0]);
-        }
-
-        const linearRing = geometryFactory.createLinearRing(coords);
-        const polygon = geometryFactory.createPolygon(linearRing);
-
-        return polygon.getArea();
-    } catch (error) {
-        console.warn('Error calculating chain area:', error);
-        return 0;
-    }
-} /**
- * Check if one closed chain contains another using JSTS geometric operations
- * Based on MetalHeadCAM implementation
- */
-
-export function isChainContainedInChain(
-    innerChain: Chain,
-    outerChain: Chain,
-    tolerance: number,
-    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
-): boolean {
-    // Only closed chains can contain other chains
-    if (!isChainClosed(outerChain, tolerance)) {
-        return false;
-    }
-
-    const geometryFactory = new GeometryFactory();
-
-    try {
-        // Convert outer chain to JSTS polygon
-        const outerPoints = tessellateChain(outerChain, params);
-        const outerCoords = outerPoints.map(
-            (p) =>
-                new Coordinate(
-                    roundToDecimalPlaces(p.x, params.decimalPrecision),
-                    roundToDecimalPlaces(p.y, params.decimalPrecision)
-                )
-        );
-
-        // Remove duplicate consecutive coordinates (this can cause JSTS to fail)
-        const cleanOuterCoords: Coordinate[] = [];
-        for (let i = 0; i < outerCoords.length; i++) {
-            const current = outerCoords[i];
-            const previous = cleanOuterCoords[cleanOuterCoords.length - 1];
-            // Only add if it's different from the previous coordinate
-            if (!previous || !current.equals(previous)) {
-                cleanOuterCoords.push(current);
-            }
-        }
-
-        // Ensure the ring is closed
-        if (
-            cleanOuterCoords.length > 0 &&
-            !cleanOuterCoords[0].equals(
-                cleanOuterCoords[cleanOuterCoords.length - 1]
-            )
-        ) {
-            cleanOuterCoords.push(cleanOuterCoords[0]);
-        }
-
-        // Check minimum coordinate count like MetalHeadCAM
-        if (cleanOuterCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
-            return false;
-        }
-
-        const outerLinearRing =
-            geometryFactory.createLinearRing(cleanOuterCoords);
-        const outerPolygon = geometryFactory.createPolygon(outerLinearRing);
-
-        // Convert inner chain to JSTS geometry
-        const innerPoints = tessellateChain(innerChain, params);
-        const innerCoords = innerPoints.map(
-            (p) =>
-                new Coordinate(
-                    roundToDecimalPlaces(p.x, params.decimalPrecision),
-                    roundToDecimalPlaces(p.y, params.decimalPrecision)
-                )
-        );
-
-        if (isChainClosed(innerChain, tolerance)) {
-            // Inner chain is closed - create polygon and check containment
-            // Remove duplicate consecutive coordinates for inner chain too
-            const cleanInnerCoords: Coordinate[] = [];
-            for (let i = 0; i < innerCoords.length; i++) {
-                const current = innerCoords[i];
-                const previous = cleanInnerCoords[cleanInnerCoords.length - 1];
-                // Only add if it's different from the previous coordinate
-                if (!previous || !current.equals(previous)) {
-                    cleanInnerCoords.push(current);
-                }
-            }
-
-            // Ensure the ring is closed
-            if (
-                cleanInnerCoords.length > 0 &&
-                !cleanInnerCoords[0].equals(
-                    cleanInnerCoords[cleanInnerCoords.length - 1]
-                )
-            ) {
-                cleanInnerCoords.push(cleanInnerCoords[0]);
-            }
-
-            // Check minimum coordinate count like MetalHeadCAM
-            if (cleanInnerCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
-                return false;
-            }
-
-            const innerLinearRing =
-                geometryFactory.createLinearRing(cleanInnerCoords);
-            const innerPolygon = geometryFactory.createPolygon(innerLinearRing);
-
-            // Use JSTS RelateOp to check containment
-            const result = RelateOp.contains(outerPolygon, innerPolygon);
-
-            // If JSTS geometric containment failed, try fallback approach
-            if (!result) {
-                const innerArea = innerPolygon.getArea();
-                const outerArea = outerPolygon.getArea();
-                const areaRatio = innerArea / outerArea;
-
-                // If inner area is much smaller (< 5% of outer area), try bounding box check
-                // This handles cases where JSTS fails due to complex tessellation but logical containment exists
-                if (areaRatio < AREA_RATIO_THRESHOLD) {
-                    // Calculate bounding boxes for fallback check
-                    const innerBounds = chainBoundingBox(innerChain);
-                    const outerBounds = chainBoundingBox(outerChain);
-
-                    const boundingBoxContained =
-                        innerBounds.min.x >= outerBounds.min.x &&
-                        innerBounds.max.x <= outerBounds.max.x &&
-                        innerBounds.min.y >= outerBounds.min.y &&
-                        innerBounds.max.y <= outerBounds.max.y;
-
-                    if (boundingBoxContained) {
-                        return true; // Use bounding box fallback when geometric test fails
-                    }
-                }
-            }
-
-            return result;
-        } else {
-            // Inner chain is open - create linestring and check if all points are contained
-            const innerLineString =
-                geometryFactory.createLineString(innerCoords);
-            const result = RelateOp.contains(outerPolygon, innerLineString);
-
-            return result;
-        }
-    } catch (error) {
-        console.warn('Error in geometric containment detection:', error);
-        return false;
-    }
-}
-
-/**
- * Check if one closed chain contains another using Clipper2 boolean operations
- *
- * Uses Clipper2's Intersect64 operation: if inner is fully contained in outer,
- * then Intersect(inner, outer) will equal inner (same area).
- *
- * This is more robust than JSTS for complex tessellated spline geometry.
- *
- * @param innerChain - The chain to test for containment
- * @param outerChain - The potential containing chain
- * @param tolerance - Distance tolerance for chain closure checks
- * @param params - Part detection parameters for tessellation
- * @returns Promise<boolean> - True if inner is contained within outer
- */
-export async function isChainContainedInChainClipper2(
-    innerChain: Chain,
-    outerChain: Chain
-): Promise<boolean> {
-    // Only closed chains can contain other chains
-    if (!outerChain.isClosed) {
-        return false;
-    }
-
-    // Get Clipper2 paths from chains (cached)
-    const innerPaths: Paths64 = await innerChain.paths64();
-    const outerPaths: Paths64 = await outerChain.paths64();
-
-    // Calculate inner area before intersection (cached)
-    const innerArea: number = await innerChain.areaClipper2();
-
-    if (innerArea === 0) {
-        return false;
-    }
-
-    // console.log(`ip=${innerPaths.get(0).size()} op=${outerPaths.get(0).size()}`);
-
-    // Get clipper instance for intersection operation
-    const clipper = await getClipper2();
-    // Perform intersection: if inner is fully inside outer, intersection = inner
-    const intersection: Paths64 = clipper.Intersect64(
-        innerPaths,
-        outerPaths,
-        clipper.FillRule.NonZero
-    );
-
-    // Calculate intersection area
-    const intersectionArea: number = calculateClipper2PathsArea(intersection);
-
-    // Clean up Clipper2 memory
-    intersection.delete();
-
-    // If intersection area ≈ inner area (within 90%), inner is contained
-    // Use 90% threshold to handle tessellation differences and edge precision
-    // This is more lenient than 95% to handle complex spline geometries
-    const areaRatio = intersectionArea / innerArea;
-    return areaRatio > CONTAINMENT_AREA_RATIO_THRESHOLD;
-}
-
-/**
- * Checks if one closed chain is completely contained within another closed chain
- * using proper geometric containment (point-in-polygon testing)
- */
-
-export function isChainGeometricallyContained(
-    innerChain: Chain,
-    outerChain: Chain
-): boolean {
-    // Extract polygon points from both chains
-    const innerPolygon: Point2D[] | null = extractPolygonFromChain(innerChain);
-    const outerPolygon: Point2D[] | null = extractPolygonFromChain(outerChain);
-
-    if (
-        !innerPolygon ||
-        !outerPolygon ||
-        innerPolygon.length < POLYGON_POINTS_MIN ||
-        outerPolygon.length < POLYGON_POINTS_MIN
-    ) {
-        throw new Error(
-            `Failed to extract polygons for containment check: inner chain ${innerChain.id}=${!!innerPolygon}, outer chain ${outerChain.id}=${!!outerPolygon}. Chains may have gaps preventing polygon creation.`
-        );
-    }
-
-    // Check if all points of inner polygon are inside outer polygon
-    return isPolygonContained(
-        { points: innerPolygon },
-        { points: outerPolygon }
-    );
-}
 /**
  * Extracts a polygon representation from a chain for geometric operations
  */
-
-function extractPolygonFromChain(chain: Chain): Point2D[] | null {
+export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     if (!chain || !chain.shapes || chain.shapes.length === 0) {
         return null;
     }

@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
-import { detectParts } from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection.functions';
 import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';

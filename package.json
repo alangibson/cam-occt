@@ -33,7 +33,8 @@
     "prune:production": "knip --production",
     "worker:dev": "wrangler dev",
     "worker:tail": "wrangler tail",
-    "cf-typegen": "wrangler types ./src/worker-configuration.d.ts"
+    "cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
+    "wrangler": "wrangler"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
@@ -78,7 +79,6 @@
   "dependencies": {
     "@svar-ui/svelte-grid": "^2.3.0",
     "dxf": "^4.6.1",
-    "jsts": "^2.12.1",
     "verb-nurbs": "^3.0.3"
   }
 }

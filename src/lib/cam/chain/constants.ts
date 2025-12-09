@@ -13,11 +13,6 @@ export const POLYGON_POINTS_MIN = 3;
  */
 export const CHAIN_CLOSURE_TOLERANCE = 0.01;
 
-/**
- * Area ratio threshold for geometric containment fallback (5%)
- */
-export const AREA_RATIO_THRESHOLD: number = 0.05;
-
 // Minimum number of points required to define a circle
 export const MIN_CIRCLE_POINTS = 3;
 

@@ -17,7 +17,7 @@ import {
     createLeadOutConfig,
     convertLeadGeometryToPoints,
 } from '$lib/cam/lead/functions';
-import { detectParts } from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection.functions';
 import type { Cut } from './classes.svelte';
 
 /**

@@ -20,11 +20,14 @@
 
     // Check if all selected chains are cyclic
     function areAllSelectedChainsCyclic(): boolean {
-        if (operation.targetType !== 'chains' || operation.targetIds.length === 0) {
+        if (
+            operation.targetType !== 'chains' ||
+            operation.targetIds.length === 0
+        ) {
             return false;
         }
 
-        const selectedChains = chains.filter(chain =>
+        const selectedChains = chains.filter((chain) =>
             operation.targetIds.includes(chain.id)
         );
 
@@ -32,14 +35,15 @@
             return false;
         }
 
-        return selectedChains.every(chainData => {
+        return selectedChains.every((chainData) => {
             const chain = new Chain(chainData);
             return chain.isCyclic();
         });
     }
 
     // Reactive check for whether to show hole underspeed checkbox
-    $: showHoleUnderspeed = operation.targetType === 'parts' || areAllSelectedChainsCyclic();
+    $: showHoleUnderspeed =
+        operation.targetType === 'parts' || areAllSelectedChainsCyclic();
 </script>
 
 <!-- Cut Direction -->

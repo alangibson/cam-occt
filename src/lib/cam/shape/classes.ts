@@ -6,6 +6,7 @@ import {
     getShapeStartPoint,
     getShapeEndPoint,
     getShapePoints,
+    shapeBoundingBox,
 } from './functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Geometry } from '$lib/geometry/types';
@@ -17,6 +18,7 @@ import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D, PointGeometry } from '$lib/geometry/point/interfaces';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
+import { BoundingBox } from '$lib/geometry/bounding-box/classes';
 
 export class Shape implements ShapeData {
     #data: ShapeData;
@@ -25,6 +27,7 @@ export class Shape implements ShapeData {
     #startPoint?: Point2D;
     #endPoint?: Point2D;
     #points?: Point2D[];
+    #boundary?: BoundingBox;
 
     constructor(data: ShapeData) {
         if (!data.id) {
@@ -42,6 +45,7 @@ export class Shape implements ShapeData {
         this.#startPoint = undefined;
         this.#endPoint = undefined;
         this.#points = undefined;
+        this.#boundary = undefined;
     }
 
     get id(): string {
@@ -112,6 +116,20 @@ export class Shape implements ShapeData {
             });
         }
         return this.#points;
+    }
+
+    /**
+     * Get the bounding box for this shape
+     * Lazily calculates and caches the bounding box on first access
+     *
+     * @returns BoundingBox instance for spatial operations
+     */
+    get boundary(): BoundingBox {
+        if (!this.#boundary) {
+            const boundingBoxData = shapeBoundingBox(this);
+            this.#boundary = new BoundingBox(boundingBoxData);
+        }
+        return this.#boundary;
     }
 
     translate(dx: number, dy: number): void {

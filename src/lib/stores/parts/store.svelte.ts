@@ -1,4 +1,4 @@
-import type { PartDetectionWarning } from '$lib/cam/part/interfaces';
+import type { PartDetectionWarning } from '$lib/cam/part/part-detection.interfaces';
 
 class PartStore {
     warnings = $state<PartDetectionWarning[]>([]);

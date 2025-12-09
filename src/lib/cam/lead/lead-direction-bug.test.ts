@@ -14,7 +14,7 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc/functions';
-import { detectParts } from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection.functions';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import type { PartData } from '$lib/cam/part/interfaces';

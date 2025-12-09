@@ -17,7 +17,6 @@ import type { RayTracingConfig } from '$lib/algorithms/raytracing/types';
 import { DEFAULT_RAYTRACING_CONFIG } from '$lib/algorithms/raytracing/types';
 import { isChainClosed } from '$lib/cam/chain/functions';
 import { createHorizontalRay } from '$lib/algorithms/raytracing/utils';
-import { shapeBoundingBox } from '$lib/cam/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import {
     countHorizontalRayLineCrossings,
@@ -46,7 +45,7 @@ export function isPointInsideChainExact(
     chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
-    if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
+    if (!chain.isClosed) {
         throw new Error('Cannot check point containment for open chain');
     }
 
@@ -60,7 +59,7 @@ export function isPointInsideChainExact(
     // Optimization: Use bounding box pre-filter to skip shapes that cannot intersect the ray
     for (const shape of chain.shapes) {
         // Quick bounding box check: skip shapes whose Y bounds don't include the ray's Y
-        const shapeBBox = shapeBoundingBox(shape);
+        const shapeBBox = shape.boundary;
         if (point.y < shapeBBox.min.y || point.y > shapeBBox.max.y) {
             continue; // Ray cannot intersect this shape
         }

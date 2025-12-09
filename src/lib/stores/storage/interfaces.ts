@@ -1,6 +1,7 @@
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { PartData, PartDetectionWarning } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
+import type { PartDetectionWarning } from '$lib/cam/part/part-detection.interfaces';
 import type { OperationData } from '$lib/cam/operation/interface';
 import type {
     TessellationPoint,

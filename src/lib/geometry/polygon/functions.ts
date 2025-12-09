@@ -11,6 +11,7 @@ import { POLYGON_POINTS_MIN } from '$lib/cam/chain/constants';
 import { doLineSegmentsIntersect } from '$lib/geometry/line/functions';
 import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
+import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 
 /**
  * Calculate the area of a polygon using the shoelace formula
@@ -208,4 +209,64 @@ export function calculateSignedArea(polygon: Polygon): number {
     }
 
     return area / 2;
+}
+
+/**
+ * Detect containment relationships between multiple polygons
+ * Returns a map of polygon indices to their containing polygon index
+ * @param polygons Array of polygon vertex arrays
+ * @param tolerance Distance tolerance for closure detection
+ * @returns Map of containment relationships (contained polygon index -> containing polygon index)
+ */
+export function detectPolygonContainment(
+    polygons: Point2D[][]
+): Map<number, number> {
+    const containmentMap = new Map<number, number>();
+
+    // Calculate areas for all polygons
+    const polygonsWithArea = polygons
+        .map((polygon, index) => ({
+            polygon,
+            index,
+            area: calculatePolygonArea({ points: polygon }),
+        }))
+        .sort((a, b) => b.area - a.area); // Sort by area (largest first)
+
+    // For each polygon, find its smallest containing parent
+    for (let i = 1; i < polygonsWithArea.length; i++) {
+        const current = polygonsWithArea[i];
+        let bestParentIndex = DEFAULT_ARRAY_NOT_FOUND_INDEX;
+        let smallestArea = Infinity;
+
+        // Only check larger polygons as potential parents
+        for (let j = 0; j < i; j++) {
+            const potential = polygonsWithArea[j];
+
+            // Skip if potential parent has same or smaller area
+            if (potential.area <= current.area) continue;
+
+            // Check if all points of current polygon are inside potential parent
+            let allPointsInside = true;
+            for (const point of current.polygon) {
+                if (!isPointInPolygon(point, { points: potential.polygon })) {
+                    allPointsInside = false;
+                    break;
+                }
+            }
+
+            if (allPointsInside) {
+                if (potential.area < smallestArea) {
+                    smallestArea = potential.area;
+                    bestParentIndex = potential.index;
+                }
+            }
+        }
+
+        // If we found a parent, record the relationship
+        if (bestParentIndex >= 0) {
+            containmentMap.set(current.index, bestParentIndex);
+        }
+    }
+
+    return containmentMap;
 }

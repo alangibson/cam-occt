@@ -5,7 +5,7 @@ import { scaleShape } from '$lib/cam/shape/functions';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box/functions';
 import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { normalizeChain } from '$lib/cam/chain/chain-normalization';
-import { detectParts } from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection.functions';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';

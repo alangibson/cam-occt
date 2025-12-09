@@ -7,7 +7,6 @@ import {
     getShapePointAt,
     getShapePoints,
     getShapeStartPoint,
-    isShapeContainedInShape,
     isShapeClosed,
     moveShape,
     reverseShape,
@@ -719,104 +718,6 @@ describe('Cut Direction Regression Tests', () => {
         expect(Math.abs(direction.y)).toBeLessThan(0.1); // Should be horizontal
 
         // The old behavior would have reversed this based on cut direction parameter
-    });
-});
-
-describe('isShapeContainedInShape', () => {
-    it('should detect circle contained within larger circle', () => {
-        const innerCircle = createCircle(5, 5, 2);
-        const outerCircle = createCircle(5, 5, 5);
-
-        expect(
-            isShapeContainedInShape(
-                new Shape(innerCircle),
-                new Shape(outerCircle),
-                0.1
-            )
-        ).toBe(true);
-    });
-
-    it('should detect circle not contained in smaller circle', () => {
-        const innerCircle = createCircle(5, 5, 5);
-        const outerCircle = createCircle(5, 5, 2);
-
-        expect(
-            isShapeContainedInShape(
-                new Shape(innerCircle),
-                new Shape(outerCircle),
-                0.1
-            )
-        ).toBe(false);
-    });
-
-    it('should handle open shapes (lines)', () => {
-        const line: ShapeData = {
-            id: '1',
-            type: GeometryType.LINE,
-            geometry: {
-                start: { x: 2, y: 2 },
-                end: { x: 8, y: 8 },
-            } as Line,
-        };
-        const outerCircle = createCircle(5, 5, 5);
-
-        expect(
-            isShapeContainedInShape(
-                new Shape(line),
-                new Shape(outerCircle),
-                0.1
-            )
-        ).toBe(true);
-    });
-
-    it('should return false for insufficient tessellation points', () => {
-        const mockShape: ShapeData = {
-            id: '1',
-            type: GeometryType.CIRCLE,
-            geometry: {
-                center: { x: 0, y: 0 },
-                radius: 1,
-            } as Circle,
-        };
-
-        // This tests the error handling path when shapes don't tessellate properly
-        const result = isShapeContainedInShape(
-            new Shape(mockShape),
-            new Shape(mockShape),
-            0.1
-        );
-
-        // The result depends on tessellation - could be true or false
-        expect(typeof result).toBe('boolean');
-    });
-
-    it('should handle errors during JSTS processing', () => {
-        // Create a malformed shape that might cause JSTS errors
-        const malformedShape: ShapeData = {
-            id: '1',
-            type: GeometryType.LINE,
-            geometry: {
-                start: { x: NaN, y: NaN },
-                end: { x: Infinity, y: Infinity },
-            } as Line,
-        };
-        const validShape = createCircle(0, 0, 5);
-
-        // Should not throw and return false due to error handling
-        expect(() =>
-            isShapeContainedInShape(
-                new Shape(malformedShape),
-                new Shape(validShape),
-                0.1
-            )
-        ).not.toThrow();
-        expect(
-            isShapeContainedInShape(
-                new Shape(malformedShape),
-                new Shape(validShape),
-                0.1
-            )
-        ).toBe(false);
     });
 });
 

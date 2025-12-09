@@ -63,8 +63,7 @@ import {
     ellipseBoundingBox,
 } from '$lib/geometry/ellipse/functions';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
-import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
+import { type PartDetectionParameters } from '$lib/cam/part/part-detection.interfaces';
 import {
     calculatePolylineLength,
     getPolylineEndPoint,
@@ -77,17 +76,8 @@ import {
     reversePolyline,
 } from '$lib/geometry/dxf-polyline/functions';
 import { MIDPOINT_T, QUARTER_CIRCLE_QUADRANTS } from '$lib/geometry/constants';
-import {
-    normalizeVector,
-    roundToDecimalPlaces,
-} from '$lib/geometry/math/functions';
-import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
-import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
-import {
-    CHAIN_CLOSURE_TOLERANCE,
-    POLYGON_POINTS_MIN,
-} from '$lib/cam/chain/constants';
-import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/constants';
+import { normalizeVector } from '$lib/geometry/math/functions';
+import { POLYGON_POINTS_MIN } from '$lib/cam/chain/constants';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
 import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline/constants';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
@@ -1119,130 +1109,6 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
     }
 
     return new Shape(moved);
-}
-
-/**
- * Check if one shape is geometrically contained within another shape
- * @param inner The potentially contained shape
- * @param outer The potentially containing shape
- * @param tolerance Distance tolerance for closure detection
- * @param params Additional parameters for tessellation
- * @returns True if inner shape is contained within outer shape
- */
-export function isShapeContainedInShape(
-    inner: Shape,
-    outer: Shape,
-    tolerance: number = CHAIN_CLOSURE_TOLERANCE,
-    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
-): boolean {
-    try {
-        const geometryFactory = new GeometryFactory();
-
-        // Tessellate both shapes
-        const outerPoints = tessellateShape(outer, params);
-        const innerPoints = tessellateShape(inner, params);
-
-        if (outerPoints.length < POLYGON_POINTS_MIN || innerPoints.length < 1) {
-            return false;
-        }
-
-        // Convert outer shape to JSTS polygon
-        const outerCoords = outerPoints.map(
-            (p) =>
-                new Coordinate(
-                    roundToDecimalPlaces(p.x, params.decimalPrecision),
-                    roundToDecimalPlaces(p.y, params.decimalPrecision)
-                )
-        );
-
-        // Clean duplicate consecutive coordinates
-        const cleanOuterCoords: Coordinate[] = [];
-        for (let i = 0; i < outerCoords.length; i++) {
-            const current = outerCoords[i];
-            const previous = cleanOuterCoords[cleanOuterCoords.length - 1];
-            if (!previous || !current.equals(previous)) {
-                cleanOuterCoords.push(current);
-            }
-        }
-
-        // Ensure the ring is closed
-        if (
-            cleanOuterCoords.length > 0 &&
-            !cleanOuterCoords[0].equals(
-                cleanOuterCoords[cleanOuterCoords.length - 1]
-            )
-        ) {
-            cleanOuterCoords.push(cleanOuterCoords[0]);
-        }
-
-        if (cleanOuterCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
-            return false;
-        }
-
-        const outerLinearRing =
-            geometryFactory.createLinearRing(cleanOuterCoords);
-        const outerPolygon = geometryFactory.createPolygon(outerLinearRing);
-
-        // Convert inner shape to JSTS geometry
-        const innerCoords = innerPoints.map(
-            (p) =>
-                new Coordinate(
-                    roundToDecimalPlaces(p.x, params.decimalPrecision),
-                    roundToDecimalPlaces(p.y, params.decimalPrecision)
-                )
-        );
-
-        // Check if inner shape forms a closed polygon
-        const innerDistance = Math.sqrt(
-            Math.pow(
-                innerPoints[0].x - innerPoints[innerPoints.length - 1].x,
-                2
-            ) +
-                Math.pow(
-                    innerPoints[0].y - innerPoints[innerPoints.length - 1].y,
-                    2
-                )
-        );
-
-        if (innerDistance < tolerance) {
-            // Inner shape is closed - create polygon
-            const cleanInnerCoords: Coordinate[] = [];
-            for (let i = 0; i < innerCoords.length; i++) {
-                const current = innerCoords[i];
-                const previous = cleanInnerCoords[cleanInnerCoords.length - 1];
-                if (!previous || !current.equals(previous)) {
-                    cleanInnerCoords.push(current);
-                }
-            }
-
-            if (
-                cleanInnerCoords.length > 0 &&
-                !cleanInnerCoords[0].equals(
-                    cleanInnerCoords[cleanInnerCoords.length - 1]
-                )
-            ) {
-                cleanInnerCoords.push(cleanInnerCoords[0]);
-            }
-
-            if (cleanInnerCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
-                return false;
-            }
-
-            const innerLinearRing =
-                geometryFactory.createLinearRing(cleanInnerCoords);
-            const innerPolygon = geometryFactory.createPolygon(innerLinearRing);
-
-            return RelateOp.contains(outerPolygon, innerPolygon);
-        } else {
-            // Inner shape is open - create linestring
-            const innerLineString =
-                geometryFactory.createLineString(innerCoords);
-            return RelateOp.contains(outerPolygon, innerLineString);
-        }
-    } catch (error) {
-        console.warn('Error in shape containment detection:', error);
-        return false;
-    }
 }
 
 /**
