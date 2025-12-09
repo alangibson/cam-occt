@@ -491,6 +491,7 @@
                         <CutOperationDetails
                             {operation}
                             {updateOperationField}
+                            {chains}
                         />
                     {:else if operation.action === OperationAction.SPOT}
                         <SpotOperationProperties

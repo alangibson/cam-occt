@@ -81,6 +81,9 @@ vi.mock('$lib/cam/chain/functions', () => ({
 
 vi.mock('$lib/cam/chain/constants', () => ({
     CHAIN_CLOSURE_TOLERANCE: 0.01,
+    MIN_CIRCLE_POINTS: 3,
+    CIRCLE_FIT_EPSILON: 1e-10,
+    CYCLIC_CHECK_TOLERANCE: 0.01,
 }));
 
 vi.mock('$lib/cam/offset', () => ({

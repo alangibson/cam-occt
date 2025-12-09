@@ -1,5 +1,6 @@
 # Fix
 
+- Move spot duration value to Simulation page. This is set in LinuxCNC config directly.
 - Hole underspeed should be available for isCyclic chains
 - Persist cuts to local storage or rebuild on refresh
 - Changing Application Measurement Units does nothing after Import clicked

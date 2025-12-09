@@ -448,6 +448,13 @@ function generateSpotCommands(
         comment: 'Spotting tool off',
     });
 
+    // Restore material feed rate
+    commands.push({
+        code: 'F#<_hal[plasmac.cut-feed-rate]>',
+        parameters: {},
+        comment: 'Use material feed rate from HAL',
+    });
+
     // Retract to safe height
     commands.push({
         code: 'G0',

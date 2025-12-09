@@ -1,6 +1,8 @@
 <script lang="ts">
     import type { OperationData } from '$lib/cam/operation/interface';
     import type { Operation } from '$lib/cam/operation/classes.svelte';
+    import type { ChainData } from '$lib/cam/chain/interfaces';
+    import { Chain } from '$lib/cam/chain/classes.svelte';
     import { CutDirection } from '$lib/cam/cut/enums';
     import { LeadType } from '$lib/cam/lead/enums';
     import { KerfCompensation } from '$lib/cam/operation/enums';
@@ -9,11 +11,35 @@
 
     // Props
     export let operation: Operation;
+    export let chains: ChainData[] = [];
     export let updateOperationField: <K extends keyof OperationData>(
         id: string,
         field: K,
         value: OperationData[K]
     ) => void;
+
+    // Check if all selected chains are cyclic
+    function areAllSelectedChainsCyclic(): boolean {
+        if (operation.targetType !== 'chains' || operation.targetIds.length === 0) {
+            return false;
+        }
+
+        const selectedChains = chains.filter(chain =>
+            operation.targetIds.includes(chain.id)
+        );
+
+        if (selectedChains.length === 0) {
+            return false;
+        }
+
+        return selectedChains.every(chainData => {
+            const chain = new Chain(chainData);
+            return chain.isCyclic();
+        });
+    }
+
+    // Reactive check for whether to show hole underspeed checkbox
+    $: showHoleUnderspeed = operation.targetType === 'parts' || areAllSelectedChainsCyclic();
 </script>
 
 <!-- Cut Direction -->
@@ -37,8 +63,8 @@
     </div>
 </div>
 
-<!-- Hole Cutting Settings (only for part operations) -->
-{#if operation.targetType === 'parts'}
+<!-- Hole Cutting Settings (for part operations or cyclic chain operations) -->
+{#if showHoleUnderspeed}
     <div class="operation-row">
         <div class="field-group">
             <label class="hole-underspeed-label">

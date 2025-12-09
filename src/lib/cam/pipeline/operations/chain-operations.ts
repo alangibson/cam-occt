@@ -141,6 +141,10 @@ export async function generateCutsForChainsWithOperation(
         }
     }
 
+    // Determine if this chain should be treated as a hole for underspeed purposes
+    const isCyclicChain = chain.isCyclic();
+    const shouldApplyUnderspeed = isCyclicChain && operation.holeUnderspeedEnabled;
+
     // Create the cut object
     const cutToReturn = new Cut({
         id: crypto.randomUUID(),
@@ -159,8 +163,10 @@ export async function generateCutsForChainsWithOperation(
         kerfWidth: kerfWidth,
         offset: calculatedOffset,
         chain: cutChain.toData(),
-        isHole: false,
-        holeUnderspeedPercent: undefined,
+        isHole: isCyclicChain && shouldApplyUnderspeed,
+        holeUnderspeedPercent: shouldApplyUnderspeed
+            ? operation.holeUnderspeedPercent
+            : undefined,
         normal: cutNormalResult.normal,
         normalConnectionPoint: cutNormalResult.connectionPoint,
         normalSide: cutNormalResult.normalSide,
