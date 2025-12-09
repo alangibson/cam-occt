@@ -58,6 +58,12 @@ export async function buildContainmentHierarchy(
                 continue;
             }
 
+            // PERFORMANCE: Bounding box filtering
+            // Skip expensive geometric check if bounding boxes don't overlap
+            if (!potential.boundary.overlaps(current.boundary)) {
+                continue;
+            }
+
             // Do full geometric containment check
             const isContained = await potential.contains(current);
 
