@@ -106,23 +106,7 @@ export class Layer implements LayerData {
         // Lazy generation: generate chains on first access
         // Use untrack to avoid state mutation errors in reactive contexts
         if (!this.#chainsGenerated) {
-            console.log(
-                '[Layer.chains] Generating chains for layer:',
-                this.name
-            );
             untrack(() => this.#generateChains());
-            console.log(
-                '[Layer.chains] Generated',
-                this.#chains.length,
-                'chains'
-            );
-        } else {
-            console.log(
-                '[Layer.chains] Returning cached',
-                this.#chains.length,
-                'chains for layer:',
-                this.name
-            );
         }
         return this.#chains;
     }

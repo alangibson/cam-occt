@@ -4,27 +4,15 @@ import { Part } from '$lib/cam/part/classes.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { normalizeVector } from '$lib/geometry/math/functions';
-import { createTangentArc, sampleArc } from '$lib/geometry/arc/functions';
-import {
-    HALF_PERCENT,
-    QUARTER_PERCENT,
-    THREE_QUARTERS_PERCENT,
-} from '$lib/geometry/math/constants';
+import { createTangentArc } from '$lib/geometry/arc/functions';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle/constants';
 import { SMALL_ANGLE_INCREMENT_DEG } from '$lib/geometry/constants';
-import { getDefaults } from '$lib/config/defaults/defaults-manager';
-import {
-    isPointInsidePart,
-    isPointInsideChainExact,
-} from '$lib/cam/chain/point-in-chain';
 import {
     getChainEndPoint,
     getChainStartPoint,
     getChainTangent,
-    isChainClosed,
 } from '$lib/cam/chain/functions';
 import { isChainHoleInPart, isChainShellInPart } from './part-lookup-utils';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import type { LeadConfig, LeadResult, Lead } from './interfaces';
 import { Chain } from '$lib/cam/chain/classes.svelte';
 
@@ -238,61 +226,61 @@ function calculateArcLead(
         }
     }
 
+    // Find the first arc configuration (starting with full
+    // length, preferred direction) that doesn't intersect solid
+    // material and stays within boundaries. This implements collision
+    // avoidance by progressively trying shorter arcs and rotated
+    // directions.
+    //
     // Try full length first, then shorter lengths if needed (only if fit is enabled)
-    const lengthAttempts: number[] = fit
-        ? [1.0, THREE_QUARTERS_PERCENT, HALF_PERCENT, QUARTER_PERCENT]
-        : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
-
-    for (const lengthFactor of lengthAttempts) {
-        const adjustedArcLength: number = arcLength * lengthFactor;
-
-        for (const curveDirection of curveDirectionsToTry) {
-            // Create arc geometry with tangency
-            const arc: Arc = createTangentArc(
-                point,
-                tangent,
-                adjustedArcLength,
-                curveDirection,
-                isLeadIn,
-                desiredClockwise
-            );
-
-            // If no part context, use the first valid lead
-            if (!part) {
-                return {
-                    geometry: arc,
-                    type: LeadType.ARC,
-                    normal: normalizeVector(cutNormal), // INVARIANT: Lead normal always matches cut normal
-                    connectionPoint: point,
-                };
-            }
-
-            // Check if this lead avoids solid areas using geometric validation
-            const intersectsSolid: boolean = isLeadInPart(
-                arc,
-                {
-                    shell: new Chain(part.shell),
-                    voids: part.voids.map((v) => ({
-                        chain: new Chain(v.chain),
-                    })),
-                },
-                point
-            );
-
-            // For holes, add additional check to ensure lead stays within hole boundary
-            const exitsHole: boolean =
-                isHole && checkArcExitsHole(arc, chain, point);
-
-            if (!intersectsSolid && !exitsHole) {
-                return {
-                    geometry: arc,
-                    type: LeadType.ARC,
-                    normal: normalizeVector(cutNormal), // INVARIANT: Lead normal always matches cut normal
-                    connectionPoint: point,
-                };
-            }
-        }
-    }
+    // const lengthAttempts: number[] = fit
+    //     ? [1.0, THREE_QUARTERS_PERCENT, HALF_PERCENT, QUARTER_PERCENT]
+    //     : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
+    // for (const lengthFactor of lengthAttempts) {
+    //     const adjustedArcLength: number = arcLength * lengthFactor;
+    //     for (const curveDirection of curveDirectionsToTry) {
+    //         // Create arc geometry with tangency
+    //         const arc: Arc = createTangentArc(
+    //             point,
+    //             tangent,
+    //             adjustedArcLength,
+    //             curveDirection,
+    //             isLeadIn,
+    //             desiredClockwise
+    //         );
+    //         // If no part context, use the first valid lead
+    //         if (!part) {
+    //             return {
+    //                 geometry: arc,
+    //                 type: LeadType.ARC,
+    //                 normal: normalizeVector(cutNormal), // INVARIANT: Lead normal always matches cut normal
+    //                 connectionPoint: point,
+    //             };
+    //         }
+    //         // Check if this lead avoids solid areas using geometric validation
+    //         const intersectsSolid: boolean = isLeadInPart(
+    //             arc,
+    //             {
+    //                 shell: new Chain(part.shell),
+    //                 voids: part.voids.map((v) => ({
+    //                     chain: new Chain(v.chain),
+    //                 })),
+    //             },
+    //             point
+    //         );
+    //         // For holes, add additional check to ensure lead stays within hole boundary
+    //         const exitsHole: boolean =
+    //             isHole && checkArcExitsHole(arc, chain, point);
+    //         if (!intersectsSolid && !exitsHole) {
+    //             return {
+    //                 geometry: arc,
+    //                 type: LeadType.ARC,
+    //                 normal: normalizeVector(cutNormal), // INVARIANT: Lead normal always matches cut normal
+    //                 connectionPoint: point,
+    //             };
+    //         }
+    //     }
+    // }
 
     // If no rotation avoids solid areas after trying all angles and lengths, add a warning
     if (part) {
@@ -338,41 +326,41 @@ function rotateCurveDirection(direction: Point2D, angle: number): Point2D {
  * Check if an arc lead exits the boundary of a hole.
  * For holes, leads must stay entirely within the hole boundary.
  */
-function checkArcExitsHole(
-    arc: Arc,
-    holeChain: Chain,
-    connectionPoint?: Point2D,
-    tolerance?: number
-): boolean {
-    const effectiveTolerance =
-        tolerance ?? getDefaults().geometry.precisionTolerance;
-    // Only check for closed chains - open chains cannot have meaningful containment
-    if (!isChainClosed(holeChain, CHAIN_CLOSURE_TOLERANCE)) {
-        return false; // Cannot meaningfully check containment for open chains
-    }
+// function checkArcExitsHole(
+//     arc: Arc,
+//     holeChain: Chain,
+//     connectionPoint?: Point2D,
+//     tolerance?: number
+// ): boolean {
+//     const effectiveTolerance =
+//         tolerance ?? getDefaults().geometry.precisionTolerance;
+//     // Only check for closed chains - open chains cannot have meaningful containment
+//     if (!isChainClosed(holeChain, CHAIN_CLOSURE_TOLERANCE)) {
+//         return false; // Cannot meaningfully check containment for open chains
+//     }
 
-    // Sample points along the arc for testing
-    const points = sampleArc(arc);
+//     // Sample points along the arc for testing
+//     const points = sampleArc(arc);
 
-    // Check if any points are outside the hole boundary (excluding connection point)
-    for (const leadPoint of points) {
-        // Skip the connection point as it's expected to be on the boundary
-        if (
-            connectionPoint &&
-            Math.abs(leadPoint.x - connectionPoint.x) < effectiveTolerance &&
-            Math.abs(leadPoint.y - connectionPoint.y) < effectiveTolerance
-        ) {
-            continue;
-        }
+//     // Check if any points are outside the hole boundary (excluding connection point)
+//     for (const leadPoint of points) {
+//         // Skip the connection point as it's expected to be on the boundary
+//         if (
+//             connectionPoint &&
+//             Math.abs(leadPoint.x - connectionPoint.x) < effectiveTolerance &&
+//             Math.abs(leadPoint.y - connectionPoint.y) < effectiveTolerance
+//         ) {
+//             continue;
+//         }
 
-        // If point is outside the hole chain, the lead exits the hole
-        if (!isPointInsideChainExact(leadPoint, holeChain)) {
-            return true;
-        }
-    }
+//         // If point is outside the hole chain, the lead exits the hole
+//         if (!isPointInsideChainExact(leadPoint, holeChain)) {
+//             return true;
+//         }
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
 /**
  * Check if a lead arc geometry is placed in solid material of a part.
@@ -386,32 +374,32 @@ function checkArcExitsHole(
  * @param connectionPoint - Point where lead connects to path (excluded from check)
  * @returns true if ANY point of the lead is in solid material (bad placement)
  */
-function isLeadInPart(
-    leadGeometry: Arc,
-    part: { shell: Chain; voids: { chain: Chain }[] },
-    connectionPoint?: Point2D,
-    tolerance?: number
-): boolean {
-    const effectiveTolerance =
-        tolerance ?? getDefaults().geometry.precisionTolerance;
-    // Sample points along the arc lead geometry
-    const points = sampleArc(leadGeometry);
+// function isLeadInPart(
+//     leadGeometry: Arc,
+//     part: { shell: Chain; voids: { chain: Chain }[] },
+//     connectionPoint?: Point2D,
+//     tolerance?: number
+// ): boolean {
+//     const effectiveTolerance =
+//         tolerance ?? getDefaults().geometry.precisionTolerance;
+//     // Sample points along the arc lead geometry
+//     const points = sampleArc(leadGeometry);
 
-    // Check if any points are in solid material (inside shell but outside holes)
-    for (const leadPoint of points) {
-        // Skip the connection point as it's expected to be on the boundary
-        if (
-            connectionPoint &&
-            Math.abs(leadPoint.x - connectionPoint.x) < effectiveTolerance &&
-            Math.abs(leadPoint.y - connectionPoint.y) < effectiveTolerance
-        ) {
-            continue;
-        }
+//     // Check if any points are in solid material (inside shell but outside holes)
+//     for (const leadPoint of points) {
+//         // Skip the connection point as it's expected to be on the boundary
+//         if (
+//             connectionPoint &&
+//             Math.abs(leadPoint.x - connectionPoint.x) < effectiveTolerance &&
+//             Math.abs(leadPoint.y - connectionPoint.y) < effectiveTolerance
+//         ) {
+//             continue;
+//         }
 
-        // Check if point is in solid material using part geometry
-        if (isPointInsidePart(leadPoint, part)) {
-            return true; // Lead point is in solid material - bad placement
-        }
-    }
-    return false; // All lead points are in valid areas
-}
+//         // Check if point is in solid material using part geometry
+//         if (isPointInsidePart(leadPoint, part)) {
+//             return true; // Lead point is in solid material - bad placement
+//         }
+//     }
+//     return false; // All lead points are in valid areas
+// }

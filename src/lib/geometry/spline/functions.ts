@@ -942,7 +942,11 @@ export function validateSplineKnots(
  */
 export function getSplineTangent(spline: Spline, isStart: boolean): Point2D {
     const curve: VerbCurve = createNurbsCurve(spline);
-    const u: number = isStart ? 0 : 1;
+
+    // HACK Avoid zero-length tangent vectors
+    // const u: number = isStart ? 0 : 1;
+    const u = 0.5;
+
     const tangentVector: VerbVector = curve.tangent(u);
 
     // Normalize the tangent vector to unit length

@@ -47,9 +47,13 @@
                     checked={optimizationSettings.avoidLeadKerfOverlap}
                     onchange={handleAvoidLeadKerfOverlapChange}
                     class="checkbox-input"
+                    disabled
                 />
                 Avoid lead kerf overlap
             </label>
+            <p class="field-description">
+                Attempt to adjust cut start points to avoid lead kerf overlap
+            </p>
         </div>
 
         <div class="field-group">
@@ -99,10 +103,23 @@
         transform: scale(1.1);
     }
 
+    .checkbox-input:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
     .field-label {
         font-size: 0.8rem;
         font-weight: 500;
         color: #374151;
+    }
+
+    .field-description {
+        margin: 0;
+        margin-left: 1.65rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+        line-height: 1.2;
     }
 
     .algorithm-select {

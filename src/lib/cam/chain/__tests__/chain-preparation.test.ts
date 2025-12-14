@@ -5,8 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { createCutChain } from './functions';
-import { getChainCutDirection } from '$lib/cam/chain/functions';
+import { createCutChain, getChainCutDirection } from '$lib/cam/chain/functions';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { GeometryType } from '$lib/geometry/enums';

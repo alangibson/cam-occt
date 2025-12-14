@@ -84,7 +84,7 @@ export class Plan {
      * Idempotent: concurrent calls for the same operation will be ignored
      */
     async add(operation: Operation, tolerance: number): Promise<void> {
-        performance.mark(`plan-add-${operation.id}-start`);
+        console.log('ENTER Plan.add()');
 
         // Guard: skip if this operation is already being processed
         if (this.pendingOperations.has(operation.id)) {
@@ -101,24 +101,19 @@ export class Plan {
             );
 
             // Generate cuts with leads (async, parallelized)
-            performance.mark(`createCuts-${operation.id}-start`);
+            console.log('BEGIN Generate cuts with leads (async, parallelized)');
             const result: CutGenerationResult = await createCutsFromOperation(
                 operation,
                 tolerance
             );
-            performance.mark(`createCuts-${operation.id}-end`);
-            performance.measure(
-                `createCutsFromOperation(${operation.id})`,
-                `createCuts-${operation.id}-start`,
-                `createCuts-${operation.id}-end`
-            );
+            console.log('END Generate cuts with leads (async, parallelized)');
 
             // Validate all cuts have IDs
-            for (const cut of result.cuts) {
-                if (!cut.id) {
-                    throw new Error('Generated cut missing required id field');
-                }
-            }
+            // for (const cut of result.cuts) {
+            //     if (!cut.id) {
+            //         throw new Error('Generated cut missing required id field');
+            //     }
+            // }
 
             // Add generated cuts
             if (result.cuts.length > 0) {
@@ -133,14 +128,9 @@ export class Plan {
         } finally {
             // Always remove from pending set
             this.pendingOperations.delete(operation.id);
-
-            performance.mark(`plan-add-${operation.id}-end`);
-            performance.measure(
-                `Plan.add(${operation.id})`,
-                `plan-add-${operation.id}-start`,
-                `plan-add-${operation.id}-end`
-            );
         }
+
+        console.log('EXIT Plan.add()');
     }
 
     /**
@@ -148,6 +138,8 @@ export class Plan {
      * Only regenerates if geometric properties changed (skips name/enabled/order changes)
      */
     async update(operation: Operation, tolerance: number): Promise<void> {
+        console.log('ENTER Plan.update()');
+
         performance.mark(`plan-update-${operation.id}-start`);
 
         const newFingerprint = this.getGeometricFingerprint(operation);
@@ -174,6 +166,8 @@ export class Plan {
             `plan-update-${operation.id}-start`,
             `plan-update-${operation.id}-end`
         );
+
+        console.log('EXIT Plan.update()');
     }
 
     /**

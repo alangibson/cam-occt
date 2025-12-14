@@ -14,7 +14,9 @@ import {
     getChainTangent,
     isChainClosed,
     tessellateChain,
+    getChainCutDirection,
 } from './functions';
+import { CutDirection } from '$lib/cam/cut/enums';
 import {
     CHAIN_CLOSURE_TOLERANCE,
     CIRCLE_FIT_EPSILON,
@@ -48,6 +50,7 @@ export class Chain implements Geometric, ChainData {
     #midPoint?: Point2D;
     #tangent?: Point2D;
     #normal?: Point2D;
+    #direction?: CutDirection;
 
     constructor(data: ChainData) {
         this.#data = data;
@@ -210,6 +213,19 @@ export class Chain implements Geometric, ChainData {
             this.#normal = { x: -t.y, y: t.x };
         }
         return this.#normal;
+    }
+
+    /**
+     * Get the cut direction from chain's stored clockwise property
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns CutDirection based on the chain's clockwise property
+     */
+    get direction(): CutDirection {
+        if (this.#direction === undefined) {
+            this.#direction = getChainCutDirection(this);
+        }
+        return this.#direction;
     }
 
     /**
@@ -526,6 +542,7 @@ export class Chain implements Geometric, ChainData {
         this.#midPoint = undefined;
         this.#tangent = undefined;
         this.#normal = undefined;
+        this.#direction = undefined;
         // Reassign array to trigger Svelte 5 $state reactivity
         this.#shapes = [...this.#shapes];
     }

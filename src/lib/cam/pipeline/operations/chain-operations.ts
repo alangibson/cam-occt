@@ -5,7 +5,7 @@
 import { Chain } from '$lib/cam/chain/classes.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
-import { createCutChain } from '$lib/cam/pipeline/chains/functions';
+import { createCutChain } from '$lib/cam/chain/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import { Cut } from '$lib/cam/cut/classes.svelte';

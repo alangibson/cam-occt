@@ -4,8 +4,6 @@
 
 import { Chain } from '$lib/cam/chain/classes.svelte';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
-import { createCutChain } from '$lib/cam/pipeline/chains/functions';
-import { getChainCutDirection } from '$lib/cam/chain/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import { Cut } from '$lib/cam/cut/classes.svelte';
@@ -15,10 +13,16 @@ import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 import { getToolValue } from '$lib/cam/tool/tool-utils';
 import { calculateChainOffset } from '$lib/cam/pipeline/operations/offset-calculation';
 import { calculateCutLeads } from '$lib/cam/pipeline/leads/lead-orchestration';
-import type { OffsetCalculation, CutGenerationResult } from './interfaces';
+import type {
+    OffsetCalculation,
+    CutGenerationResult,
+    ChainOffsetResult,
+} from './interfaces';
 import type { Operation } from '$lib/cam/operation/classes.svelte';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { Lead } from '$lib/cam/lead/interfaces';
+import type { CutChainResult } from '$lib/cam/chain/interfaces';
+import { createCutChain } from '$lib/cam/chain/functions';
 
 /**
  * Helper function to determine kerf compensation direction based on operation settings and chain type
@@ -103,6 +107,7 @@ export async function generateCutsForPartsWithOperation(
     ) as Part[];
 
     // Get all chains from part
+    // TODO use Chain.clone()
     const chains: Chain[] = [new Chain(part.shell)];
     chains.push(...part.voids.map((v) => new Chain(v.chain)));
     chains.push(...part.slots.map((s) => new Chain(s.chain)));
@@ -132,16 +137,18 @@ export async function generateCutsForPartsWithOperation(
     const offsetInfos: ChainOffsetInfo[] = [];
 
     // Shell chain
+    //
     const shellChain: Chain | undefined = chains.find(
         (c) => c.id === part.shell.id
     );
-    const shellStoredDirection: CutDirection = getChainCutDirection(shellChain);
+    const shellStoredDirection: CutDirection =
+        shellChain?.direction ?? CutDirection.NONE;
     const shellCutDirection: CutDirection =
         shellStoredDirection === CutDirection.NONE
             ? CutDirection.NONE
             : operation.cutDirection;
 
-    const shellKerfCompensation = determineKerfCompensation(
+    const shellKerfCompensation: OffsetDirection = determineKerfCompensation(
         operation.kerfCompensation,
         'shell'
     );
@@ -157,16 +164,20 @@ export async function generateCutsForPartsWithOperation(
     }
 
     // Hole chains
+    //
     for (let holeIndex = 0; holeIndex < part.voids.length; holeIndex++) {
         const hole = part.voids[holeIndex];
         const holeChain = chains.find((c) => c.id === hole.chain.id);
-        const holeStoredDirection = getChainCutDirection(holeChain);
-        const holeCutDirection =
+
+        const holeStoredDirection: CutDirection =
+            holeChain?.direction ?? CutDirection.NONE;
+
+        const holeCutDirection: CutDirection =
             holeStoredDirection === CutDirection.NONE
                 ? CutDirection.NONE
                 : operation.cutDirection;
 
-        const holeKerfCompensation = determineKerfCompensation(
+        const holeKerfCompensation: OffsetDirection = determineKerfCompensation(
             operation.kerfCompensation,
             'hole'
         );
@@ -184,16 +195,20 @@ export async function generateCutsForPartsWithOperation(
     }
 
     // Slot chains
+    //
     for (let slotIndex = 0; slotIndex < part.slots.length; slotIndex++) {
         const slot = part.slots[slotIndex];
         const slotChain = chains.find((c) => c.id === slot.chain.id);
-        const slotStoredDirection = getChainCutDirection(slotChain);
-        const slotCutDirection =
+
+        const slotStoredDirection: CutDirection =
+            slotChain?.direction ?? CutDirection.NONE;
+
+        const slotCutDirection: CutDirection =
             slotStoredDirection === CutDirection.NONE
                 ? CutDirection.NONE
                 : operation.cutDirection;
 
-        const slotKerfCompensation = determineKerfCompensation(
+        const slotKerfCompensation: OffsetDirection = determineKerfCompensation(
             operation.kerfCompensation,
             'slot'
         );
@@ -214,14 +229,21 @@ export async function generateCutsForPartsWithOperation(
     // PHASE 2: Calculate all offsets in parallel
     // ========================================================================
 
-    const offsetPromises = offsetInfos.map((info) =>
-        calculateChainOffset(info.chain, info.kerfCompensation, tool.id, [tool])
+    // Calculate offset results
+    const offsetPromises: Promise<ChainOffsetResult | null>[] = offsetInfos.map(
+        (info) =>
+            calculateChainOffset(info.chain, info.kerfCompensation, tool.id, [
+                tool,
+            ])
     );
-
-    const offsetResults = await Promise.all(offsetPromises);
+    const offsetResults: (ChainOffsetResult | null)[] =
+        await Promise.all(offsetPromises);
 
     // Build offset calculation map for easy lookup
-    const offsetMap = new Map<string, OffsetCalculation>();
+    const offsetMap: Map<string, OffsetCalculation> = new Map<
+        string,
+        OffsetCalculation
+    >();
     offsetResults.forEach((result, index) => {
         if (result) {
             const info = offsetInfos[index];
@@ -255,7 +277,7 @@ export async function generateCutsForPartsWithOperation(
     let shellExecutionChain: Chain | undefined = undefined;
     let shellExecutionClockwise: boolean | null = null;
     if (shellChain) {
-        const shellCutChainResult = createCutChain(
+        const shellCutChainResult: CutChainResult = createCutChain(
             shellChain,
             shellCutDirection,
             shellCalculatedOffset?.offsetShapes
@@ -355,7 +377,7 @@ export async function generateCutsForPartsWithOperation(
             (c) => c.id === hole.chain.id
         );
         const holeStoredDirection: CutDirection =
-            getChainCutDirection(holeChain);
+            holeChain?.direction ?? CutDirection.NONE;
         const holeCutDirection: CutDirection =
             holeStoredDirection === CutDirection.NONE
                 ? CutDirection.NONE
@@ -472,7 +494,7 @@ export async function generateCutsForPartsWithOperation(
             (c) => c.id === slot.chain.id
         );
         const slotStoredDirection: CutDirection =
-            getChainCutDirection(slotChain);
+            slotChain?.direction ?? CutDirection.NONE;
         const slotCutDirection: CutDirection =
             slotStoredDirection === CutDirection.NONE
                 ? CutDirection.NONE

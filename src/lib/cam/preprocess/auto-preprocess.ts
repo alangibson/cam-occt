@@ -143,6 +143,6 @@ async function applyPreprocessingStep(
             break;
 
         default:
-            // Unknown preprocessing step
+        // Unknown preprocessing step
     }
 }
