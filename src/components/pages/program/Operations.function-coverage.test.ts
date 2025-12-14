@@ -1046,7 +1046,6 @@ describe('Operations Component - Function Coverage', () => {
 
             // Skip test if there aren't enough inputs
             if (lengthInputs.length < 2) {
-                console.log('Lead-out length input not found, skipping test');
                 return;
             }
 
@@ -1077,7 +1076,6 @@ describe('Operations Component - Function Coverage', () => {
 
             // Skip test if there aren't enough checkboxes
             if (fitCheckboxes.length < 2) {
-                console.log('Lead-out fit checkbox not found, skipping test');
                 return;
             }
 
@@ -1108,7 +1106,6 @@ describe('Operations Component - Function Coverage', () => {
 
             // Skip test if there aren't enough angle inputs
             if (angleInputs.length < 2) {
-                console.log('Lead-out angle input not found, skipping test');
                 return;
             }
 

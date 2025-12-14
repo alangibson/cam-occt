@@ -251,10 +251,7 @@ function checkAndWarnUnclampedSpline(spline: Spline): void {
     }
 
     if (!isClampedKnotVector(spline.knots, spline.degree)) {
-        console.warn(
-            `[SPLINE WARNING] Unclamped spline detected: degree=${spline.degree}, ` +
-                `controlPoints=${spline.controlPoints.length}, knots=[${spline.knots.slice(0, spline.degree + 1).join(',')}...${spline.knots.slice(-(spline.degree + 1)).join(',')}]`
-        );
+        // SPLINE WARNING: Unclamped spline detected - knot vector is not properly clamped for NURBS curve
     }
 }
 
@@ -468,11 +465,7 @@ function tessellateSplineAdaptive(
         const errorMessage =
             error instanceof Error ? error.message : String(error);
 
-        // Log pathological spline errors
-        console.error(
-            `[PATHOLOGICAL SPLINE] Adaptive tessellation failed for spline with ${spline.controlPoints.length} control points, degree ${spline.degree}:`,
-            errorMessage
-        );
+        // PATHOLOGICAL SPLINE: Adaptive tessellation failed - spline geometry is too complex or invalid for adaptive sampling
 
         return {
             success: false,
@@ -546,9 +539,7 @@ export function tessellateSpline(
 
     // Return early for fundamental errors that cannot be repaired
     if (errors.length > 0) {
-        console.error(
-            `[PATHOLOGICAL SPLINE] Invalid spline geometry: ${errors.join(', ')}`
-        );
+        // PATHOLOGICAL SPLINE: Invalid spline geometry - fundamental errors that cannot be repaired
         return {
             success: false,
             points: [],
@@ -571,10 +562,7 @@ export function tessellateSpline(
         const errorMessage =
             error instanceof Error ? error.message : String(error);
 
-        console.error(
-            `[PATHOLOGICAL SPLINE] NURBS creation failed for spline with ${spline.controlPoints.length} control points:`,
-            errorMessage
-        );
+        // PATHOLOGICAL SPLINE: NURBS creation failed - falling back to fit points or control points
 
         warnings.push(
             `NURBS creation failed: ${errorMessage}, falling back to fit points`
@@ -1023,11 +1011,7 @@ export function sampleSpline(spline: Spline, _sampleCount: number): Point2D[] {
 
         return points;
     } catch (error) {
-        // If verb.js fails, fall back to control points
-        console.warn(
-            'verb.js NURBS tessellation failed, falling back to control points:',
-            error instanceof Error ? error.message : String(error)
-        );
+        // verb.js NURBS tessellation failed - falling back to control points
         return spline.controlPoints.slice();
     }
 }

@@ -6,6 +6,7 @@ import type {
     SelectionMode,
     PreprocessingStep,
     OffsetImplementation,
+    Renderer,
 } from './enums';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 
@@ -64,6 +65,9 @@ export interface ApplicationSettings {
 
     /** Offset calculation implementation to use */
     offsetImplementation: OffsetImplementation;
+
+    /** Renderer implementation to use */
+    renderer: Renderer;
 
     /** CAM settings */
     camSettings: CamSettings;

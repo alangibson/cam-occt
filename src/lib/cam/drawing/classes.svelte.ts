@@ -5,11 +5,10 @@ import { shapesBoundingBox } from '$lib/cam/shape/functions';
 import { Layer } from '$lib/cam/layer/classes.svelte';
 import { Shape } from '$lib/cam/shape/classes';
 import { Unit } from '$lib/config/units/units';
-import { EMPTY_BOUNDS } from '$lib/geometry/bounding-box/constants';
 
 export class Drawing implements DrawingData {
     #data: DrawingData;
-    #layers?: Record<string, Layer>;
+    #layers = $state<Record<string, Layer>>();
 
     constructor(data: DrawingData) {
         this.#data = data;
@@ -24,19 +23,14 @@ export class Drawing implements DrawingData {
     }
 
     // Read-only: Returns flat map of all shapes from all layers.
-    // To modify shapes, use layer.shapes setter (e.g., drawing.layers[layerName].shapes = newShapes)
+    // To modify shapes, use layer.shapes setter
     get shapes(): Shape[] {
         // Flatten shapes from all layers
-        const layers = this.layers;
-        return Object.values(layers).flatMap((layer) => layer.shapes);
+        return Object.values(this.layers).flatMap((layer) => layer.shapes);
     }
 
     get bounds(): BoundingBoxData {
-        const shapes = this.shapes ?? [];
-        if (shapes.length === 0) {
-            return EMPTY_BOUNDS;
-        }
-        return shapesBoundingBox(shapes);
+        return shapesBoundingBox(this.shapes);
     }
 
     get units() {
@@ -109,10 +103,12 @@ export class Drawing implements DrawingData {
      * @param dy Y offset to translate by
      */
     translate(dx: number, dy: number): void {
-        if (this.#layers) {
-            for (const layer of Object.values(this.#layers)) {
-                layer.translate(dx, dy);
-            }
+        // Translate each layer (Layer.translate handles its own reactivity)
+        for (const layer of Object.values(this.layers)) {
+            layer.translate(dx, dy);
         }
+
+        // Trigger Svelte 5 reactivity by reassigning the $state layers
+        this.#layers = { ...this.layers };
     }
 }

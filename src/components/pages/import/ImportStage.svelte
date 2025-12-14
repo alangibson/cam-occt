@@ -23,10 +23,6 @@
         fileName: string;
         originalUnits: Unit | null;
     }) {
-        console.log('[ImportStage] handleFileImported started', {
-            fileName: detail.fileName,
-            originalUnits: detail.originalUnits,
-        });
         // Reset all application state when a new file is imported
         // This ensures clean state for the new drawing
 
@@ -64,11 +60,9 @@
 
         // Mark import stage as complete
         workflowStore.completeStage(WorkflowStage.IMPORT);
-        console.log('[ImportStage] handleFileImported completed');
     }
 
     async function handleImportAdvance() {
-        console.log('[ImportStage] handleImportAdvance started');
         // Ensure units are never 'none' beyond import stage
         const drawing = drawingStore.drawing;
         if (drawing && drawing.units === Unit.NONE) {
@@ -84,9 +78,7 @@
         }
 
         // Apply all enabled preprocessing steps before advancing
-        console.log('[ImportStage] Applying auto-preprocessing...');
         await applyAutoPreprocessing();
-        console.log('[ImportStage] Auto-preprocessing complete');
 
         // Mark import stage as complete before advancing
         workflowStore.completeStage(WorkflowStage.IMPORT);
@@ -96,9 +88,6 @@
         if (nextStage) {
             workflowStore.setStage(nextStage);
         }
-        console.log('[ImportStage] handleImportAdvance completed', {
-            nextStage,
-        });
     }
 </script>
 

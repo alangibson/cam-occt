@@ -199,13 +199,7 @@ export function convertBulgeToArc(
             Math.abs(distToStart - radius) > validationTolerance ||
             Math.abs(distToEnd - radius) > validationTolerance
         ) {
-            // Validation failed - this indicates a mathematical error
-            console.warn(
-                `Bulge conversion validation failed: bulge=${bulge}, chord=${chordLength.toFixed(PRECISION_DECIMAL_PLACES)}, radius=${radius.toFixed(PRECISION_DECIMAL_PLACES)}`
-            );
-            console.warn(
-                `Distance errors: start=${Math.abs(distToStart - radius).toFixed(PRECISION_DECIMAL_PLACES)}, end=${Math.abs(distToEnd - radius).toFixed(PRECISION_DECIMAL_PLACES)}, tolerance=${validationTolerance.toFixed(PRECISION_DECIMAL_PLACES)}`
-            );
+            // Bulge conversion validation failed - calculated arc center doesn't maintain consistent radius to endpoints
             return null;
         }
 
@@ -233,7 +227,7 @@ export function convertBulgeToArc(
             clockwise: bulge < 0, // Negative bulge indicates clockwise direction
         };
     } catch (error) {
-        console.warn('Error in bulge-to-arc conversion:', error);
+        // Error in bulge-to-arc conversion - mathematical error during conversion
         return null;
     }
 }

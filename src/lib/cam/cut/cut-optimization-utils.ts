@@ -139,11 +139,7 @@ export function getCutStartPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
                 }
             }
         } catch (error) {
-            console.warn(
-                'Failed to calculate lead-in for cut:',
-                cut.name,
-                error
-            );
+            // Failed to calculate lead-in for cut - lead calculation threw exception
         }
     }
 

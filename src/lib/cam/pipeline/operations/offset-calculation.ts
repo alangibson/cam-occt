@@ -35,12 +35,12 @@ export async function calculateChainOffset(
     // Find tool by ID
     const tool = tools.find((t) => t.id === toolId);
     if (!tool) {
-        console.warn('Tool not found for kerf compensation');
+        // Tool not found for kerf compensation
         return null;
     }
     const kerfWidth = getToolValue(tool, 'kerfWidth');
     if (!kerfWidth || kerfWidth <= 0) {
-        console.warn(`Tool "${tool.toolName}" has no kerf width set`);
+        // Tool has no kerf width set - cannot calculate offset
         return null;
     }
 
@@ -65,7 +65,7 @@ export async function calculateChainOffset(
         );
 
         if (!offsetResult.success) {
-            console.warn('Offset calculation failed', offsetResult.errors);
+            // Offset calculation failed - check offsetResult.errors for details
             return null;
         }
 
@@ -81,10 +81,7 @@ export async function calculateChainOffset(
         }
 
         if (!selectedChain || selectedChain.length === 0) {
-            console.warn(
-                'No appropriate offset chain found for direction:',
-                kerfCompensation
-            );
+            // No appropriate offset chain found for the specified direction
             return null;
         }
 
@@ -99,7 +96,7 @@ export async function calculateChainOffset(
             warnings: offsetResult.warnings || [],
         };
     } catch (error) {
-        console.error('Error calculating offset:', error);
+        // Error calculating offset - offset calculation threw exception
         return null;
     }
 }

@@ -17,7 +17,6 @@
     import type { ShapeData } from '$lib/cam/shape/interfaces';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { SelectionMode } from '$lib/config/settings/enums';
-    import { getPhysicalScaleFactor } from '$lib/config/units/units';
     import { RenderingPipeline } from '$lib/rendering/canvas/pipeline';
     import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
     import { getCanvasConfigForStage } from '$components/drawing/canvas-config';
@@ -210,10 +209,8 @@
         }
     });
 
-    // Calculate unit scale factor for proper unit display
-    const unitScale = $derived(
-        drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1
-    );
+    // Get unit scale factor from DrawingStore
+    const unitScale = $derived(drawingStore.unitScale);
 
     // Get canvas configuration for current stage
     const canvasConfig = $derived(

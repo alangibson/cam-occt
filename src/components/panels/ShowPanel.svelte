@@ -186,6 +186,94 @@
         </div>
 
         <div class="show-section">
+            <h3 class="section-header">Parts</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartDirections}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartDirections(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Directions
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartEndPoints}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartEndPoints(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Ends
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartNormals}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartNormals(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Normals
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartPaths}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartPaths(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Paths
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartStartPoints}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartStartPoints(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Starts
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartTangentLines}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartTangentLines(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Tangents
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartTessellation}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartTessellation(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Tessellation
+            </label>
+        </div>
+
+        <div class="show-section">
             <h3 class="section-header">Cuts</h3>
             <label class="show-checkbox-label">
                 <input

@@ -7,6 +7,9 @@ import {
     getShapeEndPoint,
     getShapePoints,
     shapeBoundingBox,
+    getShapeMidpoint,
+    getShapeNormal,
+    getShapePointAt,
 } from './functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Geometry } from '$lib/geometry/types';
@@ -19,8 +22,9 @@ import type { Point2D, PointGeometry } from '$lib/geometry/point/interfaces';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { BoundingBox } from '$lib/geometry/bounding-box/classes';
+import type { Geometric } from '$lib/cam/interfaces';
 
-export class Shape implements ShapeData {
+export class Shape implements Geometric, ShapeData {
     #data: ShapeData;
     #tessellationCache?: TessellationCache;
     #tessellated?: Point2D[];
@@ -28,6 +32,9 @@ export class Shape implements ShapeData {
     #endPoint?: Point2D;
     #points?: Point2D[];
     #boundary?: BoundingBox;
+    #midPoint?: Point2D;
+    #normal?: Point2D;
+    #pointAt?: Map<number, Point2D | null>;
 
     constructor(data: ShapeData) {
         if (!data.id) {
@@ -46,6 +53,9 @@ export class Shape implements ShapeData {
         this.#endPoint = undefined;
         this.#points = undefined;
         this.#boundary = undefined;
+        this.#midPoint = undefined;
+        this.#normal = undefined;
+        this.#pointAt = undefined;
     }
 
     get id(): string {
@@ -130,6 +140,51 @@ export class Shape implements ShapeData {
             this.#boundary = new BoundingBox(boundingBoxData);
         }
         return this.#boundary;
+    }
+
+    /**
+     * Get the midpoint of this shape at t=0.5
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns Midpoint or null if shape doesn't support midpoint calculation
+     */
+    get midPoint(): Point2D {
+        if (this.#midPoint === undefined) {
+            this.#midPoint = getShapeMidpoint(this, 0.5);
+        }
+        return this.#midPoint;
+    }
+
+    /**
+     * Get the normal vector at the midpoint (t=0.5) of this shape
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns Normal vector at midpoint
+     */
+    get normal(): Point2D {
+        if (!this.#normal) {
+            this.#normal = getShapeNormal(this, 0.5);
+        }
+        return this.#normal;
+    }
+
+    /**
+     * Get the point at a specific position along the shape
+     * Lazily calculates and caches results
+     *
+     * @param t Parameter value from 0 to 1 (0 = start, 1 = end)
+     * @returns Point at the specified position along the shape, or null if unavailable
+     */
+    pointAt(t: number): Point2D {
+        if (!this.#pointAt) {
+            this.#pointAt = new Map();
+        }
+
+        if (!this.#pointAt.has(t)) {
+            this.#pointAt.set(t, getShapePointAt(this, t));
+        }
+
+        return this.#pointAt.get(t)!;
     }
 
     translate(dx: number, dy: number): void {

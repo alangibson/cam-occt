@@ -1,6 +1,9 @@
 <script lang="ts">
     import DrawingCanvas from '$components/drawing/DrawingCanvas.svelte';
+    import DrawingSVG from '$components/svg/DrawingSVG.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import { settingsStore } from '$lib/stores/settings/store.svelte';
+    import { Renderer } from '$lib/config/settings/enums';
 
     export let onChainClick: ((chainId: string) => void) | null = null;
     export let onPartClick: ((partId: string) => void) | null = null;
@@ -18,7 +21,11 @@
     {/if}
 
     <div class="canvas-container">
-        <DrawingCanvas {onChainClick} {onPartClick} {currentStage} />
+        {#if settingsStore.settings.renderer === Renderer.Canvas}
+            <DrawingCanvas {onChainClick} {onPartClick} {currentStage} />
+        {:else if settingsStore.settings.renderer === Renderer.SVG}
+            <DrawingSVG />
+        {/if}
     </div>
 </div>
 

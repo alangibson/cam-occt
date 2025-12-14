@@ -47,7 +47,6 @@
 
     async function handleGenerateGCode() {
         if (!drawing) {
-            console.log('No drawing available for G-code generation');
             return;
         }
 
@@ -135,13 +134,13 @@
             navigator.clipboard
                 .writeText(generatedGCode)
                 .then(() => {
-                    console.log('G-code copied to clipboard!');
+                    // G-code copied to clipboard
                 })
                 .catch((err) => {
-                    console.error('Failed to copy G-code:', err);
+                    // Failed to copy G-code
                 });
         } else {
-            console.error('Clipboard API not available');
+            // Clipboard API not available
         }
     }
 

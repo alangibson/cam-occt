@@ -199,14 +199,11 @@ export class CutRenderer extends BaseRenderer {
                             ctx.shadowBlur = 0;
                         }
                     } catch (error) {
-                        console.warn(
-                            `Error rendering offset shape ${index} for cut ${cut.id}:`,
-                            error
-                        );
+                        // Error rendering offset shape for cut - shape rendering threw exception
                     }
                 });
             } catch (error) {
-                console.error(`Error rendering cut ${cut.id}:`, error);
+                // Error rendering cut - cut rendering threw exception
             } finally {
                 ctx.restore();
             }
@@ -487,7 +484,7 @@ export class CutRenderer extends BaseRenderer {
             typeof point.x !== 'number' ||
             typeof point.y !== 'number'
         ) {
-            console.error('CutRenderer.hitWorld: invalid point', point);
+            // CutRenderer.hitWorld: invalid point - point is null or has invalid coordinates
             return null;
         }
 

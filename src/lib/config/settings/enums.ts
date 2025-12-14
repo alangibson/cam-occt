@@ -56,3 +56,11 @@ export enum OffsetImplementation {
     Exact = 'exact', // Existing TypeScript implementation (preserves curves)
     Polyline = 'polyline',
 }
+
+/**
+ * Renderer implementation options
+ */
+export enum Renderer {
+    Canvas = 'canvas',
+    SVG = 'svg',
+}

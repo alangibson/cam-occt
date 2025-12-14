@@ -363,7 +363,7 @@ function restoreStateToStores(state: PersistedState): void {
             plan.cuts = state.cuts.map((cutData) => {
                 // Validate that cut has required fields
                 if (!cutData.id) {
-                    console.error('Cut missing required id field:', cutData);
+                    // Cut missing required id field - cannot restore cut without id
                     throw new Error('Cut data missing required id field');
                 }
                 return new Cut(cutData);
@@ -388,7 +388,7 @@ function restoreStateToStores(state: PersistedState): void {
             toolStore.reorderTools(state.tools);
         }
     } catch (error) {
-        console.error('Failed to restore application state:', error);
+        // Failed to restore application state - state restoration threw exception
     }
 }
 
@@ -482,6 +482,5 @@ export function setupAutoSave(): () => void {
     // Return cleanup function
     return () => {
         unsubscribers.forEach((unsub) => unsub());
-        console.log('Auto-save subscriptions cleaned up');
     };
 }

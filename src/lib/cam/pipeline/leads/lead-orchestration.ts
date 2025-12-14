@@ -90,7 +90,7 @@ export async function calculateCutLeads(
 
         return leadGeometry;
     } catch (error) {
-        console.error(`Failed to calculate leads for cut ${cut.name}:`, error);
+        // Failed to calculate leads for cut - lead calculation threw exception
 
         // Return error information
         return {
@@ -145,10 +145,7 @@ export async function calculateOperationLeads(
         // Wait for all calculations to complete
         await Promise.all(calculations);
     } catch (error) {
-        console.error(
-            `Failed to calculate leads for operation ${operation.name}:`,
-            error
-        );
+        // Failed to calculate leads for operation - lead orchestration threw exception
     }
 
     return leadResults;

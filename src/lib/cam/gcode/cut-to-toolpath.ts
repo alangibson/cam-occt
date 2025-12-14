@@ -134,9 +134,7 @@ export async function cutToToolPath(
                 ) {
                     leadIn = convertLeadGeometryToPoints(cut.leadIn);
                 } else {
-                    console.warn(
-                        `Cached lead-in doesn't connect to offset cut for cut ${cut.id}. Lead connects to (${leadEnd.x}, ${leadEnd.y}) but cut starts at (${cutStart.x}, ${cutStart.y})`
-                    );
+                    // Cached lead-in doesn't connect to offset cut - lead endpoint doesn't match cut start point
                     leadIn = undefined; // Don't use disconnected lead
                 }
             } else {
@@ -175,9 +173,7 @@ export async function cutToToolPath(
                     ) {
                         leadIn = convertLeadGeometryToPoints(cached.leadIn);
                     } else {
-                        console.warn(
-                            `Cached lead-in doesn't connect to current geometry for cut ${cut.id}`
-                        );
+                        // Cached lead-in doesn't connect to current geometry - will trigger recalculation
                         leadIn = undefined; // Will trigger recalculation below
                     }
                 }
@@ -222,9 +218,7 @@ export async function cutToToolPath(
                 ) {
                     leadOut = convertLeadGeometryToPoints(cut.leadOut);
                 } else {
-                    console.warn(
-                        `Cached lead-out doesn't connect to offset cut for cut ${cut.id}. Lead connects to (${leadStart.x}, ${leadStart.y}) but cut ends at (${cutEnd.x}, ${cutEnd.y})`
-                    );
+                    // Cached lead-out doesn't connect to offset cut - lead start point doesn't match cut end point
                     leadOut = undefined; // Don't use disconnected lead
                 }
             } else {
@@ -262,9 +256,7 @@ export async function cutToToolPath(
                     ) {
                         leadOut = convertLeadGeometryToPoints(cached.leadOut);
                     } else {
-                        console.warn(
-                            `Cached lead-out doesn't connect to current geometry for cut ${cut.id}`
-                        );
+                        // Cached lead-out doesn't connect to current geometry - will trigger recalculation
                         leadOut = undefined; // Will trigger recalculation below
                     }
                 }

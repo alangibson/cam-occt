@@ -26,13 +26,6 @@ const STEP_DELAY_MS = 50;
 export async function applyAutoPreprocessing(): Promise<void> {
     const enabledSteps = settingsStore.settings.enabledPreprocessingSteps;
 
-    if (import.meta.env.DEV) {
-        console.log(
-            'Starting auto-preprocessing with enabled steps:',
-            enabledSteps
-        );
-    }
-
     // Get algorithm parameters from defaults
     const defaults = getDefaults();
     const algorithmParams: AlgorithmParameters = {
@@ -51,13 +44,8 @@ export async function applyAutoPreprocessing(): Promise<void> {
             // Add small delay to allow UI to update
             await new Promise((resolve) => setTimeout(resolve, STEP_DELAY_MS));
         } catch (error) {
-            console.error(`Error applying preprocessing step ${step}:`, error);
             // Continue with other steps even if one fails
         }
-    }
-
-    if (import.meta.env.DEV) {
-        console.log('Auto-preprocessing complete');
     }
 }
 
@@ -71,15 +59,11 @@ async function applyPreprocessingStep(
     const drawing = drawingStore.drawing;
 
     if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
-        console.warn(`No drawing available for step ${step}`);
         return;
     }
 
     switch (step) {
         case PreprocessingStep.DecomposePolylines:
-            if (import.meta.env.DEV) {
-                console.log('Applying: Decompose Polylines');
-            }
             Object.values(drawing.layers).forEach((layer) => {
                 const decomposedShapes = decomposePolylines(layer.shapes);
                 layer.shapes = decomposedShapes;
@@ -88,9 +72,6 @@ async function applyPreprocessingStep(
             break;
 
         case PreprocessingStep.DeduplicateShapes:
-            if (import.meta.env.DEV) {
-                console.log('Applying: Deduplicate Shapes');
-            }
             for (const layer of Object.values(drawing.layers)) {
                 const deduplicatedShapes = await deduplicateShapes(
                     layer.shapes
@@ -101,9 +82,6 @@ async function applyPreprocessingStep(
             break;
 
         case PreprocessingStep.JoinColinearLines:
-            if (import.meta.env.DEV) {
-                console.log('Applying: Join Co-linear Lines');
-            }
             Object.values(drawing.layers).forEach((layer) => {
                 // Join collinear lines in the layer's chains
                 const joinedChains = joinColinearLines(
@@ -123,25 +101,17 @@ async function applyPreprocessingStep(
             break;
 
         case PreprocessingStep.TranslateToPositive:
-            if (import.meta.env.DEV) {
-                console.log('Applying: Translate to Positive');
-            }
             translateToPositiveQuadrant(drawing);
             resetDownstreamStages(WorkflowStage.PROGRAM);
             break;
 
         case PreprocessingStep.OptimizeStarts:
-            if (import.meta.env.DEV) {
-                console.log('Applying: Optimize Starts');
-            }
-
             // Get all chains from all layers
             const allChains = Object.values(drawing.layers).flatMap(
                 (layer) => layer.chains
             );
 
             if (allChains.length === 0) {
-                console.warn('No chains detected. Skipping optimization.');
                 return;
             }
 
@@ -170,15 +140,9 @@ async function applyPreprocessingStep(
             });
 
             resetDownstreamStages(WorkflowStage.PROGRAM);
-
-            if (import.meta.env.DEV) {
-                console.log(
-                    `Optimized start points. Re-detected ${allChains.length} chains.`
-                );
-            }
             break;
 
         default:
-            console.warn(`Unknown preprocessing step: ${step}`);
+            // Unknown preprocessing step
     }
 }

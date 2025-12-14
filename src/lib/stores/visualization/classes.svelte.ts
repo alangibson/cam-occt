@@ -38,6 +38,16 @@ interface ShapeVisualizationState {
     showShapeTessellation: boolean;
 }
 
+interface PartVisualizationState {
+    showPartPaths: boolean;
+    showPartStartPoints: boolean;
+    showPartEndPoints: boolean;
+    showPartNormals: boolean;
+    showPartDirections: boolean;
+    showPartTangentLines: boolean;
+    showPartTessellation: boolean;
+}
+
 class VisualizationStore {
     // Chain visualization
     tolerance = $state(0.1);
@@ -48,6 +58,15 @@ class VisualizationStore {
     showChainNormals = $state(false);
     showChainDirections = $state(false);
     showChainTessellation = $state(false);
+
+    // Part visualization
+    showPartPaths = $state(true);
+    showPartStartPoints = $state(false);
+    showPartEndPoints = $state(false);
+    showPartNormals = $state(false);
+    showPartDirections = $state(false);
+    showPartTangentLines = $state(false);
+    showPartTessellation = $state(false);
 
     // Cut visualization
     showCutNormals = $state(false);
@@ -115,6 +134,55 @@ class VisualizationStore {
 
     setShowChainTessellation(show: boolean) {
         this.showChainTessellation = show;
+    }
+
+    // Part methods
+    setShowPartPaths(show: boolean) {
+        this.showPartPaths = show;
+    }
+
+    setShowPartStartPoints(show: boolean) {
+        this.showPartStartPoints = show;
+    }
+
+    setShowPartEndPoints(show: boolean) {
+        this.showPartEndPoints = show;
+    }
+
+    setShowPartNormals(show: boolean) {
+        this.showPartNormals = show;
+    }
+
+    setShowPartDirections(show: boolean) {
+        this.showPartDirections = show;
+    }
+
+    setShowPartTangentLines(show: boolean) {
+        this.showPartTangentLines = show;
+    }
+
+    setShowPartTessellation(show: boolean) {
+        this.showPartTessellation = show;
+    }
+
+    resetParts() {
+        this.showPartPaths = true;
+        this.showPartStartPoints = false;
+        this.showPartEndPoints = false;
+        this.showPartNormals = false;
+        this.showPartDirections = false;
+        this.showPartTangentLines = false;
+        this.showPartTessellation = false;
+    }
+
+    restoreParts(state: PartVisualizationState) {
+        this.showPartPaths = state.showPartPaths;
+        this.showPartStartPoints = state.showPartStartPoints;
+        this.showPartEndPoints = state.showPartEndPoints;
+        this.showPartNormals = state.showPartNormals;
+        this.showPartDirections = state.showPartDirections;
+        this.showPartTangentLines = state.showPartTangentLines;
+        this.showPartTessellation = state.showPartTessellation;
     }
 
     // Cut methods
@@ -298,6 +366,7 @@ class VisualizationStore {
         this.resetLeads();
         this.resetRapids();
         this.resetShapes();
+        this.resetParts();
         this.clearTessellation();
     }
 }

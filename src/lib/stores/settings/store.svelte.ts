@@ -22,6 +22,7 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
+    Renderer,
 } from '$lib/config/settings/enums';
 import { DefaultsManager } from '$lib/config/defaults/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -147,6 +148,9 @@ function loadSettings(): ApplicationSettings {
                     ).includes(parsed.offsetImplementation)
                         ? parsed.offsetImplementation
                         : DEFAULT_SETTINGS.offsetImplementation,
+                    renderer: Object.values(Renderer).includes(parsed.renderer)
+                        ? parsed.renderer
+                        : DEFAULT_SETTINGS.renderer,
                     camSettings,
                 };
             }
@@ -380,6 +384,14 @@ class SettingsStore {
         this.settings = {
             ...this.settings,
             offsetImplementation: implementation,
+        };
+        saveSettings(this.settings);
+    }
+
+    setRenderer(renderer: Renderer) {
+        this.settings = {
+            ...this.settings,
+            renderer,
         };
         saveSettings(this.settings);
     }

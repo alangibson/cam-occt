@@ -344,11 +344,7 @@ function convertDXFEntity(
                 return null;
         }
     } catch (error) {
-        // Log the error for debugging but don't crash the parsing
-        console.warn(
-            `Error converting DXF entity of type ${entity.type}:`,
-            error
-        );
+        // Error converting DXF entity - continue parsing other entities
         return null;
     }
 }
@@ -384,13 +380,11 @@ function convertRawInsUnitsToUnit(rawInsUnits: number | undefined): {
 }
 
 export async function parseDXF(content: string): Promise<DrawingData> {
-    console.log('[parseDXF] Starting DXF parsing...');
     let parsed: DXFParsed;
     try {
         parsed = parseString(content);
-        console.log('[parseDXF] DXF string parsed successfully');
     } catch (error) {
-        console.error('[parseDXF] Failed to parse DXF file:', error);
+        // Failed to parse DXF file
         throw new Error(
             `DXF parsing failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`
         );
@@ -407,15 +401,7 @@ export async function parseDXF(content: string): Promise<DrawingData> {
     const { unit: drawingUnits, scaleFactor: coordinateScaleFactor } =
         convertRawInsUnitsToUnit(rawInsUnits);
 
-    console.log(
-        '[parseDXF] Detected units:',
-        drawingUnits,
-        'scale factor:',
-        coordinateScaleFactor
-    );
-
     // Process blocks first to build block dictionary
-    console.log('[parseDXF] Processing blocks...');
     const blocks: Map<string, DXFEntity[]> = new Map<string, DXFEntity[]>();
     const blockBasePoints: Map<string, { x: number; y: number }> = new Map<
         string,
@@ -435,16 +421,8 @@ export async function parseDXF(content: string): Promise<DrawingData> {
         }
     }
 
-    console.log('[parseDXF] Processed', blocks.size, 'blocks');
-
     // Process entities
-    console.log('[parseDXF] Processing entities...');
     if (parsed && parsed.entities) {
-        console.log(
-            '[parseDXF] Found',
-            parsed.entities.length,
-            'entities to process'
-        );
         parsed.entities.forEach((entity: DXFEntity, index: number) => {
             try {
                 const result: ShapeData | ShapeData[] | null = convertDXFEntity(
@@ -488,16 +466,11 @@ export async function parseDXF(content: string): Promise<DrawingData> {
                     }
                 }
             } catch (error) {
-                console.error(
-                    `Failed to convert entity at index ${index} (type: ${entity?.type}):`,
-                    error
-                );
-                // Continue processing other entities
+                // Failed to convert entity - continue processing other entities
+                void error;
             }
         });
     }
-
-    console.log('[parseDXF] Completed. Generated', shapes.length, 'shapes');
 
     return {
         shapes,

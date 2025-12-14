@@ -88,10 +88,6 @@ export class Plan {
 
         // Guard: skip if this operation is already being processed
         if (this.pendingOperations.has(operation.id)) {
-            console.log(
-                '[Plan] Skipping duplicate add for operation:',
-                operation.id
-            );
             return;
         }
 
@@ -120,7 +116,6 @@ export class Plan {
             // Validate all cuts have IDs
             for (const cut of result.cuts) {
                 if (!cut.id) {
-                    console.error('Cut missing id:', cut);
                     throw new Error('Generated cut missing required id field');
                 }
             }
@@ -160,12 +155,6 @@ export class Plan {
 
         // Skip regeneration if geometric properties unchanged
         if (oldFingerprint === newFingerprint) {
-            if (import.meta.env.DEV) {
-                console.log(
-                    '[Plan] Skipping update - no geometric changes for operation:',
-                    operation.id
-                );
-            }
             performance.mark(`plan-update-${operation.id}-end`);
             performance.measure(
                 `Plan.update(${operation.id}) - skipped`,

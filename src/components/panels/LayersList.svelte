@@ -332,10 +332,6 @@
                         selectionStore.clearShapeSelection();
                     } else if (rowData?.shellChainId) {
                         // It's a part shell row - select the shell chain
-                        console.log(
-                            '[LayersList] Selecting shell chain:',
-                            rowData.shellChainId
-                        );
                         selectionStore.selectChain(rowData.shellChainId);
                         selectionStore.selectPart(null);
                         selectionStore.clearPartHighlight();
@@ -346,10 +342,6 @@
                         selectionStore.selectKerf(null);
                     } else if (rowData?.voidChainId) {
                         // It's a part void row - select the void chain
-                        console.log(
-                            '[LayersList] Selecting void chain:',
-                            rowData.voidChainId
-                        );
                         selectionStore.selectChain(rowData.voidChainId);
                         selectionStore.selectPart(null);
                         selectionStore.clearPartHighlight();
@@ -360,10 +352,6 @@
                         selectionStore.selectKerf(null);
                     } else if (rowData?.slotChainId) {
                         // It's a part slot row - select the slot chain
-                        console.log(
-                            '[LayersList] Selecting slot chain:',
-                            rowData.slotChainId
-                        );
                         selectionStore.selectChain(rowData.slotChainId);
                         selectionStore.selectPart(null);
                         selectionStore.clearPartHighlight();
@@ -374,12 +362,6 @@
                         selectionStore.selectKerf(null);
                     } else if (rowData?.chainId) {
                         // It's a chain row - select the chain
-                        console.log(
-                            '[LayersList] Selecting chain:',
-                            rowData.chainId,
-                            'from row:',
-                            rowId
-                        );
                         selectionStore.selectChain(rowData.chainId);
                         selectionStore.selectPart(null);
                         selectionStore.clearShapeSelection();

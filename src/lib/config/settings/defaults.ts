@@ -8,6 +8,7 @@ import {
     SelectionMode as SM,
     PreprocessingStep,
     OffsetImplementation,
+    Renderer,
 } from './enums';
 import type {
     CamSettings,
@@ -46,5 +47,6 @@ export const DEFAULT_SETTINGS: ApplicationSettings = {
     enabledProgramSteps: [PreprocessingStep.TranslateToPositive],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
     offsetImplementation: OffsetImplementation.Polyline,
+    renderer: Renderer.SVG,
     camSettings: DEFAULT_CAM_SETTINGS,
 };

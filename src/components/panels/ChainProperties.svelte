@@ -41,26 +41,15 @@
     const selectedChain = $derived(
         activeChainId
             ? detectedChains.find((chain) => {
-                  console.log(
-                      '[ChainProperties] Looking for chain:',
-                      activeChainId,
-                      'current:',
-                      chain.id
-                  );
                   return chain.id === activeChainId;
               })
             : null
     );
 
     $effect(() => {
-        console.log(
-            '[ChainProperties] activeChainId:',
-            activeChainId,
-            'selectedChain:',
-            selectedChain?.id,
-            'detectedChains:',
-            detectedChains.map((c) => c.id)
-        );
+        void activeChainId;
+        void selectedChain;
+        void detectedChains;
     });
 
     // Build properties array

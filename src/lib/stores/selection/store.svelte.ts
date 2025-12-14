@@ -417,7 +417,7 @@ class SelectionStore {
     }
 
     // Global operations
-    clearAllSelections() {
+    clearSelections() {
         this.shapes = {
             ...this.shapes,
             selected: new SvelteSet(),
@@ -431,7 +431,7 @@ class SelectionStore {
         this.kerfs = { ...this.kerfs, selected: null };
     }
 
-    clearAllHighlights() {
+    clearHighlights() {
         this.shapes = { ...this.shapes, hovered: null };
         this.chains = { ...this.chains, highlighted: null };
         this.parts = { ...this.parts, highlighted: null, hovered: null };

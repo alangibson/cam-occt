@@ -20,14 +20,12 @@
         !!(selectedChainId || highlightedChainId)
     );
 
-    // Debug log for chain selection
+    // Track chain selection changes
     $effect(() => {
-        console.log('[InspectPanel] Chain selection changed:', {
-            selectedChainIds: Array.from(selectedChainIds),
-            selectedChainId,
-            highlightedChainId,
-            hasChainSelection,
-        });
+        void selectedChainIds;
+        void selectedChainId;
+        void highlightedChainId;
+        void hasChainSelection;
     });
 
     const selectedPartIds = $derived(selectionStore.parts.selected);
@@ -90,50 +88,36 @@
     );
 
     $effect(() => {
-        console.log('[InspectPanel] Selection state:', {
-            hasLeadSelection,
-            hasRapidSelection,
-            selectedKerfId,
-            hasCutSelection,
-            hasPartSelection,
-            hasChainSelection,
-            hasShapeSelection,
-            hasLayerSelection,
-            hasAnySelection,
-        });
+        void hasLeadSelection;
+        void hasRapidSelection;
+        void selectedKerfId;
+        void hasCutSelection;
+        void hasPartSelection;
+        void hasChainSelection;
+        void hasShapeSelection;
+        void hasLayerSelection;
+        void hasAnySelection;
     });
 </script>
 
 <AccordionPanel title="Inspect" isExpanded={hasAnySelection}>
     {#if hasLeadSelection}
-        {console.log('[InspectPanel] Rendering LeadProperties')}
         <LeadProperties />
     {:else if hasRapidSelection}
-        {console.log('[InspectPanel] Rendering RapidProperties')}
         <RapidProperties />
     {:else if selectedKerfId}
-        {console.log(
-            '[InspectPanel] Rendering KerfProperties, selectedKerfId:',
-            selectedKerfId
-        )}
         <KerfProperties />
     {:else if hasCutSelection}
-        {console.log('[InspectPanel] Rendering CutProperties')}
         <CutProperties />
     {:else if hasPartSelection}
-        {console.log('[InspectPanel] Rendering PartProperties')}
         <PartProperties />
     {:else if hasChainSelection}
-        {console.log('[InspectPanel] Rendering ChainProperties')}
         <ChainProperties />
     {:else if hasShapeSelection}
-        {console.log('[InspectPanel] Rendering ShapeProperties')}
         <ShapeProperties />
     {:else if hasLayerSelection}
-        {console.log('[InspectPanel] Rendering LayerProperties')}
         <LayerProperties />
     {:else}
-        {console.log('[InspectPanel] Rendering nothing selected')}
         <p class="no-selection">Nothing selected</p>
     {/if}
 </AccordionPanel>

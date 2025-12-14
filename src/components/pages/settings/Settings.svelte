@@ -5,6 +5,7 @@
     import {
         PreprocessingStep,
         OffsetImplementation,
+        Renderer,
     } from '$lib/config/settings/enums';
     import { resetApplicationToDefaults } from '$lib/stores/storage/store';
     import { CutterCompensation } from '$lib/cam/gcode/enums';
@@ -73,6 +74,10 @@
         compensation: CutterCompensation | null
     ) {
         settingsStore.setCutterCompensation(compensation);
+    }
+
+    function handleRendererChange(renderer: Renderer) {
+        settingsStore.setRenderer(renderer);
     }
 
     function handleResetApplication() {
@@ -239,6 +244,30 @@
                         <span class="option-description"
                             >No cutter compensation in G-code</span
                         >
+                    {/if}
+                </div>
+
+                <div class="dropdown-container">
+                    <label for="renderer" class="dropdown-label">Renderer</label
+                    >
+                    <select
+                        id="renderer"
+                        class="dropdown-select"
+                        value={settingsStore.settings.renderer}
+                        onchange={(e) =>
+                            handleRendererChange(
+                                e.currentTarget.value as Renderer
+                            )}
+                    >
+                        <option value={Renderer.Canvas}>Canvas</option>
+                        <option value={Renderer.SVG}>SVG</option>
+                    </select>
+                    {#if settingsStore.settings.renderer === Renderer.Canvas}
+                        <span class="option-description"
+                            >HTML Canvas renderer (default)</span
+                        >
+                    {:else if settingsStore.settings.renderer === Renderer.SVG}
+                        <span class="option-description">SVG renderer</span>
                     {/if}
                 </div>
             </div>

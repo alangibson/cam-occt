@@ -40,13 +40,6 @@ class WorkflowStore {
      * Set the current workflow stage
      */
     setStage(stage: WorkflowStage): void {
-        console.log('[WorkflowStore] setStage called', {
-            stage,
-            currentStage: this.currentStage,
-            completedStages: Array.from(this.completedStages),
-            canAdvanceTo: this.canAdvanceTo(stage),
-        });
-
         if (this.canAdvanceTo(stage)) {
             // Sync DefaultsManager with current measurement system when transitioning stages
             // This ensures unit-aware defaults are properly updated, especially when transitioning
@@ -58,9 +51,6 @@ class WorkflowStore {
             }
 
             this.currentStage = stage;
-            console.log('[WorkflowStore] Stage set to', stage);
-        } else {
-            console.log('[WorkflowStore] Cannot advance to', stage);
         }
     }
 
@@ -68,15 +58,7 @@ class WorkflowStore {
      * Mark a stage as completed
      */
     completeStage(stage: WorkflowStage): void {
-        console.log('[WorkflowStore] completeStage called', {
-            stage,
-            beforeAdd: Array.from(this.completedStages),
-        });
         this.completedStages.add(stage);
-        console.log(
-            '[WorkflowStore] After add:',
-            Array.from(this.completedStages)
-        );
     }
 
     /**

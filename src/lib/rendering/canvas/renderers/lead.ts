@@ -232,7 +232,7 @@ export class LeadRenderer extends BaseRenderer {
 
             return leadResult;
         } catch (error) {
-            console.error('Error calculating leads for cut:', cut.id, error);
+            // Error calculating leads for cut - lead calculation failed
             return { warnings: [`Error calculating leads: ${error}`] };
         }
     }

@@ -128,14 +128,14 @@
         // Restore state from localStorage on app load
         const restored = restoreApplicationState();
         if (restored) {
-            console.log('Application state restored from previous session');
+            // Application state restored from previous session
         }
 
         // Ensure at least one tool exists (required for operations)
         const tools = toolStore.tools;
         if (tools.length === 0) {
             toolStore.addTool(createDefaultTool(1));
-            console.log('Created default tool - no tools found in storage');
+            // Created default tool - no tools found in storage
         }
 
         // Setup auto-save for all state changes

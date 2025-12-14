@@ -135,7 +135,6 @@ export async function executeWorkflowHappyPath(
     const collectTracingData = () => {
         return new Promise<void>((resolve) => {
             const timeout = setTimeout(() => {
-                console.log('Force stopping tracing collection');
                 resolve();
             }, 3000);
 
@@ -155,7 +154,6 @@ export async function executeWorkflowHappyPath(
 
     await collectTracingData();
     traceData = JSON.stringify({ traceEvents: chunks });
-    console.log(`Collected ${chunks.length} trace events`);
 
     // Save the performance trace to file
     const reportPath = path.join(process.cwd(), performanceReportPath);
@@ -164,21 +162,10 @@ export async function executeWorkflowHappyPath(
         fs.mkdirSync(reportDir, { recursive: true });
     }
     fs.writeFileSync(reportPath, traceData);
-    console.log(`Performance trace saved to: ${reportPath}`);
 
     // Check for console errors and warnings
     const errors = consoleMessages.filter((msg) => msg.type === 'error');
     const warnings = consoleMessages.filter((msg) => msg.type === 'warning');
-
-    if (errors.length > 0) {
-        console.log('Console Errors:');
-        errors.forEach((msg) => console.log(`  - ${msg.text}`));
-    }
-
-    if (warnings.length > 0) {
-        console.log('Console Warnings:');
-        warnings.forEach((msg) => console.log(`  - ${msg.text}`));
-    }
 
     // Fail test if there are errors or warnings
     expect(errors.length, `Found ${errors.length} console errors`).toBe(0);

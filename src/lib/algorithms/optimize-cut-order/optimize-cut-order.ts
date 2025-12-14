@@ -151,11 +151,7 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
                 }
             }
         } catch (error) {
-            console.warn(
-                'Failed to calculate lead-out for cut:',
-                cut.name,
-                error
-            );
+            // Failed to calculate lead-out for cut - lead calculation threw exception
         }
     }
 

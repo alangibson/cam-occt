@@ -35,7 +35,7 @@ export async function generateSpotsForChainsWithOperation(
 
     // Calculate centroid using Chain's centerPoint method
     const chainObj = new Chain(chain);
-    const centroid = chainObj.centerPoint();
+    const centroid = chainObj.centroid;
 
     // Create a single-point shape at the centroid
     const pointShape = new Shape({

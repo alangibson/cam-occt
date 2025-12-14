@@ -193,10 +193,5 @@ describe('Rapid Rate Display Bug', () => {
         const correctDefaultInMM = expectedImperialRapidRate * 25.4;
 
         expect(correctDefaultInMM).toBe(76200);
-
-        console.log(`Current DEFAULT_RAPID_RATE_MM: ${DEFAULT_RAPID_RATE_MM}`);
-        console.log(
-            `Should be: ${correctDefaultInMM} (for 3000 inch/min rapids)`
-        );
     });
 });

@@ -5,13 +5,13 @@ import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
 import { drawingStore } from '$lib/stores/drawing/store.svelte';
 import { toolStore } from '$lib/stores/tools/store.svelte';
-import { settingsStore } from '$lib/stores/settings/store.svelte';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { PreprocessingStep } from '$lib/config/settings/enums';
+import { settingsStore } from '$lib/stores/settings/store.svelte';
 
 /**
  * Helper function to resolve operation IDs to actual objects and set them on the operation
@@ -129,54 +129,31 @@ class OperationsStore {
     }
 
     async applyOperation(operationId: string) {
-        performance.mark(`applyOperation-${operationId}-start`);
-
         // Look up Operation by id
         const operation = this.operations.find((op) => op.id === operationId);
 
         if (operation && operation.enabled) {
             // Generate and add cuts for this operation using Plan
-            performance.mark(`planAdd-${operationId}-start`);
             await planStore.plan.add(operation, visualizationStore.tolerance);
-            performance.mark(`planAdd-${operationId}-end`);
-            performance.measure(
-                `planStore.plan.add(${operationId})`,
-                `planAdd-${operationId}-start`,
-                `planAdd-${operationId}-end`
-            );
 
             // Check if translate to positive is enabled and apply if so
-            if (
-                settingsStore.settings.enabledProgramSteps.includes(
-                    PreprocessingStep.TranslateToPositive
-                ) &&
-                drawingStore.drawing
-            ) {
-                performance.mark('translateToPositive-start');
-                translateToPositiveQuadrant(
-                    drawingStore.drawing,
-                    planStore.plan
-                );
-                performance.mark('translateToPositive-end');
-                performance.measure(
-                    'translateToPositiveQuadrant',
-                    'translateToPositive-start',
-                    'translateToPositive-end'
-                );
-            }
+            // if (
+            //     settingsStore.settings.enabledProgramSteps.includes(
+            //         PreprocessingStep.TranslateToPositive
+            //     ) &&
+            //     drawingStore.drawing
+            // ) {
+            //     translateToPositiveQuadrant(
+            //         drawingStore.drawing,
+            //         planStore.plan
+            //     );
+            // }
 
             // Check if any cuts exist and mark program stage as complete
             if (planStore.plan.cuts.length > 0) {
                 workflowStore.completeStage(WorkflowStage.PROGRAM);
             }
         }
-
-        performance.mark(`applyOperation-${operationId}-end`);
-        performance.measure(
-            `OperationsStore.applyOperation(${operationId})`,
-            `applyOperation-${operationId}-start`,
-            `applyOperation-${operationId}-end`
-        );
     }
 
     async applyAllOperations() {

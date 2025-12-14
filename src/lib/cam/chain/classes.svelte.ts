@@ -9,6 +9,9 @@ import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import {
     getChainCentroid,
     getChainPointAt,
+    getChainStartPoint,
+    getChainEndPoint,
+    getChainTangent,
     isChainClosed,
     tessellateChain,
 } from './functions';
@@ -28,8 +31,9 @@ import {
     calculateClipper2PathsArea,
 } from '$lib/cam/offset/convert';
 import { isChainContainedInChain_Clipper2 } from './chain-containment';
+import type { Geometric } from '$lib/cam/interfaces';
 
-export class Chain implements ChainData {
+export class Chain implements Geometric, ChainData {
     #data: ChainData;
     #shapes = $state<Shape[]>([]);
     #boundary?: BoundingBox;
@@ -38,7 +42,12 @@ export class Chain implements ChainData {
     #tessellated?: Point2D[];
     #paths64?: Paths64;
     #centroid?: Point2D;
-    #pointAtCache?: Map<number, Point2D>;
+    #pointAt?: Map<number, Point2D>;
+    #startPoint?: Point2D;
+    #endPoint?: Point2D;
+    #midPoint?: Point2D;
+    #tangent?: Point2D;
+    #normal?: Point2D;
 
     constructor(data: ChainData) {
         this.#data = data;
@@ -88,17 +97,6 @@ export class Chain implements ChainData {
     }
 
     /**
-     * Get the center point (centroid) of this chain
-     * For circles/arcs, returns geometric center
-     * For other shapes, calculates polygon centroid
-     *
-     * @returns The center point of the chain
-     */
-    centerPoint(): Point2D {
-        return getChainCentroid(this);
-    }
-
-    /**
      * Get the bounding box for this chain
      * Lazily calculates and caches the bounding box on first access
      *
@@ -136,15 +134,82 @@ export class Chain implements ChainData {
      * @returns Point at the specified position along the chain
      */
     pointAt(t: number): Point2D {
-        if (!this.#pointAtCache) {
-            this.#pointAtCache = new Map();
+        if (!this.#pointAt) {
+            this.#pointAt = new Map();
         }
 
-        if (!this.#pointAtCache.has(t)) {
-            this.#pointAtCache.set(t, getChainPointAt(this, t));
+        if (!this.#pointAt.has(t)) {
+            this.#pointAt.set(t, getChainPointAt(this, t));
         }
 
-        return this.#pointAtCache.get(t)!;
+        return this.#pointAt.get(t)!;
+    }
+
+    /**
+     * Get the start point of this chain
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns The start point of the chain
+     */
+    get startPoint(): Point2D {
+        if (!this.#startPoint) {
+            this.#startPoint = getChainStartPoint(this);
+        }
+        return this.#startPoint;
+    }
+
+    /**
+     * Get the end point of this chain
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns The end point of the chain
+     */
+    get endPoint(): Point2D {
+        if (!this.#endPoint) {
+            this.#endPoint = getChainEndPoint(this);
+        }
+        return this.#endPoint;
+    }
+
+    /**
+     * Get the midpoint of this chain (at t=0.5)
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns The midpoint of the chain
+     */
+    get midPoint(): Point2D {
+        if (!this.#midPoint) {
+            this.#midPoint = getChainPointAt(this, 0.5);
+        }
+        return this.#midPoint;
+    }
+
+    /**
+     * Get the tangent vector at the start of this chain
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns The tangent vector at the start point
+     */
+    get tangent(): Point2D {
+        if (!this.#tangent) {
+            this.#tangent = getChainTangent(this, this.startPoint, true);
+        }
+        return this.#tangent;
+    }
+
+    /**
+     * Get the normal vector at the start of this chain
+     * Lazily calculates and caches the result on first access
+     * The normal is perpendicular to the tangent (rotated 90° counterclockwise)
+     *
+     * @returns The normal vector at the start point
+     */
+    get normal(): Point2D {
+        if (!this.#normal) {
+            const t = this.tangent;
+            this.#normal = { x: -t.y, y: t.x };
+        }
+        return this.#normal;
     }
 
     /**
@@ -452,10 +517,15 @@ export class Chain implements ChainData {
         // Clear caches as they're now invalid
         this.#boundary = undefined;
         this.#centroid = undefined;
-        this.#pointAtCache = undefined;
+        this.#pointAt = undefined;
         this.#tessellated = undefined;
         this.#paths64 = undefined;
         this.#area = undefined;
+        this.#startPoint = undefined;
+        this.#endPoint = undefined;
+        this.#midPoint = undefined;
+        this.#tangent = undefined;
+        this.#normal = undefined;
         // Reassign array to trigger Svelte 5 $state reactivity
         this.#shapes = [...this.#shapes];
     }

@@ -96,9 +96,6 @@
             drawing &&
             !isOptimizing
         ) {
-            console.log(
-                '[ProgramStage] Cut hash or optimization settings changed, recalculating rapids'
-            );
             previousPathsHash = optimizationHash;
             // Use setTimeout to avoid recursive updates and ensure all stores are synced
             setTimeout(() => {
@@ -137,9 +134,6 @@
         performance.mark('handleOptimizeCutOrder-start');
 
         if (!drawing || chains.length === 0 || cuts.length === 0) {
-            console.warn(
-                'No drawing, chains, or cuts available for optimization'
-            );
             return;
         }
 
@@ -155,9 +149,6 @@
         // Convert Cut[] to CutData[] for optimization functions
         // Check if rapid optimization is disabled
         if (optimizationSettings.rapidOptimizationAlgorithm === 'none') {
-            console.log(
-                'Rapid optimization disabled, generating rapids from current cut order'
-            );
             performance.mark('generateRapids-start');
             // Generate rapids from existing cut order without optimization
             result = generateRapidsFromCutOrder(cuts, chainMap, parts, {
@@ -203,15 +194,6 @@
             'planStore.updateCuts',
             'updateCuts-start',
             'updateCuts-end'
-        );
-
-        // Count rapids for logging
-        const rapidCount = result.orderedCuts.filter(
-            (cut) => cut.rapidIn !== undefined
-        ).length;
-
-        console.log(
-            `${optimizationSettings.rapidOptimizationAlgorithm === 'none' ? 'Generated' : 'Optimized'} cut order: ${result.orderedCuts.length} cuts, ${rapidCount} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
         );
 
         performance.mark('handleOptimizeCutOrder-end');

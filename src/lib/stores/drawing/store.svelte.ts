@@ -1,9 +1,14 @@
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { Unit } from '$lib/config/units/units';
+import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { resetDownstreamStages } from './functions';
 import { calculateZoomToFitForDrawing } from '$lib/cam/drawing/functions';
+import {
+    DEFAULT_PADDING,
+    DEFAULT_SVG_SIZE,
+    MIN_SVG_SIZE,
+} from '$components/svg/constants';
 
 class DrawingStore {
     drawing = $state<Drawing | null>(null);
@@ -14,6 +19,43 @@ class DrawingStore {
     layerVisibility = $state<{ [layerName: string]: boolean }>({});
     displayUnit = $state<Unit>(Unit.MM);
     canvasDimensions = $state<{ width: number; height: number } | null>(null);
+
+    // Derived: Calculate physical scale factor for unit display
+    get unitScale(): number {
+        return this.drawing
+            ? getPhysicalScaleFactor(this.drawing.units, this.displayUnit)
+            : 1;
+    }
+
+    // Derived: Calculate SVG viewport dimensions and offset from drawing bounds
+    get viewport(): { width: number; height: number; offset: Point2D } {
+        if (!this.drawing) {
+            return {
+                width: DEFAULT_SVG_SIZE,
+                height: DEFAULT_SVG_SIZE,
+                offset: { x: 0, y: 0 },
+            };
+        }
+
+        const bounds = this.drawing.bounds;
+
+        // Calculate dimensions from bounds
+        const boundsWidth = bounds.max.x - bounds.min.x;
+        const boundsHeight = bounds.max.y - bounds.min.y;
+
+        // Calculate SVG viewport size with padding
+        const totalPadding = DEFAULT_PADDING;
+        const width = Math.max(boundsWidth + 2 * totalPadding, MIN_SVG_SIZE);
+        const height = Math.max(boundsHeight + 2 * totalPadding, MIN_SVG_SIZE);
+
+        // Set transform offsets to map CNC coordinates to SVG coordinates
+        const offset: Point2D = {
+            x: bounds.min.x - totalPadding,
+            y: bounds.min.y - totalPadding,
+        };
+
+        return { width, height, offset };
+    }
 
     setDrawing(drawing: Drawing, fileName: string) {
         // Reset all application state when importing a new file

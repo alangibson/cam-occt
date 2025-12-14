@@ -112,48 +112,28 @@
     });
 
     async function handleFiles(files: FileList | null) {
-        console.log('[handleFiles] Starting file handling...');
         if (!files || files.length === 0) {
-            console.log('[handleFiles] No files provided, returning');
             return;
         }
 
         const file = files[0];
-        console.log(
-            '[handleFiles] Processing file:',
-            file.name,
-            'size:',
-            file.size,
-            'bytes'
-        );
         const reader = new FileReader();
 
         reader.onload = async (e) => {
-            console.log('[handleFiles] File read complete, parsing content...');
             const content = e.target?.result as string;
 
             try {
                 let drawing;
 
                 if (file.name.toLowerCase().endsWith('.dxf')) {
-                    console.log(
-                        '[handleFiles] Detected DXF file, calling parseDXF...'
-                    );
                     // Parse DXF file
                     const parsedDrawing: DrawingData = await parseDXF(content);
-                    console.log(
-                        '[handleFiles] DXF parsed, shapes:',
-                        parsedDrawing.shapes.length,
-                        'units:',
-                        parsedDrawing.units
-                    );
 
                     // Store original drawing and units before conversion
                     originalDrawing = parsedDrawing;
                     originalUnits = parsedDrawing.units;
 
                     // Apply unit conversion based on application settings
-                    console.log('[handleFiles] Applying unit conversion...');
                     drawing = applyImportUnitConversion(
                         parsedDrawing,
                         settings
@@ -162,31 +142,21 @@
                     // Add fileName to the drawing data
                     drawing.fileName = file.name;
 
-                    console.log('[handleFiles] Setting drawing in store...');
                     drawingStore.setDrawing(new Drawing(drawing), file.name);
                     onfileImported?.({
                         drawing,
                         fileName: file.name,
                         originalUnits,
                     });
-                    console.log(
-                        '[handleFiles] File import completed successfully'
-                    );
                 } else {
-                    console.log(
-                        '[handleFiles] Unsupported file format:',
-                        file.name
-                    );
                     alert('Unsupported file format. Please use DXF files.');
                     return;
                 }
             } catch (error) {
-                console.error('[handleFiles] Error parsing file:', error);
                 alert('Error parsing file. Please check the file format.');
             }
         };
 
-        console.log('[handleFiles] Reading file as text...');
         reader.readAsText(file);
     }
 

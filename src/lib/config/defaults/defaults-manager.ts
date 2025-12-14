@@ -84,10 +84,7 @@ export class DefaultsManager {
                 settingsStore.settings.measurementSystem
             );
         } catch {
-            // Settings store not ready yet, keep default
-            console.warn(
-                'Settings store not ready during DefaultsManager initialization'
-            );
+            // Settings store not ready during DefaultsManager initialization - keeping default values
         }
     }
 

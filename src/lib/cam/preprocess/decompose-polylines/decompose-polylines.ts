@@ -47,7 +47,7 @@ export function decomposePolylines(shapes: Shape[]): Shape[] {
                     }
                 });
             } else {
-                console.warn('Polyline missing segments array:', polyline);
+                // Polyline missing segments array - cannot decompose polyline without segments
             }
         } else {
             // Keep other shape types as-is

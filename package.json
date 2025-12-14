@@ -79,6 +79,7 @@
   "dependencies": {
     "@svar-ui/svelte-grid": "^2.3.0",
     "dxf": "^4.6.1",
+    "panzoom": "^9.4.3",
     "verb-nurbs": "^3.0.3"
   }
 }

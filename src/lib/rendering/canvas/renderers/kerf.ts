@@ -402,10 +402,7 @@ export class KerfRenderer extends BaseRenderer {
                     try {
                         drawShape(ctx, shape);
                     } catch (error) {
-                        console.warn(
-                            `Error rendering cutter path shape for cut ${cut.id}:`,
-                            error
-                        );
+                        // Error rendering cutter path shape for cut - shape rendering threw exception
                     }
                 });
 
@@ -427,10 +424,7 @@ export class KerfRenderer extends BaseRenderer {
                             ctx.stroke();
                         }
                     } catch (error) {
-                        console.warn(
-                            `Error rendering cutter path on lead-in for cut ${cut.id}:`,
-                            error
-                        );
+                        // Error rendering cutter path on lead-in for cut - lead-in rendering threw exception
                     }
                 }
 
@@ -452,17 +446,11 @@ export class KerfRenderer extends BaseRenderer {
                             ctx.stroke();
                         }
                     } catch (error) {
-                        console.warn(
-                            `Error rendering cutter path on lead-out for cut ${cut.id}:`,
-                            error
-                        );
+                        // Error rendering cutter path on lead-out for cut - lead-out rendering threw exception
                     }
                 }
             } catch (error) {
-                console.error(
-                    `Error rendering cutter path for cut ${cut.id}:`,
-                    error
-                );
+                // Error rendering cutter path for cut - cutter path rendering threw exception
             } finally {
                 ctx.restore();
             }
@@ -479,7 +467,7 @@ export class KerfRenderer extends BaseRenderer {
             typeof point.x !== 'number' ||
             typeof point.y !== 'number'
         ) {
-            console.error('KerfRenderer.hitWorld: invalid point', point);
+            // KerfRenderer.hitWorld: invalid point - point is null or has invalid coordinates
             return null;
         }
 
