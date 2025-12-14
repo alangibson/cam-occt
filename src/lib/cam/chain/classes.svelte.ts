@@ -28,6 +28,7 @@ import { shapesBoundingBox } from '$lib/cam/shape/functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Paths64 } from '$lib/wasm/clipper2z';
 import { getClipper2 } from '$lib/cam/offset/clipper-init';
+import { SvelteMap } from 'svelte/reactivity';
 import {
     toClipper2Paths,
     calculateClipper2PathsArea,
@@ -138,7 +139,7 @@ export class Chain implements Geometric, ChainData {
      */
     pointAt(t: number): Point2D {
         if (!this.#pointAt) {
-            this.#pointAt = new Map();
+            this.#pointAt = new SvelteMap();
         }
 
         if (!this.#pointAt.has(t)) {

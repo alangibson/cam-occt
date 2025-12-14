@@ -343,7 +343,7 @@ function convertDXFEntity(
                 // Silently ignore unknown entity types
                 return null;
         }
-    } catch (error) {
+    } catch {
         // Error converting DXF entity - continue parsing other entities
         return null;
     }
@@ -423,7 +423,7 @@ export async function parseDXF(content: string): Promise<DrawingData> {
 
     // Process entities
     if (parsed && parsed.entities) {
-        parsed.entities.forEach((entity: DXFEntity, index: number) => {
+        parsed.entities.forEach((entity: DXFEntity) => {
             try {
                 const result: ShapeData | ShapeData[] | null = convertDXFEntity(
                     entity,

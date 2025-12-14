@@ -152,7 +152,7 @@
                     alert('Unsupported file format. Please use DXF files.');
                     return;
                 }
-            } catch (error) {
+            } catch {
                 alert('Error parsing file. Please check the file format.');
             }
         };

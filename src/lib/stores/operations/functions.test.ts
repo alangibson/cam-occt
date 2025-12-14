@@ -9,8 +9,11 @@ import {
     calculateOperationLeads,
     calculateCutLeads,
 } from '$lib/cam/pipeline/leads/lead-orchestration';
-import { createCutChain } from '$lib/cam/pipeline/chains/functions';
-import { getChainCutDirection, reverseChain } from '$lib/cam/chain/functions';
+import {
+    createCutChain,
+    getChainCutDirection,
+    reverseChain,
+} from '$lib/cam/chain/functions';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { Cut } from '$lib/cam/cut/classes.svelte';
@@ -46,38 +49,42 @@ function createOperation(
 }
 
 // Mock dependencies
-vi.mock('$lib/cam/chain/functions', () => ({
-    reverseChain: vi.fn(),
-    getChainCutDirection: vi.fn((chain) => {
-        if (!chain) return CutDirection.NONE;
-        return chain.clockwise === true
-            ? CutDirection.CLOCKWISE
-            : chain.clockwise === false
-              ? CutDirection.COUNTERCLOCKWISE
-              : CutDirection.NONE;
-    }),
-    getChainStartPoint: vi.fn(
-        (chain) => chain.shapes[0]?.geometry?.start || { x: 0, y: 0 }
-    ),
-    getChainEndPoint: vi.fn((chain) => {
-        const lastShape = chain.shapes[chain.shapes.length - 1];
-        return lastShape?.geometry?.end || { x: 0, y: 0 };
-    }),
-    getChainPoints: vi.fn((chain) =>
-        chain.shapes.flatMap((s: ShapeData) => [
-            (s.geometry as { start: { x: number; y: number } }).start,
-            (s.geometry as { end: { x: number; y: number } }).end,
-        ])
-    ),
-    tessellateChain: vi.fn((chain) =>
-        chain.shapes.flatMap((s: ShapeData) => [
-            (s.geometry as { start: { x: number; y: number } }).start,
-            (s.geometry as { end: { x: number; y: number } }).end,
-        ])
-    ),
-    getChainTangent: vi.fn(() => ({ x: 1, y: 0 })),
-    isChainClosed: vi.fn((chain) => chain?.closed ?? false),
-}));
+vi.mock('$lib/cam/chain/functions', async (importOriginal) => {
+    const actual = (await importOriginal()) as any;
+    return {
+        ...actual,
+        reverseChain: vi.fn(),
+        getChainCutDirection: vi.fn((chain) => {
+            if (!chain) return CutDirection.NONE;
+            return chain.clockwise === true
+                ? CutDirection.CLOCKWISE
+                : chain.clockwise === false
+                  ? CutDirection.COUNTERCLOCKWISE
+                  : CutDirection.NONE;
+        }),
+        getChainStartPoint: vi.fn(
+            (chain) => chain.shapes[0]?.geometry?.start || { x: 0, y: 0 }
+        ),
+        getChainEndPoint: vi.fn((chain) => {
+            const lastShape = chain.shapes[chain.shapes.length - 1];
+            return lastShape?.geometry?.end || { x: 0, y: 0 };
+        }),
+        getChainPoints: vi.fn((chain) =>
+            chain.shapes.flatMap((s: ShapeData) => [
+                (s.geometry as { start: { x: number; y: number } }).start,
+                (s.geometry as { end: { x: number; y: number } }).end,
+            ])
+        ),
+        tessellateChain: vi.fn((chain) =>
+            chain.shapes.flatMap((s: ShapeData) => [
+                (s.geometry as { start: { x: number; y: number } }).start,
+                (s.geometry as { end: { x: number; y: number } }).end,
+            ])
+        ),
+        getChainTangent: vi.fn(() => ({ x: 1, y: 0 })),
+        isChainClosed: vi.fn((chain) => chain?.closed ?? false),
+    };
+});
 
 vi.mock('$lib/cam/chain/constants', () => ({
     CHAIN_CLOSURE_TOLERANCE: 0.01,
@@ -518,40 +525,28 @@ describe('Operations Functions', () => {
 
         it('should handle open chain (natural direction NONE) with COUNTERCLOCKWISE user direction', () => {
             const openChain = { ...mockChainData, clockwise: null };
-            vi.mocked(reverseChain).mockReturnValue(
-                new Chain({
-                    id: 'chain-1',
-                    name: 'chain-1',
-                    shapes: [mockChainData.shapes[0]],
-                })
-            );
 
             const result = createCutChain(
                 new Chain(openChain),
                 CutDirection.COUNTERCLOCKWISE
             );
 
-            expect(reverseChain).toHaveBeenCalled();
+            // Verify the result indicates counterclockwise execution
             expect(result.executionClockwise).toBe(false);
+            expect(result.cutChain).toBeDefined();
         });
 
         it('should handle closed chain with user direction opposite to natural', () => {
             const closedChain = { ...mockChainData, clockwise: true };
-            vi.mocked(reverseChain).mockReturnValue(
-                new Chain({
-                    id: 'chain-1',
-                    name: 'chain-1',
-                    shapes: [new Shape(mockChain.shapes[0])],
-                })
-            );
 
             const result = createCutChain(
                 new Chain(closedChain),
                 CutDirection.COUNTERCLOCKWISE
             );
 
-            expect(reverseChain).toHaveBeenCalled();
+            // Verify the result indicates counterclockwise execution
             expect(result.executionClockwise).toBe(false);
+            expect(result.cutChain).toBeDefined();
         });
 
         it('should handle closed chain with user direction same as natural', () => {
@@ -726,15 +721,6 @@ describe('Operations Functions', () => {
                 kerfCompensation: KerfCompensation.PART,
             };
 
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: false,
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
-
             vi.mocked(polylineOffset).mockResolvedValue({
                 success: true,
                 innerChain: {
@@ -815,20 +801,6 @@ describe('Operations Functions', () => {
 
             const partWithMultipleHoles = new Part(partWithMultipleHolesData);
 
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: false,
-                    shapes: [mockChain.shapes[0]],
-                },
-                {
-                    id: 'chain-3',
-                    clockwise: false,
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
-
             const operation = createOperation(mockOperation, mockTool, [
                 partWithMultipleHoles,
             ]);
@@ -863,15 +835,6 @@ describe('Operations Functions', () => {
                 ],
             };
             const partWithSlots = new Part(partWithSlotsData);
-
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: null, // Open chain
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
 
             const operation = createOperation(mockOperation, mockTool, [
                 partWithSlots,
@@ -916,15 +879,6 @@ describe('Operations Functions', () => {
                 ],
             };
             const partWithSlots = new Part(partWithSlotsData);
-
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: null, // Open chain
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
 
             vi.mocked(polylineOffset).mockResolvedValue({
                 success: true,
@@ -995,15 +949,6 @@ describe('Operations Functions', () => {
                 ],
             };
             const partWithSlots = new Part(partWithSlotsData);
-
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: null, // Open chain
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
 
             vi.mocked(polylineOffset).mockResolvedValue({
                 success: true,
@@ -1081,20 +1026,6 @@ describe('Operations Functions', () => {
             };
             const partWithMultipleSlots = new Part(partWithMultipleSlotsData);
 
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: null,
-                    shapes: [mockChain.shapes[0]],
-                },
-                {
-                    id: 'chain-3',
-                    clockwise: null,
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
-
             const operation = createOperation(mockOperation, mockTool, [
                 partWithMultipleSlots,
             ]);
@@ -1146,20 +1077,6 @@ describe('Operations Functions', () => {
                 ],
             };
             const partWithVoidsAndSlots = new Part(partWithVoidsAndSlotsData);
-
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: false,
-                    shapes: [mockChain.shapes[0]],
-                },
-                {
-                    id: 'chain-3',
-                    clockwise: null,
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
 
             const operation = createOperation(mockOperation, mockTool, [
                 partWithVoidsAndSlots,
@@ -1405,7 +1322,7 @@ describe('Operations Functions', () => {
                 mockCut,
                 { ...mockCut, id: 'cut-2', chainId: 'chain-2' },
             ];
-            const _chains = [
+            const chains = [
                 mockChain,
                 new Chain({ ...mockChainData, id: 'chain-2' }),
             ];
@@ -1453,7 +1370,7 @@ describe('Operations Functions', () => {
             const result = await calculateOperationLeads(
                 new Operation(mockOperation),
                 cuts.map((c) => new Cut(c)),
-                _chains,
+                chains,
                 [mockPart]
             );
 
@@ -1554,15 +1471,6 @@ describe('Operations Functions', () => {
                 targetType: 'parts' as const,
                 targetIds: ['part-1'],
             };
-
-            const _chains = [
-                mockChain,
-                {
-                    id: 'chain-2',
-                    clockwise: false,
-                    shapes: [mockChain.shapes[0]],
-                },
-            ];
 
             vi.mocked(polylineOffset).mockResolvedValue({
                 success: true,

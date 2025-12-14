@@ -45,6 +45,7 @@
         }
 
         // Get the chain ID from the clicked element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const chainElement = target.closest('[data-chain-id]');
         const chainId = chainElement?.getAttribute('data-chain-id');
@@ -82,6 +83,7 @@
         }
 
         // Get the chain ID from the hovered element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const chainElement = target?.closest('[data-chain-id]');
         const chainId = chainElement?.getAttribute('data-chain-id');

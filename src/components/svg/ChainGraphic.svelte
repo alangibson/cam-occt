@@ -40,12 +40,7 @@
     {onmousemove}
 >
     {#each chain.shapes as shape (shape.id)}
-        <ShapeGraphic
-            {shape}
-            stroke={strokeColor}
-            {onclick}
-            {onmousemove}
-        />
+        <ShapeGraphic {shape} stroke={strokeColor} {onclick} {onmousemove} />
     {/each}
 </g>
 

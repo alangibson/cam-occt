@@ -12,15 +12,18 @@
     import CoordinateGroup from './CoordinateGroup.svelte';
 
     // SVG and panzoom references
+    // eslint-disable-next-line no-undef
     let svgElement: SVGSVGElement;
+    // eslint-disable-next-line no-undef
     let drawingGroup: SVGGElement | undefined = $state();
     let panzoomInstance: PanZoom | null = null;
+    // eslint-disable-next-line no-undef
     let svgContainerElement: HTMLDivElement;
     let resizeObserver: ResizeObserver | null = null;
 
     // Manual right-click panning state
-    let isPanning = false;
-    let lastMousePos = { x: 0, y: 0 };
+    let isPanning = $state(false);
+    let lastMousePos = $state({ x: 0, y: 0 });
 
     // Get zoom scale for constant screen sizes - get it directly from panzoom transform
     let zoomScale = $state(1);
@@ -61,7 +64,7 @@
                 // Allow wheel zoom
                 return false;
             },
-            beforeMouseDown: (e) => {
+            beforeMouseDown: (_e) => {
                 // Prevent panzoom from handling any mouse button - we'll do it manually
                 return true;
             },
@@ -205,7 +208,8 @@
                 class="viewport-transform"
                 transform="scale({drawingStore.unitScale}) 
                           translate({-drawingStore.viewport.offset.x}, 
-                                    {drawingStore.viewport.height + drawingStore.viewport.offset.y}) 
+                                    {drawingStore.viewport.height +
+                    drawingStore.viewport.offset.y}) 
                           scale(1, -1)"
             >
                 <!-- Coordinate cross at origin -->
@@ -213,13 +217,16 @@
 
                 <!-- Shape layer -->
                 {#if drawingStore.drawing}
-                    <ShapeGroup shapes={drawingStore.drawing.shapes} {zoomScale} />
+                    <ShapeGroup
+                        shapes={drawingStore.drawing.shapes}
+                        {zoomScale}
+                    />
 
                     <!-- Chain layer -->
                     <ChainGroup
-                        chains={Object.values(drawingStore.drawing.layers).flatMap(
-                            (l) => l.chains
-                        )}
+                        chains={Object.values(
+                            drawingStore.drawing.layers
+                        ).flatMap((l) => l.chains)}
                         {zoomScale}
                     />
 

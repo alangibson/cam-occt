@@ -35,6 +35,7 @@
         }
 
         // Get the rapid ID from the clicked element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const rapidElement = target.closest('[data-rapid-id]');
         const rapidId = rapidElement?.getAttribute('data-rapid-id');
@@ -68,6 +69,7 @@
         }
 
         // Get the rapid ID from the hovered element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const rapidElement = target?.closest('[data-rapid-id]');
         const rapidId = rapidElement?.getAttribute('data-rapid-id');

@@ -12,7 +12,7 @@
     } = $props();
 </script>
 
-{#each points as point}
+{#each points as point, i (i)}
     <!-- White border circle -->
     <circle
         cx={point.x}

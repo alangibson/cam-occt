@@ -85,7 +85,7 @@ export class Layer implements LayerData {
             // Clear and repopulate to ensure reactivity
             this.#parts.length = 0;
             this.#parts.push(...result.parts);
-        } catch (error) {
+        } catch {
             // Error generating parts
         }
     }

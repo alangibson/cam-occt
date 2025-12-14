@@ -43,7 +43,7 @@ export async function applyAutoPreprocessing(): Promise<void> {
             await applyPreprocessingStep(step, algorithmParams);
             // Add small delay to allow UI to update
             await new Promise((resolve) => setTimeout(resolve, STEP_DELAY_MS));
-        } catch (error) {
+        } catch {
             // Continue with other steps even if one fails
         }
     }

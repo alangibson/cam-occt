@@ -19,7 +19,7 @@ import { isPointInsidePart } from '$lib/cam/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/enums';
 import { PartType } from '$lib/cam/part/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
-import { createCutChain } from '$lib/cam/pipeline/chains/functions';
+import { createCutChain } from '$lib/cam/chain/functions';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 
 describe('Cut Normal Direction on Parts', () => {

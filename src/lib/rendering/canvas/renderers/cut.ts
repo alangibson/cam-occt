@@ -158,7 +158,7 @@ export class CutRenderer extends BaseRenderer {
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
-                shapesToDraw.forEach((shape, index) => {
+                shapesToDraw.forEach((shape) => {
                     try {
                         // Check if this specific offset shape is selected
                         const isOffsetShapeSelected =
@@ -198,11 +198,11 @@ export class CutRenderer extends BaseRenderer {
                             ctx.shadowColor = 'transparent';
                             ctx.shadowBlur = 0;
                         }
-                    } catch (error) {
+                    } catch {
                         // Error rendering offset shape for cut - shape rendering threw exception
                     }
                 });
-            } catch (error) {
+            } catch {
                 // Error rendering cut - cut rendering threw exception
             } finally {
                 ctx.restore();

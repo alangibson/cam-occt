@@ -24,6 +24,7 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
+    Renderer,
 } from '$lib/config/settings/enums';
 
 // Default application settings for tests
@@ -54,6 +55,7 @@ const defaultApplicationSettings = {
         avoidLeadKerfOverlap: false,
     },
     offsetImplementation: OffsetImplementation.Exact,
+    renderer: Renderer.Canvas,
     camSettings: {
         rapidRate: 3000,
         cutterCompensation: null,

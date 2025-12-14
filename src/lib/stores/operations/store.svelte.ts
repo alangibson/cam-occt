@@ -9,9 +9,6 @@ import type { Part } from '$lib/cam/part/classes.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';
-import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-import { PreprocessingStep } from '$lib/config/settings/enums';
-import { settingsStore } from '$lib/stores/settings/store.svelte';
 
 /**
  * Helper function to resolve operation IDs to actual objects and set them on the operation

@@ -387,7 +387,7 @@ function restoreStateToStores(state: PersistedState): void {
         if (state.tools && Array.isArray(state.tools)) {
             toolStore.reorderTools(state.tools);
         }
-    } catch (error) {
+    } catch {
         // Failed to restore application state - state restoration threw exception
     }
 }

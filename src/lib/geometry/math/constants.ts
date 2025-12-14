@@ -26,11 +26,6 @@ export const INTERSECTION_TOLERANCE: number = 1e-6;
 export const STANDARD_TESSELLATION_COUNT: number = 20;
 
 /**
- * Half percentage value for ratios and fractions
- */
-export const HALF_PERCENT: number = 0.5;
-
-/**
  * Three quarters percentage value for ratios and fractions
  */
 export const THREE_QUARTERS_PERCENT: number = 0.75;

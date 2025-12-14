@@ -138,7 +138,7 @@ export function getCutStartPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
                     return points[0];
                 }
             }
-        } catch (error) {
+        } catch {
             // Failed to calculate lead-in for cut - lead calculation threw exception
         }
     }

@@ -2,8 +2,9 @@
  * Tests for DrawingSVG deselection functionality
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { selectionStore } from '$lib/stores/selection/store.svelte';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('DrawingSVG Empty Space Click Deselection', () => {
     beforeEach(() => {
@@ -98,7 +99,7 @@ describe('DrawingSVG Empty Space Click Deselection', () => {
         // Arrange - select an offset shape
         const mockOffsetShape = {
             id: 'offset-1',
-            type: 'line' as const,
+            type: GeometryType.LINE,
             geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
         };
         selectionStore.selectOffsetShape(mockOffsetShape);

@@ -8,7 +8,7 @@ import { Unit } from '$lib/config/units/units';
 
 export class Drawing implements DrawingData {
     #data: DrawingData;
-    #layers = $state<Record<string, Layer>>();
+    #layers: Record<string, Layer> | undefined = undefined;
 
     constructor(data: DrawingData) {
         this.#data = data;

@@ -50,7 +50,6 @@ import {
     DEFAULT_MAX_ATTEMPTS,
     DEFAULT_STEP_SIZE,
     DEFAULT_TOLERANCE,
-    INTERVAL_DECIMAL_PLACES,
     KERF_VERSION,
 } from './constants';
 
@@ -431,7 +430,7 @@ export function doesLeadKerfOverlapChain(
             if (isPointInsideChainExact(point, leadKerfPolygon)) {
                 return true; // Found overlap - original chain passes through kerf
             }
-        } catch (error) {
+        } catch {
             // isPointInsideChainExact may throw if chain is not closed
             // In that case, we can't reliably detect containment
             // Unable to test point containment
@@ -555,7 +554,7 @@ export async function adjustCutStartPointForLeadKerfOverlap(
                     cut.leadOut = originalLeadOut;
                 }
             }
-        } catch (error) {
+        } catch {
             // Failed to test start point
             continue;
         }

@@ -401,7 +401,7 @@ export class KerfRenderer extends BaseRenderer {
                 shapesToDraw.forEach((shape) => {
                     try {
                         drawShape(ctx, shape);
-                    } catch (error) {
+                    } catch {
                         // Error rendering cutter path shape for cut - shape rendering threw exception
                     }
                 });
@@ -423,7 +423,7 @@ export class KerfRenderer extends BaseRenderer {
                             }
                             ctx.stroke();
                         }
-                    } catch (error) {
+                    } catch {
                         // Error rendering cutter path on lead-in for cut - lead-in rendering threw exception
                     }
                 }
@@ -445,11 +445,11 @@ export class KerfRenderer extends BaseRenderer {
                             }
                             ctx.stroke();
                         }
-                    } catch (error) {
+                    } catch {
                         // Error rendering cutter path on lead-out for cut - lead-out rendering threw exception
                     }
                 }
-            } catch (error) {
+            } catch {
                 // Error rendering cutter path for cut - cutter path rendering threw exception
             } finally {
                 ctx.restore();

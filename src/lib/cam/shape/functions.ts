@@ -776,6 +776,32 @@ export function sampleShapes(
 }
 
 /**
+ * Gets the tangent vector at a point on a shape
+ *
+ * @param shape - Shape to get tangent from
+ * @param t - Parameter value (0-1) where to get the tangent
+ * @returns Normalized tangent vector pointing in direction of travel
+ */
+export function getShapeTangent(shape: Shape, t: number): Point2D {
+    // Get two nearby points to calculate tangent
+    const delta: number = 0.001;
+    const t1: number = Math.max(0, t - delta);
+    const t2: number = Math.min(1, t + delta);
+
+    const p1: Point2D = shape.pointAt(t1);
+    const p2: Point2D = shape.pointAt(t2);
+
+    // Calculate tangent vector
+    const tangent: Point2D = {
+        x: p2.x - p1.x,
+        y: p2.y - p1.y,
+    };
+
+    // Normalize tangent
+    return normalizeVector(tangent);
+}
+
+/**
  * Gets the normal vector at a point on a shape
  *
  * @param shapeInput - Shape to get normal from

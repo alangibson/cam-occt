@@ -45,6 +45,7 @@
         }
 
         // Get the cut ID from the clicked element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const cutElement = target.closest('[data-cut-id]');
         const cutId = cutElement?.getAttribute('data-cut-id');
@@ -82,6 +83,7 @@
         }
 
         // Get the cut ID from the hovered element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const cutElement = target?.closest('[data-cut-id]');
         const cutId = cutElement?.getAttribute('data-cut-id');
@@ -106,6 +108,7 @@
         }
 
         // Get the lead ID from the clicked element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const leadElement = target.closest('[data-lead-id]');
         const leadId = leadElement?.getAttribute('data-lead-id');
@@ -137,6 +140,7 @@
         }
 
         // Get the lead ID from the hovered element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const leadElement = target?.closest('[data-lead-id]');
         const leadId = leadElement?.getAttribute('data-lead-id');

@@ -136,7 +136,7 @@
                 .then(() => {
                     // G-code copied to clipboard
                 })
-                .catch((err) => {
+                .catch((_err) => {
                     // Failed to copy G-code
                 });
         } else {

@@ -5,10 +5,6 @@ import { EPSILON } from '$lib/geometry/math/constants';
 import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle/constants';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import {
-    OCTAGON_SIDES,
-    PRECISION_DECIMAL_PLACES,
-} from '$lib/geometry/constants';
-import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
     PERPENDICULAR_TOLERANCE,
@@ -226,7 +222,7 @@ export function convertBulgeToArc(
             endAngle: normalizeAngle(endAngle),
             clockwise: bulge < 0, // Negative bulge indicates clockwise direction
         };
-    } catch (error) {
+    } catch {
         // Error in bulge-to-arc conversion - mathematical error during conversion
         return null;
     }
@@ -257,25 +253,25 @@ export function calculateArcMidpointAngle(
  * Calculate the arc length for an existing arc
  * Arc length = radius × angular span (in radians)
  */
-function calculateArcLength(arc: Arc): number {
-    let angularSpan: number;
+// function calculateArcLength(arc: Arc): number {
+//     let angularSpan: number;
 
-    if (arc.clockwise) {
-        // For clockwise arcs, calculate span from start to end in clockwise direction
-        angularSpan = arc.startAngle - arc.endAngle;
-        if (angularSpan <= 0) {
-            angularSpan += FULL_CIRCLE_RADIANS;
-        }
-    } else {
-        // For counter-clockwise arcs, calculate span from start to end in counter-clockwise direction
-        angularSpan = arc.endAngle - arc.startAngle;
-        if (angularSpan <= 0) {
-            angularSpan += FULL_CIRCLE_RADIANS;
-        }
-    }
+//     if (arc.clockwise) {
+//         // For clockwise arcs, calculate span from start to end in clockwise direction
+//         angularSpan = arc.startAngle - arc.endAngle;
+//         if (angularSpan <= 0) {
+//             angularSpan += FULL_CIRCLE_RADIANS;
+//         }
+//     } else {
+//         // For counter-clockwise arcs, calculate span from start to end in counter-clockwise direction
+//         angularSpan = arc.endAngle - arc.startAngle;
+//         if (angularSpan <= 0) {
+//             angularSpan += FULL_CIRCLE_RADIANS;
+//         }
+//     }
 
-    return arc.radius * angularSpan;
-}
+//     return arc.radius * angularSpan;
+// }
 
 /**
  * Create an arc with a specific arc length from starting parameters
@@ -468,41 +464,41 @@ export function createTangentArc(
     };
 }
 
-/**
- * Sample points along an arc geometry for collision testing.
- *
- * TODO Should take a distance argument. Don't assume "~2mm segments".
- *
- * @param arc - Arc geometry to sample
- * @returns Array of points along the arc
- */
-export function sampleArc(arc: Arc): Point2D[] {
-    const points: Point2D[] = [];
-    const arcLength = calculateArcLength(arc);
-    const segments = Math.max(OCTAGON_SIDES, Math.ceil(arcLength / 2)); // ~2mm segments
+// /**
+//  * Sample points along an arc geometry for collision testing.
+//  *
+//  * TODO Should take a distance argument. Don't assume "~2mm segments".
+//  *
+//  * @param arc - Arc geometry to sample
+//  * @returns Array of points along the arc
+//  */
+// export function sampleArc(arc: Arc): Point2D[] {
+//     const points: Point2D[] = [];
+//     const arcLength = calculateArcLength(arc);
+//     const segments = Math.max(OCTAGON_SIDES, Math.ceil(arcLength / 2)); // ~2mm segments
 
-    for (let i = 0; i <= segments; i++) {
-        const t = i / segments;
-        let angle: number;
+//     for (let i = 0; i <= segments; i++) {
+//         const t = i / segments;
+//         let angle: number;
 
-        if (arc.clockwise) {
-            let angularSpan = arc.startAngle - arc.endAngle;
-            if (angularSpan <= 0) angularSpan += 2 * Math.PI;
-            angle = arc.startAngle - t * angularSpan;
-        } else {
-            let angularSpan = arc.endAngle - arc.startAngle;
-            if (angularSpan <= 0) angularSpan += 2 * Math.PI;
-            angle = arc.startAngle + t * angularSpan;
-        }
+//         if (arc.clockwise) {
+//             let angularSpan = arc.startAngle - arc.endAngle;
+//             if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+//             angle = arc.startAngle - t * angularSpan;
+//         } else {
+//             let angularSpan = arc.endAngle - arc.startAngle;
+//             if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+//             angle = arc.startAngle + t * angularSpan;
+//         }
 
-        points.push({
-            x: arc.center.x + arc.radius * Math.cos(angle),
-            y: arc.center.y + arc.radius * Math.sin(angle),
-        });
-    }
+//         points.push({
+//             x: arc.center.x + arc.radius * Math.cos(angle),
+//             y: arc.center.y + arc.radius * Math.sin(angle),
+//         });
+//     }
 
-    return points;
-}
+//     return points;
+// }
 
 /**
  * Tessellate an arc into a series of points for detailed geometric analysis

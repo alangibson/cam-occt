@@ -27,6 +27,7 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
+    Renderer,
 } from '$lib/config/settings/enums';
 import { CutterCompensation } from '$lib/cam/gcode/enums';
 
@@ -56,6 +57,7 @@ const defaultApplicationSettings = {
         avoidLeadKerfOverlap: false,
     },
     offsetImplementation: OffsetImplementation.Polyline,
+    renderer: Renderer.Canvas,
     camSettings: {
         rapidRate: 3000,
         cutterCompensation: CutterCompensation.SOFTWARE,
@@ -340,6 +342,7 @@ vi.mock('../settings/store.svelte', () => {
             avoidLeadKerfOverlap: false,
         },
         offsetImplementation: 'polyline',
+        renderer: 'canvas',
         camSettings: {
             rapidRate: 3000,
             cutterCompensation: 'software',

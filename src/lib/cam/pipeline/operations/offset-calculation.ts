@@ -95,7 +95,7 @@ export async function calculateChainOffset(
             kerfWidth: kerfWidth,
             warnings: offsetResult.warnings || [],
         };
-    } catch (error) {
+    } catch {
         // Error calculating offset - offset calculation threw exception
         return null;
     }

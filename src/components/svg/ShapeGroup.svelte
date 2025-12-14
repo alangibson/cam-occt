@@ -57,6 +57,7 @@
         }
 
         // Get the shape ID from the clicked element
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const shapeId = target.getAttribute('data-shape-id');
 
@@ -83,6 +84,7 @@
         }
 
         // Get the shape ID from the hovered element
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const shapeId = target?.getAttribute('data-shape-id');
 

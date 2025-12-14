@@ -144,7 +144,7 @@ export async function calculateOperationLeads(
 
         // Wait for all calculations to complete
         await Promise.all(calculations);
-    } catch (error) {
+    } catch {
         // Failed to calculate leads for operation - lead orchestration threw exception
     }
 

@@ -186,7 +186,7 @@ describe('Rapid Rate Display Bug', () => {
         // - 3000-5000 inch/min is normal
         // - 76200-127000 mm/min equivalent
 
-        const DEFAULT_RAPID_RATE_MM = 3000;
+        const _DEFAULT_RAPID_RATE_MM = 3000;
         const expectedImperialRapidRate = 3000; // inch/min
 
         // To get 3000 inch/min, DEFAULT_RAPID_RATE_MM should be:

@@ -39,7 +39,11 @@
 
     // Get all chains from parts (shells, voids, slots)
     const allPartChains = $derived.by(() => {
-        const chains: Array<{ chain: Chain; type: 'shell' | 'void' | 'slot'; partId: string }> = [];
+        const chains: Array<{
+            chain: Chain;
+            type: 'shell' | 'void' | 'slot';
+            partId: string;
+        }> = [];
         for (const part of parts) {
             // Add shell chain
             chains.push({
@@ -72,7 +76,11 @@
     });
 
     // Get stroke color for a part chain based on type and selection state
-    function getPartChainStrokeColor(chainId: string, partId: string, chainType: 'shell' | 'void' | 'slot'): string {
+    function getPartChainStrokeColor(
+        chainId: string,
+        partId: string,
+        chainType: 'shell' | 'void' | 'slot'
+    ): string {
         // Check chain selection/highlight first (takes precedence)
         if (selectedChainIds.has(chainId) || highlightedChainId === chainId) {
             return '#ff6600'; // Orange for selected/highlighted chain
@@ -210,6 +218,7 @@
         }
 
         // Get the chain ID from the clicked element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const chainElement = target.closest('[data-chain-id]');
         const chainId = chainElement?.getAttribute('data-chain-id');
@@ -247,6 +256,7 @@
         }
 
         // Get the chain ID from the hovered element or its parent
+        // eslint-disable-next-line no-undef
         const target = e.target as SVGElement;
         const chainElement = target?.closest('[data-chain-id]');
         const chainId = chainElement?.getAttribute('data-chain-id');
@@ -299,7 +309,11 @@
                     {#each chain.shapes as shape (shape.id)}
                         <ShapeGraphic
                             {shape}
-                            stroke={getPartChainStrokeColor(chain.id, partId, type)}
+                            stroke={getPartChainStrokeColor(
+                                chain.id,
+                                partId,
+                                type
+                            )}
                             onclick={handleChainClick}
                             onmousemove={handleChainMouseMove}
                         />

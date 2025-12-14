@@ -940,7 +940,7 @@ export function validateSplineKnots(
  * Get tangent direction for a spline geometry at start or end.
  * Uses NURBS derivative evaluation to compute the exact tangent vector.
  */
-export function getSplineTangent(spline: Spline, isStart: boolean): Point2D {
+export function getSplineTangent(spline: Spline, _isStart: boolean): Point2D {
     const curve: VerbCurve = createNurbsCurve(spline);
 
     // HACK Avoid zero-length tangent vectors
@@ -1014,7 +1014,7 @@ export function sampleSpline(spline: Spline, _sampleCount: number): Point2D[] {
         }
 
         return points;
-    } catch (error) {
+    } catch {
         // verb.js NURBS tessellation failed - falling back to control points
         return spline.controlPoints.slice();
     }

@@ -7,15 +7,8 @@ import type { Chain } from './classes.svelte';
 import {
     CONTAINMENT_AREA_RATIO_THRESHOLD,
     POLYGON_POINTS_MIN,
-    CHAIN_CLOSURE_TOLERANCE,
 } from './constants';
-import {
-    isChainClosed,
-    chainBoundingBox,
-    extractPolygonFromChain,
-    getChainCentroid,
-    getChainPointAt,
-} from './functions';
+import { extractPolygonFromChain } from './functions';
 import { isPointInsideChainExact } from './point-in-chain';
 import type { BoundingBox } from '$lib/geometry/bounding-box/classes';
 

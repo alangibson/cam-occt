@@ -9,6 +9,7 @@ import {
     shapeBoundingBox,
     getShapeMidpoint,
     getShapeNormal,
+    getShapeTangent,
     getShapePointAt,
 } from './functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
@@ -23,6 +24,7 @@ import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { BoundingBox } from '$lib/geometry/bounding-box/classes';
 import type { Geometric } from '$lib/cam/interfaces';
+import { MIDPOINT_T } from '$lib/geometry/constants';
 
 export class Shape implements Geometric, ShapeData {
     #data: ShapeData;
@@ -34,6 +36,7 @@ export class Shape implements Geometric, ShapeData {
     #boundary?: BoundingBox;
     #midPoint?: Point2D;
     #normal?: Point2D;
+    #tangent?: Point2D;
     #pointAt?: Map<number, Point2D | null>;
 
     constructor(data: ShapeData) {
@@ -55,6 +58,7 @@ export class Shape implements Geometric, ShapeData {
         this.#boundary = undefined;
         this.#midPoint = undefined;
         this.#normal = undefined;
+        this.#tangent = undefined;
         this.#pointAt = undefined;
     }
 
@@ -150,7 +154,7 @@ export class Shape implements Geometric, ShapeData {
      */
     get midPoint(): Point2D {
         if (this.#midPoint === undefined) {
-            this.#midPoint = getShapeMidpoint(this, 0.5);
+            this.#midPoint = getShapeMidpoint(this, MIDPOINT_T);
         }
         return this.#midPoint;
     }
@@ -163,9 +167,22 @@ export class Shape implements Geometric, ShapeData {
      */
     get normal(): Point2D {
         if (!this.#normal) {
-            this.#normal = getShapeNormal(this, 0.5);
+            this.#normal = getShapeNormal(this, MIDPOINT_T);
         }
         return this.#normal;
+    }
+
+    /**
+     * Get the tangent vector at the start point (t=0) of this shape
+     * Lazily calculates and caches the result on first access
+     *
+     * @returns Tangent vector at start point
+     */
+    get tangent(): Point2D {
+        if (!this.#tangent) {
+            this.#tangent = getShapeTangent(this, 0);
+        }
+        return this.#tangent;
     }
 
     /**

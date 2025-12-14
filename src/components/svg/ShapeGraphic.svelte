@@ -12,8 +12,8 @@
     }: {
         shape: Shape;
         stroke: string;
-        onclick: (e: MouseEvent) => void;
-        onmousemove: (e: MouseEvent) => void;
+        onclick?: (e: MouseEvent) => void;
+        onmousemove?: (e: MouseEvent) => void;
     } = $props();
 
     // Convert points to SVG path data without coordinate transformation

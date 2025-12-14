@@ -20,11 +20,6 @@ export const CLOSURE_VALIDATION_TOLERANCE = 0.01;
 export const DECIMAL_PLACES = 3;
 
 /**
- * Number of decimal places for displaying interval distances in log messages
- */
-export const INTERVAL_DECIMAL_PLACES = 3;
-
-/**
  * Default step size for adjusting cut start point (10% increments)
  */
 export const DEFAULT_STEP_SIZE = 0.1;

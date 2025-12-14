@@ -150,7 +150,7 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
                     ];
                 }
             }
-        } catch (error) {
+        } catch {
             // Failed to calculate lead-out for cut - lead calculation threw exception
         }
     }
