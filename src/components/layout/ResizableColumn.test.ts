@@ -36,7 +36,7 @@ describe('ResizableColumn Component', () => {
         });
 
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         expect(column.style.width).toBe('300px');
     });
@@ -50,7 +50,7 @@ describe('ResizableColumn Component', () => {
 
         expect(localStorageMock.getItem).toHaveBeenCalledWith('saved-column');
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         expect(column.style.width).toBe('350px');
     });
@@ -91,7 +91,7 @@ describe('ResizableColumn Component', () => {
         await fireEvent.mouseMove(document, { clientX: 150 });
 
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         expect(parseInt(column.style.width)).toBeGreaterThan(280);
     });
@@ -112,7 +112,7 @@ describe('ResizableColumn Component', () => {
         await fireEvent.mouseMove(document, { clientX: 150 });
 
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         const newWidth = parseInt(column.style.width);
         expect(newWidth).toBeLessThan(280);
@@ -130,7 +130,7 @@ describe('ResizableColumn Component', () => {
         await fireEvent.mouseMove(document, { clientX: 0 }); // Move far left
 
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         expect(parseInt(column.style.width)).toBeGreaterThanOrEqual(200);
     });
@@ -147,7 +147,7 @@ describe('ResizableColumn Component', () => {
         await fireEvent.mouseMove(document, { clientX: 300 }); // Move far right
 
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         expect(parseInt(column.style.width)).toBeLessThanOrEqual(600);
     });
@@ -169,7 +169,7 @@ describe('ResizableColumn Component', () => {
         await fireEvent.keyDown(resizeHandle!, { key: 'ArrowRight' });
 
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         expect(column.style.width).toBe('290px');
 
@@ -197,7 +197,7 @@ describe('ResizableColumn Component', () => {
         await fireEvent.keyDown(resizeHandle!, { key: 'ArrowRight' });
 
         const column = container.querySelector(
-            '.resizable-column'
+            '.resizable-column-wrapper'
         ) as HTMLElement;
         expect(column.style.width).toBe('270px');
     });
@@ -211,13 +211,19 @@ describe('ResizableColumn Component', () => {
             props: { storageKey: 'test-column', position: 'right' },
         });
 
-        const leftHandle = leftContainer.querySelector('.resize-handle');
-        const rightHandle = rightContainer.querySelector('.resize-handle');
-
-        expect(leftHandle?.classList.contains('resize-handle-left')).toBe(true);
-        expect(rightHandle?.classList.contains('resize-handle-right')).toBe(
-            true
+        const leftHandleColumn = leftContainer.querySelector(
+            '.resize-handle-column'
         );
+        const rightHandleColumn = rightContainer.querySelector(
+            '.resize-handle-column'
+        );
+
+        expect(
+            leftHandleColumn?.classList.contains('resize-handle-column-left')
+        ).toBe(true);
+        expect(
+            rightHandleColumn?.classList.contains('resize-handle-column-right')
+        ).toBe(true);
     });
 
     it('should apply dragging class during resize', async () => {
@@ -226,17 +232,120 @@ describe('ResizableColumn Component', () => {
         });
 
         const resizeHandle = container.querySelector('.resize-handle');
-        const column = container.querySelector('.resizable-column');
+        const wrapper = container.querySelector('.resizable-column-wrapper');
 
         // Start dragging
         await fireEvent.mouseDown(resizeHandle!, { clientX: 100 });
 
         expect(resizeHandle?.classList.contains('dragging')).toBe(true);
-        expect(column?.classList.contains('no-select')).toBe(true);
+        expect(wrapper?.classList.contains('no-select')).toBe(true);
 
         // End dragging
         await fireEvent.mouseUp(document);
 
         expect(resizeHandle?.classList.contains('dragging')).toBe(false);
+    });
+
+    it('should collapse on double-click', async () => {
+        localStorageMock.getItem.mockReturnValue(null);
+
+        const { container } = render(ResizableColumn, {
+            props: { storageKey: 'collapse-test', width: 300 },
+        });
+
+        const resizeHandle = container.querySelector('.resize-handle');
+        const wrapper = container.querySelector(
+            '.resizable-column-wrapper'
+        ) as HTMLElement;
+        const content = container.querySelector('.resizable-column');
+
+        // Double-click to collapse
+        await fireEvent.dblClick(resizeHandle!);
+
+        expect(wrapper?.classList.contains('collapsed')).toBe(true);
+        expect(content?.classList.contains('hidden')).toBe(true);
+        expect(wrapper?.style.width).toBe('10px'); // Collapsed width
+
+        // Verify collapse state was saved
+        expect(localStorageMock.setItem).toHaveBeenCalledWith(
+            'collapse-test-collapsed',
+            'true'
+        );
+    });
+
+    it('should expand on second double-click', async () => {
+        localStorageMock.getItem.mockReturnValue(null);
+
+        const { container } = render(ResizableColumn, {
+            props: { storageKey: 'expand-test', width: 300 },
+        });
+
+        const resizeHandle = container.querySelector('.resize-handle');
+        const wrapper = container.querySelector(
+            '.resizable-column-wrapper'
+        ) as HTMLElement;
+        const content = container.querySelector('.resizable-column');
+
+        // First double-click to collapse
+        await fireEvent.dblClick(resizeHandle!);
+
+        // Second double-click to expand
+        await fireEvent.dblClick(resizeHandle!);
+
+        expect(wrapper?.classList.contains('collapsed')).toBe(false);
+        expect(content?.classList.contains('hidden')).toBe(false);
+        expect(wrapper?.style.width).toBe('300px'); // Restored to original width
+
+        // Verify collapse state was saved
+        expect(localStorageMock.setItem).toHaveBeenCalledWith(
+            'expand-test-collapsed',
+            'false'
+        );
+    });
+
+    it('should prevent resizing when collapsed', async () => {
+        localStorageMock.getItem.mockReturnValue(null);
+
+        const { container } = render(ResizableColumn, {
+            props: { storageKey: 'resize-collapsed-test', width: 300 },
+        });
+
+        const resizeHandle = container.querySelector('.resize-handle');
+        const wrapper = container.querySelector(
+            '.resizable-column-wrapper'
+        ) as HTMLElement;
+
+        // Collapse first
+        await fireEvent.dblClick(resizeHandle!);
+        expect(wrapper?.style.width).toBe('10px');
+
+        // Try to resize while collapsed
+        await fireEvent.mouseDown(resizeHandle!, { clientX: 100 });
+        await fireEvent.mouseMove(document, { clientX: 200 });
+        await fireEvent.mouseUp(document);
+
+        // Width should remain collapsed
+        expect(wrapper?.style.width).toBe('10px');
+    });
+
+    it('should load collapsed state from localStorage', () => {
+        localStorageMock.getItem.mockImplementation((key) => {
+            if (key === 'collapsed-load-test') return '300';
+            if (key === 'collapsed-load-test-collapsed') return 'true';
+            return null;
+        });
+
+        const { container } = render(ResizableColumn, {
+            props: { storageKey: 'collapsed-load-test' },
+        });
+
+        const wrapper = container.querySelector(
+            '.resizable-column-wrapper'
+        ) as HTMLElement;
+        const content = container.querySelector('.resizable-column');
+
+        expect(wrapper?.classList.contains('collapsed')).toBe(true);
+        expect(content?.classList.contains('hidden')).toBe(true);
+        expect(wrapper?.style.width).toBe('10px');
     });
 });

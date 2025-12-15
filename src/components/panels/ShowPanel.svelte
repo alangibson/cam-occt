@@ -503,7 +503,6 @@
         background-color: #f3f4f6;
         color: #374151;
         border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
         font-size: 0.875rem;
         font-weight: 500;
         cursor: pointer;

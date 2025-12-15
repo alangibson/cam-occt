@@ -93,7 +93,7 @@
         if (chainType === 'shell') {
             return 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for shells
         } else {
-            return 'rgb(153, 204, 255)'; // Lighter blue for voids and slots
+            return 'rgb(110, 163, 214)'; // Light blue for voids and slots
         }
     }
 

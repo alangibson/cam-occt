@@ -260,7 +260,6 @@
         font-style: italic;
         text-align: center;
         padding: 0.5rem;
-        border-radius: 0.25rem;
     }
 
     .multi-selection {

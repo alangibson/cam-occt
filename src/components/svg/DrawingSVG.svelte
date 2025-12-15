@@ -265,6 +265,7 @@
         height: 100%;
         display: block;
         cursor: default;
+        outline: none;
     }
 
     .drawing-svg.panning {

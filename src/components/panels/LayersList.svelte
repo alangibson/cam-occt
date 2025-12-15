@@ -462,12 +462,12 @@
             treetoggle: true, // This column shows expand/collapse arrows
             cell: LayerTreeCell,
         },
-        {
-            id: 'type',
-            header: 'Type',
-            width: 100,
-            cell: LayerTreeCell,
-        },
+        // {
+        //     id: 'type',
+        //     header: 'Type',
+        //     width: 100,
+        //     cell: LayerTreeCell,
+        // },
     ];
 </script>
 

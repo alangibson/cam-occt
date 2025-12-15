@@ -259,7 +259,6 @@
         padding: 0.75rem;
         background-color: #f8fafc;
         border: 1px solid #e2e8f0;
-        border-radius: 0.25rem;
     }
 
     .section-title {
@@ -293,7 +292,6 @@
         color: #374151;
         background-color: #f3f4f6;
         padding: 0.125rem 0.25rem;
-        border-radius: 0.125rem;
         font-size: 0.75rem;
     }
 

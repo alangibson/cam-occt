@@ -10,22 +10,64 @@
     let isDragging = false;
     let startX = 0;
     let startWidth = 0;
+    let isCollapsed = false;
+    let expandedWidth = width; // Store width before collapsing
+    const collapsedWidth = 10; // Just the handle width
 
-    // Load width from localStorage on mount
+    // Load width and collapse state from localStorage on mount
     onMount(() => {
         const savedWidth = localStorage.getItem(storageKey);
+        const savedCollapsed = localStorage.getItem(`${storageKey}-collapsed`);
+
         if (savedWidth) {
-            width = parseInt(savedWidth, 10);
+            const parsedWidth = parseInt(savedWidth, 10);
+            expandedWidth = parsedWidth;
+            width = parsedWidth;
+        }
+
+        if (savedCollapsed === 'true') {
+            isCollapsed = true;
+            width = collapsedWidth;
         }
     });
 
     // Save width to localStorage
     function saveWidth() {
-        localStorage.setItem(storageKey, width.toString());
+        if (!isCollapsed) {
+            localStorage.setItem(storageKey, width.toString());
+            expandedWidth = width;
+        }
+    }
+
+    // Save collapse state
+    function saveCollapseState() {
+        localStorage.setItem(`${storageKey}-collapsed`, isCollapsed.toString());
+    }
+
+    // Toggle collapse/expand
+    function handleDoubleClick() {
+        isCollapsed = !isCollapsed;
+
+        if (isCollapsed) {
+            // Collapsing: save current width and set to collapsed width
+            expandedWidth = width;
+            width = collapsedWidth;
+        } else {
+            // Expanding: restore saved width
+            width = expandedWidth;
+        }
+
+        saveCollapseState();
+        if (!isCollapsed) {
+            saveWidth();
+        }
     }
 
     // Resize handlers
     function handleResizeStart(e: MouseEvent) {
+        // Don't allow resizing when collapsed
+        if (isCollapsed) return;
+
         isDragging = true;
         startX = e.clientX;
         startWidth = width;
@@ -59,6 +101,9 @@
 
     // Keyboard support
     function handleKeydown(e: KeyboardEvent) {
+        // Don't allow keyboard resize when collapsed
+        if (isCollapsed) return;
+
         let adjustment = 0;
 
         if (e.key === 'ArrowLeft') {
@@ -76,55 +121,95 @@
 </script>
 
 <div
-    class="resizable-column"
+    class="resizable-column-wrapper"
     style="width: {width}px;"
     class:no-select={isDragging}
+    class:collapsed={isCollapsed}
 >
-    <!-- Resize handle -->
-    <button
-        class="resize-handle resize-handle-{position}"
-        on:mousedown={handleResizeStart}
-        on:keydown={handleKeydown}
-        class:dragging={isDragging}
-        aria-label="Resize {position} panel (Arrow keys to adjust)"
-        type="button"
-    >
-        <div class="handle-indicator"></div>
-    </button>
+    <!-- Scrollable content area -->
+    <div class="resizable-column" class:hidden={isCollapsed}>
+        <slot />
+    </div>
 
-    <slot />
+    <!-- Dedicated resize handle column -->
+    <div class="resize-handle-column resize-handle-column-{position}">
+        <button
+            class="resize-handle"
+            on:mousedown={handleResizeStart}
+            on:dblclick={handleDoubleClick}
+            on:keydown={handleKeydown}
+            class:dragging={isDragging}
+            aria-label="Resize {position} panel (Arrow keys to adjust, Double-click to collapse/expand)"
+            type="button"
+        >
+            <div class="handle-indicator"></div>
+        </button>
+    </div>
 </div>
 
 <style>
+    .resizable-column-wrapper {
+        display: flex;
+        flex-shrink: 0;
+        position: relative;
+        min-height: 0;
+        transition: width 0.2s ease;
+    }
+
     .resizable-column {
+        flex: 1;
         background-color: #f5f5f5;
-        border-right: 1px solid #e5e7eb;
         padding: 0.5rem;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        min-height: 0; /* Allow flex child to shrink */
-        flex-shrink: 0; /* Prevent column from shrinking */
-        position: relative; /* For resize handle positioning */
+        min-height: 0;
+        transition: opacity 0.2s ease;
     }
 
-    .resizable-column:last-child {
-        border-right: none;
+    .resizable-column.hidden {
+        display: none;
+    }
+
+    .resizable-column-wrapper:not(:last-child) .resizable-column {
+        border-right: 1px solid #e5e7eb;
+    }
+
+    .resizable-column-wrapper:last-child .resizable-column {
         border-left: 1px solid #e5e7eb;
+    }
+
+    /* Thin column for resize handle */
+    .resize-handle-column {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .resize-handle-column-left {
+        right: 0;
+    }
+
+    .resize-handle-column-right {
+        left: 0;
     }
 
     /* Resize handle styles */
     .resize-handle {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 6px;
+        width: 100%;
+        height: 100%;
         cursor: col-resize;
         background: transparent;
         border: none;
         padding: 0;
-        z-index: 10;
+        pointer-events: auto;
         transition: background-color 0.2s ease;
         display: flex;
         align-items: center;
@@ -141,59 +226,46 @@
         opacity: 0.5;
     }
 
-    /* Visual indicator - three vertical lines (grip pattern) */
+    /* Visual indicator - 6-dot grip pattern (2 columns × 3 rows) */
     .handle-indicator {
-        width: 4px;
-        height: 32px;
+        width: 8px;
+        height: 40px;
         position: relative;
         pointer-events: none;
         transition: all 0.15s ease;
+        background-image:
+            radial-gradient(circle, #9ca3af 1px, transparent 1px),
+            radial-gradient(circle, #9ca3af 1px, transparent 1px);
+        background-size: 4px 4px;
+        background-position:
+            0 0,
+            4px 0;
+        background-repeat: repeat-y;
     }
 
-    .handle-indicator::before,
-    .handle-indicator::after {
-        content: '';
-        position: absolute;
-        width: 3px;
-        height: 100%;
-        background-color: #9ca3af;
-        top: 0;
+    .resize-handle:hover .handle-indicator {
+        background-image:
+            radial-gradient(circle, rgb(0, 83, 135) 1px, transparent 1px),
+            radial-gradient(circle, rgb(0, 83, 135) 1px, transparent 1px);
     }
 
-    .handle-indicator::before {
-        left: 0;
-    }
-
-    .handle-indicator::after {
-        right: 0;
-    }
-
-    .resize-handle:hover .handle-indicator::before,
-    .resize-handle:hover .handle-indicator::after {
-        background-color: rgb(0, 83, 135);
-    }
-
-    .resize-handle.dragging .handle-indicator::before,
-    .resize-handle.dragging .handle-indicator::after {
-        background-color: rgb(0, 83, 135);
-    }
-
-    .resize-handle-left {
-        right: -3px; /* Half of width to center on border */
-    }
-
-    .resize-handle-right {
-        left: -3px; /* Half of width to center on border */
+    .resize-handle.dragging .handle-indicator {
+        background-image:
+            radial-gradient(circle, rgb(0, 83, 135) 1px, transparent 1px),
+            radial-gradient(circle, rgb(0, 83, 135) 1px, transparent 1px);
     }
 
     /* Prevent text selection during resize */
-    .resizable-column.no-select {
+    .resizable-column-wrapper.no-select {
         user-select: none;
     }
 
     @media (max-width: 768px) {
-        .resizable-column {
+        .resizable-column-wrapper {
             width: 100% !important;
+        }
+
+        .resizable-column {
             height: auto;
             max-height: 200px;
         }

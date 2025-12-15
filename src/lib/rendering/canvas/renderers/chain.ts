@@ -169,7 +169,7 @@ export class ChainRenderer extends BaseRenderer {
         for (const chain of state.chains) {
             // Use lighter blue for voids and slots, darker blue for shells
             if (containedChainIds.has(chain.id)) {
-                ctx.strokeStyle = 'rgb(102, 153, 204)'; // Light blue for voids and slots
+                ctx.strokeStyle = 'rgb(110, 163, 214)'; // Light blue for voids and slots
             } else {
                 ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for shells
             }

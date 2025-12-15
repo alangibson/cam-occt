@@ -77,7 +77,6 @@
         background-color: #fff;
         color: #374151;
         border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
         font-size: 0.875rem;
         font-weight: 500;
         cursor: pointer;

@@ -74,7 +74,6 @@
         width: 100%;
         padding: 0.25rem 0.5rem;
         border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
         font-size: 0.875rem;
         background: white;
     }

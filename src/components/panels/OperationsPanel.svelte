@@ -576,7 +576,6 @@
     .operation-item {
         background: white;
         border: 1px solid #e5e7eb;
-        border-radius: 0.375rem;
         padding: 0.75rem;
         transition: all 0.2s;
     }
@@ -607,7 +606,6 @@
         flex: 1;
         padding: 0.25rem 0.5rem;
         border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
         font-size: 0.875rem;
         font-weight: 500;
     }
@@ -621,7 +619,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0.25rem;
         transition: all 0.2s;
     }
 
@@ -667,7 +664,6 @@
         width: 100%;
         padding: 0.25rem 0.5rem;
         border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
         font-size: 0.875rem;
         background: white;
         text-align: left;
@@ -693,7 +689,6 @@
         width: 100%;
         padding: 0.25rem 0.5rem;
         border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
         font-size: 0.875rem;
         background: white;
         cursor: pointer;
@@ -716,7 +711,6 @@
         z-index: 1000;
         background: white;
         border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
         box-shadow:
             0 10px 25px -3px rgba(0, 0, 0, 0.1),
             0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -756,7 +750,6 @@
         flex: 1;
         padding: 0.5rem;
         border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
         font-size: 0.875rem;
         font-weight: 500;
         background: white;
@@ -902,7 +895,6 @@
     .btn {
         padding: 0.375rem 0.75rem;
         border: none;
-        border-radius: 0.25rem;
         font-size: 0.875rem;
         font-weight: 500;
         cursor: pointer;
