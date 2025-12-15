@@ -271,6 +271,18 @@
                 />
                 Tessellation
             </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={visualizationStore.showPartSurface}
+                    onchange={(e) =>
+                        visualizationStore.setShowPartSurface(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Surface
+            </label>
         </div>
 
         <div class="show-section">

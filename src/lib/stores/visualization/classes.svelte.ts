@@ -46,6 +46,7 @@ interface PartVisualizationState {
     showPartDirections: boolean;
     showPartTangentLines: boolean;
     showPartTessellation: boolean;
+    showPartSurface: boolean;
 }
 
 class VisualizationStore {
@@ -67,6 +68,7 @@ class VisualizationStore {
     showPartDirections = $state(false);
     showPartTangentLines = $state(false);
     showPartTessellation = $state(false);
+    showPartSurface = $state(true);
 
     // Cut visualization
     showCutNormals = $state(false);
@@ -165,6 +167,10 @@ class VisualizationStore {
         this.showPartTessellation = show;
     }
 
+    setShowPartSurface(show: boolean) {
+        this.showPartSurface = show;
+    }
+
     resetParts() {
         this.showPartPaths = true;
         this.showPartStartPoints = false;
@@ -173,6 +179,7 @@ class VisualizationStore {
         this.showPartDirections = false;
         this.showPartTangentLines = false;
         this.showPartTessellation = false;
+        this.showPartSurface = true;
     }
 
     restoreParts(state: PartVisualizationState) {
@@ -183,6 +190,7 @@ class VisualizationStore {
         this.showPartDirections = state.showPartDirections;
         this.showPartTangentLines = state.showPartTangentLines;
         this.showPartTessellation = state.showPartTessellation;
+        this.showPartSurface = state.showPartSurface;
     }
 
     // Cut methods

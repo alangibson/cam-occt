@@ -102,7 +102,10 @@
         if (selectedPartIds.has(partId) || highlightedPartId === partId) {
             return 'rgba(255, 102, 0, 0.1)'; // Very light orange (10% opacity) for selected/highlighted
         }
-        return 'transparent'; // Transparent for normal state
+        if (visualizationStore.showPartSurface) {
+            return 'rgba(173, 216, 230, 0.3)'; // Light blue for normal state when surface is enabled
+        }
+        return 'transparent'; // Transparent when surface is disabled
     }
 
     // Helper function to convert a chain to SVG path data
