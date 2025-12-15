@@ -526,7 +526,7 @@
         const height = rect.height;
 
         // Update drawing store with canvas dimensions
-        drawingStore.setCanvasDimensions(width, height);
+        drawingStore.setContainerDimensions(width, height);
 
         // Initialize rendering pipeline with multi-canvas support
         renderingPipeline.initialize(canvasContainer, width, height, {

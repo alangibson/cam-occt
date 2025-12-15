@@ -3,31 +3,43 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { resetDownstreamStages } from './functions';
-import { calculateZoomToFitForDrawing } from '$lib/cam/drawing/functions';
+import { DEFAULT_SVG_SIZE } from '$components/svg/constants';
 import {
-    DEFAULT_PADDING,
-    DEFAULT_SVG_SIZE,
-    MIN_SVG_SIZE,
-} from '$components/svg/constants';
+    calculateZoomToFitForDrawing,
+    svgViewport,
+} from '$lib/cam/drawing/functions';
 
 class DrawingStore {
+    // The current drawing containing all shapes, chains, and parts
     drawing = $state<Drawing | null>(null);
+    // Whether the user is currently dragging the canvas for panning
     isDragging = $state(false);
+    // The starting point of the current drag operation in screen coordinates
     dragStart = $state<Point2D | null>(null);
+    // The current zoom scale factor (1.0 = 100%)
     scale = $state(1);
+    // The pan offset applied to the canvas viewport
     offset = $state<Point2D>({ x: 0, y: 0 });
+    // Visibility state for each layer (layer name -> visible)
     layerVisibility = $state<{ [layerName: string]: boolean }>({});
+    // The unit system for display (MM or Inch)
     displayUnit = $state<Unit>(Unit.MM);
-    canvasDimensions = $state<{ width: number; height: number } | null>(null);
+    // The pixel dimensions of the drawing container
+    containerDimensions = $state<{ width: number; height: number } | null>(null);
 
-    // Derived: Calculate physical scale factor for unit display
+    // TODO Scale from CAD dimensions to SVG/screen dimensions
+    // get scale() {
+    //     return thisunitScale * zoomScale;
+    // }
+
+    // Calculate physical scale factor for unit display
     get unitScale(): number {
         return this.drawing
             ? getPhysicalScaleFactor(this.drawing.units, this.displayUnit)
             : 1;
     }
 
-    // Derived: Calculate SVG viewport dimensions and offset from drawing bounds
+    // Calculate SVG viewport dimensions and offset from drawing bounds
     get viewport(): { width: number; height: number; offset: Point2D } {
         if (!this.drawing) {
             return {
@@ -37,24 +49,7 @@ class DrawingStore {
             };
         }
 
-        const bounds = this.drawing.bounds;
-
-        // Calculate dimensions from bounds
-        const boundsWidth = bounds.max.x - bounds.min.x;
-        const boundsHeight = bounds.max.y - bounds.min.y;
-
-        // Calculate SVG viewport size with padding
-        const totalPadding = DEFAULT_PADDING;
-        const width = Math.max(boundsWidth + 2 * totalPadding, MIN_SVG_SIZE);
-        const height = Math.max(boundsHeight + 2 * totalPadding, MIN_SVG_SIZE);
-
-        // Set transform offsets to map CNC coordinates to SVG coordinates
-        const offset: Point2D = {
-            x: bounds.min.x - totalPadding,
-            y: bounds.min.y - totalPadding,
-        };
-
-        return { width, height, offset };
+        return svgViewport(this.drawing.bounds);
     }
 
     setDrawing(drawing: Drawing, fileName: string) {
@@ -69,15 +64,18 @@ class DrawingStore {
         this.isDragging = false; // Reset drag state
         this.dragStart = null; // Reset drag start
 
-        // Calculate zoom-to-fit if canvas dimensions are available
-        const zoomToFit = calculateZoomToFitForDrawing(
-            drawing,
-            this.canvasDimensions,
-            this.displayUnit
-        );
-
-        this.scale = zoomToFit.scale;
-        this.offset = zoomToFit.offset;
+        if (this.containerDimensions) {
+            // Calculate zoom-to-fit if canvas dimensions are available
+            const zoomToFit = calculateZoomToFitForDrawing(
+                drawing,
+                this.containerDimensions,
+                this.displayUnit,
+                this.unitScale,
+                this.viewport
+            );
+            this.scale = zoomToFit.scale;
+            this.offset = zoomToFit.offset;
+        }
     }
 
     setViewTransform(scale: number, offset: Point2D) {
@@ -85,49 +83,52 @@ class DrawingStore {
         this.offset = offset;
     }
 
-    setCanvasDimensions(width: number, height: number) {
+    setContainerDimensions(width: number, height: number) {
         const canvasDimensions = { width, height };
 
         // If we have a drawing and this is the first time setting canvas dimensions,
         // automatically calculate zoom-to-fit
-        if (this.drawing && !this.canvasDimensions) {
+        if (this.drawing && !this.containerDimensions) {
             const zoomToFit = calculateZoomToFitForDrawing(
                 this.drawing,
                 canvasDimensions,
-                this.displayUnit
+                this.displayUnit,
+                this.unitScale,
+                this.viewport
             );
 
-            this.canvasDimensions = canvasDimensions;
+            this.containerDimensions = canvasDimensions;
             this.scale = zoomToFit.scale;
             this.offset = zoomToFit.offset;
         } else {
-            this.canvasDimensions = canvasDimensions;
+            this.containerDimensions = canvasDimensions;
         }
     }
 
     zoomToFit() {
         // Only calculate zoom-to-fit if we have a drawing and canvas dimensions
-        if (this.drawing && this.canvasDimensions) {
+        if (this.drawing && this.containerDimensions) {
             const zoomToFit = calculateZoomToFitForDrawing(
                 this.drawing,
-                this.canvasDimensions,
-                this.displayUnit
+                this.containerDimensions,
+                this.displayUnit,
+                this.unitScale,
+                this.viewport
             );
 
             this.scale = zoomToFit.scale;
             this.offset = zoomToFit.offset;
         }
     }
+
+    // Zoom to physical size on screen
+    // TODO zoomToPhysical()
 
     setLayerVisibility(layerName: string, visible: boolean) {
         this.layerVisibility = {
             ...this.layerVisibility,
             [layerName]: visible,
         };
-    }
-
-    setDisplayUnit(unit: Unit) {
-        this.displayUnit = unit;
     }
 
     // Special method for restoring state without resetting downstream stages
@@ -159,7 +160,7 @@ class DrawingStore {
         this.offset = { x: 0, y: 0 };
         this.layerVisibility = {};
         this.displayUnit = Unit.MM;
-        this.canvasDimensions = null;
+        this.containerDimensions = null;
     }
 }
 

@@ -10,7 +10,7 @@ import { Drawing } from '$lib/cam/drawing/classes.svelte';
 describe('Footer Fit Button', () => {
     beforeEach(() => {
         // Reset store state and set canvas dimensions
-        drawingStore.setCanvasDimensions(800, 600);
+        drawingStore.setContainerDimensions(800, 600);
     });
 
     it('should render the Fit button', () => {

@@ -8,7 +8,7 @@ import { Drawing } from '$lib/cam/drawing/classes.svelte';
 describe('DrawingStore zoomToFit method', () => {
     beforeEach(() => {
         // Reset store and set canvas dimensions
-        drawingStore.setCanvasDimensions(1000, 800);
+        drawingStore.setContainerDimensions(1000, 800);
     });
 
     it('should calculate zoom-to-fit when called', () => {
@@ -73,7 +73,7 @@ describe('DrawingStore zoomToFit method', () => {
 
         // The store should have canvas dimensions from beforeEach
         const state = drawingStore;
-        expect(state.canvasDimensions).not.toBeNull();
+        expect(state.containerDimensions).not.toBeNull();
 
         // Call zoomToFit - it should work since we have canvas dimensions
         drawingStore.zoomToFit();

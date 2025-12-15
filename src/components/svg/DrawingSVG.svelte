@@ -89,13 +89,13 @@
         // Set canvas dimensions if container is available
         if (svgContainerElement) {
             const rect = svgContainerElement.getBoundingClientRect();
-            drawingStore.setCanvasDimensions(rect.width, rect.height);
+            drawingStore.setContainerDimensions(rect.width, rect.height);
 
             // Set up ResizeObserver to track container size changes
             resizeObserver = new ResizeObserver((entries) => {
                 for (const entry of entries) {
                     const { width, height } = entry.contentRect;
-                    drawingStore.setCanvasDimensions(width, height);
+                    drawingStore.setContainerDimensions(width, height);
                 }
             });
             resizeObserver.observe(svgContainerElement);
