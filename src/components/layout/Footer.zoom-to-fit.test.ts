@@ -79,7 +79,7 @@ describe('Footer Fit Button', () => {
 
         const initialState = drawingStore;
         expect(initialState.scale).toBe(2.5);
-        expect(initialState.offset).toEqual({ x: 100, y: 100 });
+        expect(initialState.pan).toEqual({ x: 100, y: 100 });
 
         const { getByText } = render(Footer);
         const fitButton = getByText('Fit') as HTMLButtonElement;
@@ -89,10 +89,10 @@ describe('Footer Fit Button', () => {
 
         const stateAfterFit = drawingStore;
 
-        // The scale and offset should have changed after clicking Fit
+        // The scale and pan should have changed after clicking Fit
         // Note: The exact values depend on the calculateZoomToFit algorithm
         expect(stateAfterFit.scale).not.toBe(2.5);
-        expect(stateAfterFit.offset).not.toEqual({ x: 100, y: 100 });
+        expect(stateAfterFit.pan).not.toEqual({ x: 100, y: 100 });
     });
 
     it('should display the Fit button next to the zoom percentage', () => {

@@ -161,8 +161,12 @@ describe('OverlayGroup Toolhead Rendering', () => {
 
         // Assert - lines should have vector-effect for constant stroke width
         const lines = target.querySelectorAll('line');
-        expect(lines[0].getAttribute('vector-effect')).toBe('non-scaling-stroke');
-        expect(lines[1].getAttribute('vector-effect')).toBe('non-scaling-stroke');
+        expect(lines[0].getAttribute('vector-effect')).toBe(
+            'non-scaling-stroke'
+        );
+        expect(lines[1].getAttribute('vector-effect')).toBe(
+            'non-scaling-stroke'
+        );
 
         // Cleanup
         unmount(component);

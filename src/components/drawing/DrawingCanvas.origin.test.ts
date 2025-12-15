@@ -10,8 +10,8 @@ describe('Drawing Canvas Origin Positioning', () => {
 
         const screenOrigin = transformer.getScreenOrigin();
 
-        expect(screenOrigin.x).toBe(200); // 25% of 800
-        expect(screenOrigin.y).toBe(450); // 75% of 600
+        expect(screenOrigin.x).toBe(80); // 10% of 800
+        expect(screenOrigin.y).toBe(540); // 90% of 600
     });
 
     it('should maintain origin position when canvas size changes', () => {
@@ -56,8 +56,8 @@ describe('Drawing Canvas Origin Positioning', () => {
 
         const screenOrigin = transformer.getScreenOrigin();
 
-        expect(screenOrigin.x).toBe(250); // 200 + 50
-        expect(screenOrigin.y).toBe(420); // 450 - 30
+        expect(screenOrigin.x).toBe(130); // 80 + 50
+        expect(screenOrigin.y).toBe(510); // 540 - 30
     });
 
     it('should convert screen coordinates to world coordinates correctly', () => {

@@ -20,13 +20,7 @@
     let { currentStage }: Props = $props();
 
     // SVG and panzoom references
-    // eslint-disable-next-line no-undef
-    let svgElement: SVGSVGElement;
-    // eslint-disable-next-line no-undef
-    let drawingGroup: SVGGElement | undefined = $state();
     let panzoomInstance: PanZoom | null = null;
-    // eslint-disable-next-line no-undef
-    let svgContainerElement: HTMLDivElement;
     let resizeObserver: ResizeObserver | null = null;
 
     // Manual right-click panning state
@@ -37,9 +31,9 @@
     let zoomScale = $state(1);
 
     // Calculate viewBox string from viewport dimensions
-    const viewBox = $derived(
-        `0 0 ${drawingStore.viewport.width} ${drawingStore.viewport.height}`
-    );
+    // const viewBox = $derived(
+    //     `0 0 ${drawingStore.viewport.width} ${drawingStore.viewport.height}`
+    // );
 
     // Get cuts from plan store
     const cuts = $derived(planStore.plan.cuts);
@@ -58,12 +52,12 @@
             .map((cut) => cut.rapidIn!)
     );
 
-    // Initialize panzoom on mount
-    onMount(() => {
-        if (!drawingGroup) return;
+    // Used to break reactive loop
+    let wasReactiveTransform = false;
 
-        // Initialize panzoom on the transform group
-        panzoomInstance = panzoom(drawingGroup, {
+    // Initialize panzoom instance with configuration
+    function initPanzoomElement(element: SVGGElement) {
+        panzoomInstance = panzoom(element, {
             maxZoom: 10,
             minZoom: 0.05,
             smoothScroll: true,
@@ -78,56 +72,49 @@
             },
         });
 
-        // Listen to panzoom transform events and update DrawingStore
+        // Listen to panzoom transform events and update zoom scale
         panzoomInstance.on('transform', () => {
             const transform = panzoomInstance?.getTransform();
             if (!transform) return;
 
-            // TODO this causes a busy loop
-            // // Update DrawingStore with new scale and offset
-            // // Note: panzoom uses x/y for translation, we use offset
-            // drawingStore.setViewTransform(transform.scale, {
-            //     x: transform.x,
-            //     y: transform.y,
-            // });
+            // console.log('panzoom transform', transform);
+
+            // Update DrawingStore with new scale and offset
+            // Note: panzoom uses x/y for translation, we use offset
+            if (wasReactiveTransform) {
+                wasReactiveTransform = false;
+            } else {
+                drawingStore.setViewTransform(transform.scale, {
+                    x: transform.x,
+                    y: transform.y,
+                });
+            }
 
             zoomScale = transform.scale;
         });
+    }
 
-        // Set canvas dimensions if container is available
-        if (svgContainerElement) {
-            const rect = svgContainerElement.getBoundingClientRect();
-            drawingStore.setContainerDimensions(rect.width, rect.height);
+    function initSVGContainerElement(svgContainerElement: HTMLDivElement) {
+        const rect = svgContainerElement.getBoundingClientRect();
+        drawingStore.setContainerDimensions(rect.width, rect.height);
 
-            // Set up ResizeObserver to track container size changes
-            resizeObserver = new ResizeObserver((entries) => {
-                for (const entry of entries) {
-                    const { width, height } = entry.contentRect;
-                    drawingStore.setContainerDimensions(width, height);
-                }
-            });
-            resizeObserver.observe(svgContainerElement);
-        }
-
-        // Listen for mouseup on window to handle mouse released outside SVG
-        const handleWindowMouseUp = (e: MouseEvent) => {
-            if (e.button === 2) {
-                isPanning = false;
+        // Set up ResizeObserver to track container size changes
+        resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                drawingStore.setContainerDimensions(width, height);
             }
-        };
-        window.addEventListener('mouseup', handleWindowMouseUp);
-
-        // Clean up window listener on destroy
-        return () => {
-            window.removeEventListener('mouseup', handleWindowMouseUp);
-        };
-    });
+        });
+        resizeObserver.observe(svgContainerElement);
+    }
 
     // Sync panzoom state when DrawingStore changes (e.g., from zoomToFit)
     $effect(() => {
         if (!panzoomInstance) return;
-        panzoomInstance.moveTo(drawingStore.offset.x, drawingStore.offset.y);
+        wasReactiveTransform = true;
+        // Set zoom first, then position (order matters - zoomAbs affects translation)
         panzoomInstance.zoomAbs(0, 0, drawingStore.scale);
+        panzoomInstance.moveTo(drawingStore.pan.x, drawingStore.pan.y);
     });
 
     // Handle clicks on empty space (background)
@@ -176,6 +163,22 @@
         e.preventDefault();
     }
 
+    // Initialize panzoom on mount
+    onMount(() => {
+        // Listen for mouseup on window to handle mouse released outside SVG
+        const handleWindowMouseUp = (e: MouseEvent) => {
+            if (e.button === 2) {
+                isPanning = false;
+            }
+        };
+        window.addEventListener('mouseup', handleWindowMouseUp);
+
+        // Clean up window listener on destroy
+        return () => {
+            window.removeEventListener('mouseup', handleWindowMouseUp);
+        };
+    });
+
     // Cleanup on destroy
     onDestroy(() => {
         if (panzoomInstance) {
@@ -189,13 +192,11 @@
     });
 </script>
 
-<div bind:this={svgContainerElement} class="svg-container">
+<div use:initSVGContainerElement class="svg-container">
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <svg
-        bind:this={svgElement}
         class="drawing-svg {isPanning ? 'panning' : ''}"
-        {viewBox}
         preserveAspectRatio="xMidYMid meet"
         role="application"
         aria-label="Drawing SVG - Interactive CAD Drawing View"
@@ -206,7 +207,7 @@
         oncontextmenu={handleContextMenu}
     >
         <!-- panzoom draggable and zoomable layer -->
-        <g class="drawing" bind:this={drawingGroup}>
+        <g class="drawing" use:initPanzoomElement>
             <!-- Viewport transform layer: Map from CAD to SVG coordinate systems.
                  1. Flip y axis
                  2. Unit scaling so screen matches physical size
@@ -214,11 +215,7 @@
              -->
             <g
                 class="viewport-transform"
-                transform="scale({drawingStore.unitScale}) 
-                          translate({-drawingStore.viewport.offset.x}, 
-                                    {drawingStore.viewport.height +
-                    drawingStore.viewport.offset.y}) 
-                          scale(1, -1)"
+                transform="scale(1, -1) scale({drawingStore.unitScale})"
             >
                 <!-- Coordinate cross at origin -->
                 <CoordinateGroup {zoomScale} />

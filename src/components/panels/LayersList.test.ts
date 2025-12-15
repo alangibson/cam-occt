@@ -17,7 +17,7 @@ global.ResizeObserver = class ResizeObserver {
 
 describe('LayersList Component', () => {
     beforeEach(() => {
-        drawingStore.setDisplayUnit(Unit.MM);
+        drawingStore.displayUnit = Unit.MM;
     });
 
     it('should render without errors', () => {

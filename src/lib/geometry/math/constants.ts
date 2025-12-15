@@ -24,13 +24,3 @@ export const INTERSECTION_TOLERANCE: number = 1e-6;
  * Standard tessellation count for smooth curves
  */
 export const STANDARD_TESSELLATION_COUNT: number = 20;
-
-/**
- * Three quarters percentage value for ratios and fractions
- */
-export const THREE_QUARTERS_PERCENT: number = 0.75;
-
-/**
- * Quarter percentage value for ratios and fractions
- */
-export const QUARTER_PERCENT: number = 0.25;

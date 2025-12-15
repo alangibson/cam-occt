@@ -16,7 +16,7 @@ vi.mock('$lib/cam/drawing/drawing-size', () => ({
 
 describe('Footer Component', () => {
     beforeEach(() => {
-        drawingStore.setDisplayUnit(Unit.MM);
+        drawingStore.displayUnit = Unit.MM;
     });
 
     it('should render without errors', () => {

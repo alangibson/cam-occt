@@ -224,15 +224,15 @@ describe('drawingStore', () => {
     });
 
     describe('setViewTransform', () => {
-        it('should update scale and offset', () => {
+        it('should update scale and pan', () => {
             const scale = 2;
-            const offset = { x: 100, y: 50 };
+            const pan = { x: 100, y: 50 };
 
-            drawingStore.setViewTransform(scale, offset);
+            drawingStore.setViewTransform(scale, pan);
 
             const state = drawingStore;
             expect(state.scale).toBe(scale);
-            expect(state.offset).toEqual(offset);
+            expect(state.pan).toEqual(pan);
         });
     });
 
@@ -280,15 +280,15 @@ describe('drawingStore', () => {
 
     describe('setDisplayUnit', () => {
         it('should update display unit', () => {
-            drawingStore.setDisplayUnit(Unit.INCH);
+            drawingStore.displayUnit = Unit.INCH;
 
             const state = drawingStore;
             expect(state.displayUnit).toBe(Unit.INCH);
         });
 
         it('should switch between units', () => {
-            drawingStore.setDisplayUnit(Unit.INCH);
-            drawingStore.setDisplayUnit(Unit.MM);
+            drawingStore.displayUnit = Unit.INCH;
+            drawingStore.displayUnit = Unit.MM;
 
             const state = drawingStore;
             expect(state.displayUnit).toBe(Unit.MM);

@@ -74,7 +74,7 @@ The drawing canvas must maintain perfect synchronization with UI state:
 
 **Fixed Origin Position**:
 
-- Origin at 25% from left, 75% from top of canvas
+- Origin at 10% from left, 90% from top of canvas
 - Independent of column widths or UI layout
 - Only changes via user panning
 

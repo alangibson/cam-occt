@@ -181,15 +181,15 @@ describe('viewport-culling', () => {
                 1.0 // physicalScale
             );
 
-            // Origin should be at 25% from left (200px), 75% from top (450px)
-            // Top-left world coordinates: (0 - 200) / 1 = -200, -(0 - 450) / 1 = 450
-            // Bottom-right world coordinates: (800 - 200) / 1 = 600, -(600 - 450) / 1 = -150
+            // Origin should be at 10% from left (80px), 90% from top (540px)
+            // Top-left world coordinates: (0 - 80) / 1 = -80, -(0 - 540) / 1 = 540
+            // Bottom-right world coordinates: (800 - 80) / 1 = 720, -(600 - 540) / 1 = -60
 
             expect(result).toEqual({
-                minX: -200,
-                maxX: 600,
-                minY: -150,
-                maxY: 450,
+                minX: -80,
+                maxX: 720,
+                minY: -60,
+                maxY: 540,
             });
         });
 
@@ -204,10 +204,10 @@ describe('viewport-culling', () => {
 
             // With 2x zoom, world coordinates are halved
             expect(result).toEqual({
-                minX: -100,
-                maxX: 300,
-                minY: -75,
-                maxY: 225,
+                minX: -40,
+                maxX: 360,
+                minY: -30,
+                maxY: 270,
             });
         });
 
@@ -220,12 +220,12 @@ describe('viewport-culling', () => {
                 1.0
             );
 
-            // Origin shifts by offset: (200 + 100, 450 - 50) = (300, 400)
+            // Origin shifts by offset: (80 + 100, 540 - 50) = (180, 490)
             expect(result).toEqual({
-                minX: -300,
-                maxX: 500,
-                minY: -200,
-                maxY: 400,
+                minX: -180,
+                maxX: 620,
+                minY: -110,
+                maxY: 490,
             });
         });
 
@@ -240,10 +240,10 @@ describe('viewport-culling', () => {
 
             // With 2x physical scale, total scale is 2x
             expect(result).toEqual({
-                minX: -100,
-                maxX: 300,
-                minY: -75,
-                maxY: 225,
+                minX: -40,
+                maxX: 360,
+                minY: -30,
+                maxY: 270,
             });
         });
 
@@ -257,8 +257,8 @@ describe('viewport-culling', () => {
             );
 
             const totalScale = 1.5 * 0.5; // 0.75
-            const originX = 400 * 0.25 - 25; // 75
-            const originY = 300 * 0.75 + 10; // 235
+            const originX = 400 * 0.1 - 25; // 15
+            const originY = 300 * 0.9 + 10; // 280
 
             expect(result).toEqual({
                 minX: (0 - originX) / totalScale,

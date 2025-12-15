@@ -251,6 +251,8 @@ export default [
         prompt: "readonly",
         confirm: "readonly",
         HTMLSelectElement: "readonly",
+        HTMLDivElement: "readonly",
+        SVGGElement: "readonly",
       },
     },
     rules: {

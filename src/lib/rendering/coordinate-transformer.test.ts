@@ -11,12 +11,12 @@ describe('CoordinateTransformer', () => {
     });
 
     describe('Fixed Origin Position', () => {
-        it('should position origin at 25% from left, 75% from top', () => {
+        it('should position origin at 10% from left, 90% from top', () => {
             const worldOrigin = { x: 0, y: 0 };
             const screenOrigin = transformer.worldToScreen(worldOrigin);
 
-            expect(screenOrigin.x).toBe(canvas.width * 0.25); // 200
-            expect(screenOrigin.y).toBe(canvas.height * 0.75); // 450
+            expect(screenOrigin.x).toBe(canvas.width * 0.1); // 80
+            expect(screenOrigin.y).toBe(canvas.height * 0.9); // 540
         });
 
         it('should maintain origin position when canvas resizes', () => {
@@ -24,8 +24,8 @@ describe('CoordinateTransformer', () => {
 
             // Original canvas
             const screenOrigin1 = transformer.worldToScreen(worldOrigin);
-            expect(screenOrigin1.x).toBe(200);
-            expect(screenOrigin1.y).toBe(450);
+            expect(screenOrigin1.x).toBe(80);
+            expect(screenOrigin1.y).toBe(540);
 
             // Resized canvas
             const resizedCanvas = { width: 1200, height: 800 };
@@ -35,14 +35,14 @@ describe('CoordinateTransformer', () => {
             });
             const screenOrigin2 = transformer2.worldToScreen(worldOrigin);
 
-            expect(screenOrigin2.x).toBe(resizedCanvas.width * 0.25); // 300
-            expect(screenOrigin2.y).toBe(resizedCanvas.height * 0.75); // 600
+            expect(screenOrigin2.x).toBe(resizedCanvas.width * 0.1); // 120
+            expect(screenOrigin2.y).toBe(resizedCanvas.height * 0.9); // 720
         });
     });
 
     describe('Screen to World Transformation', () => {
         it('should convert screen origin to world origin', () => {
-            const screenPoint = { x: 200, y: 450 }; // Screen origin
+            const screenPoint = { x: 80, y: 540 }; // Screen origin
             const worldPoint = transformer.screenToWorld(screenPoint);
 
             expect(worldPoint.x).toBeCloseTo(0);
@@ -50,7 +50,7 @@ describe('CoordinateTransformer', () => {
         });
 
         it('should handle Y-axis flip correctly', () => {
-            const screenPoint = { x: 200, y: 350 }; // 100 pixels above origin
+            const screenPoint = { x: 80, y: 440 }; // 100 pixels above origin
             const worldPoint = transformer.screenToWorld(screenPoint);
 
             expect(worldPoint.x).toBeCloseTo(0);
@@ -62,7 +62,7 @@ describe('CoordinateTransformer', () => {
                 x: 0,
                 y: 0,
             });
-            const screenPoint = { x: 300, y: 450 }; // 100 pixels right of origin
+            const screenPoint = { x: 180, y: 540 }; // 100 pixels right of origin
             const worldPoint = transformer2x.screenToWorld(screenPoint);
 
             expect(worldPoint.x).toBeCloseTo(50); // 100 / 2
@@ -74,7 +74,7 @@ describe('CoordinateTransformer', () => {
                 x: 50,
                 y: -50,
             });
-            const screenPoint = { x: 250, y: 400 }; // Origin shifted by offset
+            const screenPoint = { x: 130, y: 490 }; // Origin shifted by offset
             const worldPoint = transformerOffset.screenToWorld(screenPoint);
 
             expect(worldPoint.x).toBeCloseTo(0);
@@ -88,7 +88,7 @@ describe('CoordinateTransformer', () => {
                 { x: 0, y: 0 },
                 2
             );
-            const screenPoint = { x: 400, y: 450 }; // 200 pixels right of origin
+            const screenPoint = { x: 280, y: 540 }; // 200 pixels right of origin
             const worldPoint = transformerPhys.screenToWorld(screenPoint);
 
             expect(worldPoint.x).toBeCloseTo(100); // 200 / 2
@@ -110,8 +110,8 @@ describe('CoordinateTransformer', () => {
             const worldPoint = { x: -100, y: -50 };
             const screenPoint = transformer.worldToScreen(worldPoint);
 
-            expect(screenPoint.x).toBe(100); // 200 - 100
-            expect(screenPoint.y).toBe(500); // 450 + 50
+            expect(screenPoint.x).toBe(-20); // 80 - 100
+            expect(screenPoint.y).toBe(590); // 540 + 50
         });
 
         it('should apply combined scale correctly', () => {
@@ -124,8 +124,8 @@ describe('CoordinateTransformer', () => {
             const worldPoint = { x: 10, y: 10 };
             const screenPoint = transformer3x.worldToScreen(worldPoint);
 
-            expect(screenPoint.x).toBe(260); // 200 + 10 * 6
-            expect(screenPoint.y).toBe(390); // 450 - 10 * 6
+            expect(screenPoint.x).toBe(140); // 80 + 10 * 6
+            expect(screenPoint.y).toBe(480); // 540 - 10 * 6
         });
     });
 
@@ -241,7 +241,7 @@ describe('CoordinateTransformer', () => {
             const worldPoint = { x: 100, y: 0 };
             const screenPoint = transformerMM.worldToScreen(worldPoint);
 
-            expect(screenPoint.x - 200).toBeCloseTo(378, 0);
+            expect(screenPoint.x - 80).toBeCloseTo(378, 0);
         });
 
         it('should handle inch to pixel conversion at 96 DPI', () => {
@@ -257,7 +257,7 @@ describe('CoordinateTransformer', () => {
             const worldPoint = { x: 2, y: 0 };
             const screenPoint = transformerInch.worldToScreen(worldPoint);
 
-            expect(screenPoint.x - 200).toBe(192);
+            expect(screenPoint.x - 80).toBe(192);
         });
     });
 
@@ -267,8 +267,8 @@ describe('CoordinateTransformer', () => {
             transformer.updateCanvas(newCanvas);
 
             const origin = transformer.getScreenOrigin();
-            expect(origin.x).toBe(newCanvas.width * 0.25);
-            expect(origin.y).toBe(newCanvas.height * 0.75);
+            expect(origin.x).toBe(newCanvas.width * 0.1);
+            expect(origin.y).toBe(newCanvas.height * 0.9);
         });
 
         it('should maintain transformations after canvas update', () => {
@@ -332,8 +332,8 @@ describe('CoordinateTransformer', () => {
         it('should return correct origin without offset', () => {
             const origin = transformer.getScreenOrigin();
 
-            expect(origin.x).toBe(canvas.width * 0.25);
-            expect(origin.y).toBe(canvas.height * 0.75);
+            expect(origin.x).toBe(canvas.width * 0.1);
+            expect(origin.y).toBe(canvas.height * 0.9);
         });
 
         it('should apply offset to origin', () => {
@@ -342,8 +342,8 @@ describe('CoordinateTransformer', () => {
 
             const origin = transformer.getScreenOrigin();
 
-            expect(origin.x).toBe(canvas.width * 0.25 + offset.x);
-            expect(origin.y).toBe(canvas.height * 0.75 + offset.y);
+            expect(origin.x).toBe(canvas.width * 0.1 + offset.x);
+            expect(origin.y).toBe(canvas.height * 0.9 + offset.y);
         });
 
         it('should handle negative offsets', () => {
@@ -352,8 +352,8 @@ describe('CoordinateTransformer', () => {
 
             const origin = transformer.getScreenOrigin();
 
-            expect(origin.x).toBe(canvas.width * 0.25 - 100);
-            expect(origin.y).toBe(canvas.height * 0.75 + 75);
+            expect(origin.x).toBe(canvas.width * 0.1 - 100);
+            expect(origin.y).toBe(canvas.height * 0.9 + 75);
         });
     });
 

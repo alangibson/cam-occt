@@ -1,8 +1,7 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import {
-    QUARTER_PERCENT,
-    THREE_QUARTERS_PERCENT,
-} from '$lib/geometry/math/constants';
+
+const ORIGIN_POSITION_X = 0.1; // Origin at 10% from left edge
+const ORIGIN_POSITION_Y = 0.9; // Origin at 90% from top edge
 
 /**
  * Manages coordinate transformations between different coordinate systems:
@@ -10,7 +9,7 @@ import {
  * - World coordinates: CAD coordinates (Y+ up)
  * - Canvas coordinates: Canvas drawing coordinates (Y+ down)
  *
- * The origin is always positioned at 25% from left, 75% from top of the canvas.
+ * The origin is always positioned at 10% from left, 90% from top of the canvas.
  */
 export class CoordinateTransformer {
     private totalScale: number;
@@ -52,10 +51,8 @@ export class CoordinateTransformer {
     getScreenOrigin(): Point2D {
         if (!this.cachedScreenOrigin) {
             this.cachedScreenOrigin = {
-                x: this.canvas.width * QUARTER_PERCENT + this.panOffset.x,
-                y:
-                    this.canvas.height * THREE_QUARTERS_PERCENT +
-                    this.panOffset.y,
+                x: this.canvas.width * ORIGIN_POSITION_X + this.panOffset.x,
+                y: this.canvas.height * ORIGIN_POSITION_Y + this.panOffset.y,
             };
         }
         return this.cachedScreenOrigin;
@@ -180,5 +177,4 @@ export class CoordinateTransformer {
     screenToWorldDistance(screenDistance: number): number {
         return screenDistance / this.totalScale;
     }
-
 }

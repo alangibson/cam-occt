@@ -9,14 +9,17 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { shapeBoundingBox } from '$lib/cam/shape/functions';
-import {
-    QUARTER_PERCENT,
-    THREE_QUARTERS_PERCENT,
-} from '$lib/geometry/math/constants';
+
 /**
  * Default margin for viewport culling in world units
  */
 const VIEWPORT_CULLING_MARGIN = 50;
+
+/**
+ * Fixed origin position: 10% from left, 90% from top
+ */
+const ORIGIN_POSITION_X = 0.1; // Origin at 10% from left edge
+const ORIGIN_POSITION_Y = 0.9; // Origin at 90% from top edge
 
 export interface ViewportBounds {
     minX: number;
@@ -88,9 +91,9 @@ export function calculateViewportBounds(
 ): ViewportBounds {
     const totalScale = scale * physicalScale;
 
-    // Calculate origin position
-    const originX = canvasWidth * QUARTER_PERCENT + offset.x;
-    const originY = canvasHeight * THREE_QUARTERS_PERCENT + offset.y;
+    // Calculate origin position (10% from left, 90% from top)
+    const originX = canvasWidth * ORIGIN_POSITION_X + offset.x;
+    const originY = canvasHeight * ORIGIN_POSITION_Y + offset.y;
 
     // Convert canvas corners to world coordinates
     const topLeft = {

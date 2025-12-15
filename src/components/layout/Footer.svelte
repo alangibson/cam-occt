@@ -11,6 +11,8 @@
     const scale = $derived(drawingStore.scale);
     const fileName = $derived(drawing?.fileName ?? null);
     const selectionMode = $derived(settingsStore.settings.selectionMode);
+    const originX = $derived(drawingStore.offset.x);
+    const originY = $derived(drawingStore.offset.y);
 
     let drawingSize = $state<DrawingSize | null>(null);
 
@@ -36,12 +38,16 @@
         return `${(scale * 100).toFixed(0)}%`;
     }
 
+    function formatOrigin(x: number, y: number, units: string): string {
+        return `${x.toFixed(2)}, ${y.toFixed(2)} ${units}`;
+    }
+
     function handleFitClick() {
         drawingStore.zoomToFit();
     }
 
     function handleZoom100Click() {
-        drawingStore.setViewTransform(1, drawingStore.offset);
+        drawingStore.zoomToPhysical();
     }
 
     function handleSelectionModeChange(event: Event) {
@@ -65,6 +71,9 @@
                     {#if drawingSize.source === 'calculated'}
                         <span class="source-note">(calculated)</span>
                     {/if}
+                </span>
+                <span class="origin-info">
+                    Origin: {formatOrigin(originX, originY, drawingSize.units)}
                 </span>
             {:else if drawing}
                 <span class="no-size">Unable to calculate size</span>
@@ -143,6 +152,11 @@
     }
 
     .size-info {
+        font-family: 'Courier New', monospace;
+        font-weight: 500;
+    }
+
+    .origin-info {
         font-family: 'Courier New', monospace;
         font-weight: 500;
     }

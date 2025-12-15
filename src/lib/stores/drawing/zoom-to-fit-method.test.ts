@@ -30,21 +30,21 @@ describe('DrawingStore zoomToFit method', () => {
 
         drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
-        // Manually set a different zoom and offset
+        // Manually set a different zoom and pan
         drawingStore.setViewTransform(0.5, { x: -50, y: -50 });
 
         const stateBeforeFit = drawingStore;
         expect(stateBeforeFit.scale).toBe(0.5);
-        expect(stateBeforeFit.offset).toEqual({ x: -50, y: -50 });
+        expect(stateBeforeFit.pan).toEqual({ x: -50, y: -50 });
 
         // Call zoomToFit
         drawingStore.zoomToFit();
 
         const stateAfterFit = drawingStore;
 
-        // The scale and offset should have changed
+        // The scale and pan should have changed
         expect(stateAfterFit.scale).not.toBe(0.5);
-        expect(stateAfterFit.offset).not.toEqual({ x: -50, y: -50 });
+        expect(stateAfterFit.pan).not.toEqual({ x: -50, y: -50 });
 
         // The drawing should still be loaded
         expect(stateAfterFit.drawing?.shapes.length).toBe(1);
@@ -92,21 +92,21 @@ describe('DrawingStore zoomToFit method', () => {
 
         drawingStore.setDrawing(new Drawing(emptyDrawing), 'empty.dxf');
 
-        // Set a custom zoom and offset
+        // Set a custom zoom and pan
         drawingStore.setViewTransform(3, { x: 200, y: 200 });
 
         const stateBeforeFit = drawingStore;
         expect(stateBeforeFit.scale).toBe(3);
-        expect(stateBeforeFit.offset).toEqual({ x: 200, y: 200 });
+        expect(stateBeforeFit.pan).toEqual({ x: 200, y: 200 });
 
         // Call zoomToFit
         drawingStore.zoomToFit();
 
         const stateAfterFit = drawingStore;
 
-        // For empty drawings, it should use default zoom (1) and offset (0, 0)
+        // For empty drawings, it should use default zoom (1) and position origin at 10% from left, 90% from top
         expect(stateAfterFit.scale).toBe(1);
-        expect(stateAfterFit.offset).toEqual({ x: 0, y: 0 });
+        expect(stateAfterFit.pan).toEqual({ x: 100, y: 720 }); // 10% of 1000, 90% of 800
     });
 
     it('should be callable multiple times', () => {
