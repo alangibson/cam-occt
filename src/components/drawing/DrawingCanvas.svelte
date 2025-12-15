@@ -166,6 +166,7 @@
     const showChainTessellation = $derived(
         visualizationStore.showChainTessellation
     );
+    const showPartSurface = $derived(visualizationStore.showPartSurface);
     const showCutNormals = $derived(cutsState.showCutNormals);
     const showCutDirections = $derived(cutsState.showCutDirections);
     const showCutPaths = $derived(cutsState.showCutPaths);
@@ -425,6 +426,7 @@
                     showCuts: true,
                     showChains: true,
                     showParts: true,
+                    showPartSurface,
                     showOverlays: true,
                     showShapePaths,
                     showShapeStartPoints,
