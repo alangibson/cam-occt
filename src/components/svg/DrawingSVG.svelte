@@ -10,6 +10,14 @@
     import CutGroup from './CutGroup.svelte';
     import RapidGroup from './RapidGroup.svelte';
     import CoordinateGroup from './CoordinateGroup.svelte';
+    import OverlayGroup from './OverlayGroup.svelte';
+    import type { WorkflowStage } from '$lib/stores/workflow/enums';
+
+    type Props = {
+        currentStage: WorkflowStage;
+    };
+
+    let { currentStage }: Props = $props();
 
     // SVG and panzoom references
     // eslint-disable-next-line no-undef
@@ -214,6 +222,9 @@
             >
                 <!-- Coordinate cross at origin -->
                 <CoordinateGroup {zoomScale} />
+
+                <!-- Overlay layer (toolhead, etc.) -->
+                <OverlayGroup {currentStage} {zoomScale} />
 
                 <!-- Shape layer -->
                 {#if drawingStore.drawing}

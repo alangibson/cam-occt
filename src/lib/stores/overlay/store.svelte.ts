@@ -37,7 +37,7 @@ function createDefaultOverlays(): Record<WorkflowStage, DrawingOverlay> {
     };
 }
 
-class OverlayStore {
+class SimulationStore {
     currentStage = $state<WorkflowStage>(WorkflowStage.IMPORT);
     overlays = $state<Record<WorkflowStage, DrawingOverlay>>(
         createDefaultOverlays()
@@ -139,4 +139,4 @@ class OverlayStore {
     }
 }
 
-export const overlayStore = new OverlayStore();
+export const overlayStore = new SimulationStore();

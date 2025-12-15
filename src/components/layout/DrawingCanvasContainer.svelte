@@ -24,7 +24,7 @@
         {#if settingsStore.settings.renderer === Renderer.Canvas}
             <DrawingCanvas {onChainClick} {onPartClick} {currentStage} />
         {:else if settingsStore.settings.renderer === Renderer.SVG}
-            <DrawingSVG />
+            <DrawingSVG {currentStage} />
         {/if}
     </div>
 </div>
