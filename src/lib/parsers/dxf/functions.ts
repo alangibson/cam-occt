@@ -466,8 +466,10 @@ export async function parseDXF(content: string): Promise<DrawingData> {
                     }
                 }
             } catch (error) {
-                // Failed to convert entity - continue processing other entities
-                void error;
+                console.error(
+                    'Failed to convert entity - continue processing other entities',
+                    error
+                );
             }
         });
     }

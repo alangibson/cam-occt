@@ -18,7 +18,7 @@ import type { DxfPolyline, DxfPolylineVertex } from './interfaces';
 import { shapeBoundingBox } from '$lib/cam/shape/functions';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
-function createBulgeOrLineShape(
+function createArcOrLineShape(
     start: DxfPolylineVertex,
     end: Point2D,
     bulge?: number
@@ -34,7 +34,7 @@ function createBulgeOrLineShape(
         }
     }
 
-    // Fallback to line if no bulge or arc conversion fails
+    // Fallback to line if no bulge
     return {
         id: generateId(),
         type: GeometryType.LINE,
@@ -134,18 +134,23 @@ export function generateSegments(
         return segments;
     }
 
+    // TODO what about when bulge is on end vertex?
+
     // Create segments between consecutive points
     for (let i: number = 0; i < sourcePoints.length - 1; i++) {
         const start: DxfPolylineVertex = sourcePoints[i];
         const end: DxfPolylineVertex = sourcePoints[i + 1];
 
+        // console.log('vertex start', start);
+        // console.log('vertex end', end);
+
         // Check if start point has bulge data (for vertices array)
-        const bulge: number | undefined =
+        const startBulge: number | undefined =
             'bulge' in start && typeof start.bulge === 'number'
                 ? start.bulge
                 : undefined;
 
-        segments.push(createBulgeOrLineShape(start, end, bulge));
+        segments.push(createArcOrLineShape(start, end, startBulge));
     }
 
     // Handle closed polylines - create segment from last point back to first
@@ -161,12 +166,12 @@ export function generateSegments(
             Math.abs(start.y - end.y) < EPSILON;
 
         if (!isAlreadyClosed) {
-            const bulge: number | undefined =
+            const startBulge: number | undefined =
                 'bulge' in start && typeof start.bulge === 'number'
                     ? start.bulge
                     : undefined;
 
-            segments.push(createBulgeOrLineShape(start, end, bulge));
+            segments.push(createArcOrLineShape(start, end, startBulge));
         }
     }
 

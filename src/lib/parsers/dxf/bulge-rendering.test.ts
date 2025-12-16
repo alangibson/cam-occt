@@ -13,6 +13,7 @@ import type {
     DxfPolylineVertex,
 } from '$lib/geometry/dxf-polyline/interfaces';
 import { Shape } from '$lib/cam/shape/classes';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('Bulge Rendering Fixes', () => {
     describe('Polylinie.dxf', () => {
@@ -161,6 +162,105 @@ describe('Bulge Rendering Fixes', () => {
                 decomposed.shapes.map((s: ShapeData) => s.type)
             );
             expect(decomposedTypes.size).toBeGreaterThan(1);
+        });
+    });
+
+    describe('left side tilting table mount.DXF', () => {
+        it('should parse polyline with 8 arcs and 8 lines', async () => {
+            const dxfPath = path.resolve(
+                'tests/dxf/left side tilting table mount.DXF'
+            );
+            const dxfContent = readFileSync(dxfPath, 'utf-8');
+
+            // Parse DXF
+            const drawing = await parseDXF(dxfContent);
+
+            // Should have one polyline
+            const polylines = drawing.shapes.filter(
+                (s) => s.type === GeometryType.POLYLINE
+            );
+            expect(polylines.length).toBe(1);
+
+            // Get the polyline's internal shapes (segments)
+            const polyline = polylines[0];
+            const geometry = polyline.geometry as DxfPolyline;
+            const segments = geometry.shapes;
+
+            // Log all segment types for debugging
+            console.log('Segment types in polyline:');
+            segments.forEach((s, i) => {
+                console.log(`  [${i}] type: "${s.type}" (${typeof s.type})`);
+            });
+
+            // Count arcs and lines
+            const arcs = segments.filter((s) => s.type === GeometryType.ARC);
+            const lines = segments.filter((s) => s.type === GeometryType.LINE);
+
+            console.log(`Found ${arcs.length} arcs and ${lines.length} lines`);
+
+            // Should have exactly 8 arcs and 8 lines
+            expect(arcs.length).toBe(8);
+            expect(lines.length).toBe(8);
+
+            // Verify each arc has proper arc geometry
+            arcs.forEach((arc, _) => {
+                expect(arc.type).toBe(GeometryType.ARC);
+                const arcGeom = arc.geometry as Arc;
+                expect(arcGeom.center).toBeDefined();
+                expect(arcGeom.radius).toBeGreaterThan(0);
+                expect(arcGeom.startAngle).toBeDefined();
+                expect(arcGeom.endAngle).toBeDefined();
+            });
+
+            // Verify each line has proper line geometry
+            lines.forEach((line, _) => {
+                expect(line.type).toBe(GeometryType.LINE);
+            });
+        });
+
+        it('should decompose polyline and preserve 8 arcs and 8 lines', async () => {
+            const dxfPath = path.resolve(
+                'tests/dxf/left side tilting table mount.DXF'
+            );
+            const dxfContent = readFileSync(dxfPath, 'utf-8');
+
+            // Parse DXF
+            const drawing = await parseDXF(dxfContent);
+
+            // Apply decomposition
+            const decomposed = decomposePolylines(
+                drawing.shapes.map((s) => new Shape(s))
+            );
+
+            // Log all decomposed shape types for debugging
+            console.log('Decomposed shape types:');
+            decomposed.forEach((s, i) => {
+                console.log(`  [${i}] type: "${s.type}" (${typeof s.type})`);
+            });
+
+            // Count arcs and lines in decomposed result
+            const arcs = decomposed.filter((s) => s.type === GeometryType.ARC);
+            const lines = decomposed.filter(
+                (s) => s.type === GeometryType.LINE
+            );
+
+            console.log(
+                `Decomposed: ${arcs.length} arcs and ${lines.length} lines`
+            );
+
+            // Should have exactly 8 arcs and 8 lines after decomposition
+            expect(arcs.length).toBe(8);
+            expect(lines.length).toBe(8);
+
+            // Verify each arc Shape has proper type
+            arcs.forEach((arc) => {
+                expect(arc.type).toBe(GeometryType.ARC);
+            });
+
+            // Verify each line Shape has proper type
+            lines.forEach((line) => {
+                expect(line.type).toBe(GeometryType.LINE);
+            });
         });
     });
 });

@@ -21,7 +21,7 @@ const GEOMETRIC_PRECISION_TOLERANCE_MM: number = 0.001;
  * 0.01mm provides smooth curves while maintaining reasonable point counts
  * Separate from GEOMETRIC_PRECISION_TOLERANCE which is for point coincidence
  */
-export const CURVE_TESSELLATION_TOLERANCE_MM = 0.001;
+export const CURVE_TESSELLATION_TOLERANCE_MM = 0.0001;
 
 export class GeometryDefaults {
     private measurementSystem: MeasurementSystem;

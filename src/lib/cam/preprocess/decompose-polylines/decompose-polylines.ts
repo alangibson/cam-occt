@@ -21,26 +21,25 @@ export function decomposePolylines(shapes: Shape[]): Shape[] {
             // Polylines now only have shapes - extract each shape's geometry as an individual shape
             if (polyline.shapes) {
                 polyline.shapes.forEach((polylineShape) => {
-                    const segment: Line | Arc = polylineShape.geometry as
-                        | Line
-                        | Arc;
-                    if ('start' in segment && 'end' in segment) {
-                        // Line segment
-                        decomposedShapes.push(
-                            new Shape({
-                                id: generateId(),
-                                type: GeometryType.LINE,
-                                geometry: segment,
-                                layer: shape.layer,
-                            })
-                        );
-                    } else if ('center' in segment && 'radius' in segment) {
+                    // Use the shape's type directly instead of checking geometry properties
+                    // The type is already correct from parsing
+                    if (polylineShape.type === GeometryType.ARC) {
                         // Arc segment
                         decomposedShapes.push(
                             new Shape({
                                 id: generateId(),
                                 type: GeometryType.ARC,
-                                geometry: segment,
+                                geometry: polylineShape.geometry as Arc,
+                                layer: shape.layer,
+                            })
+                        );
+                    } else if (polylineShape.type === GeometryType.LINE) {
+                        // Line segment
+                        decomposedShapes.push(
+                            new Shape({
+                                id: generateId(),
+                                type: GeometryType.LINE,
+                                geometry: polylineShape.geometry as Line,
                                 layer: shape.layer,
                             })
                         );

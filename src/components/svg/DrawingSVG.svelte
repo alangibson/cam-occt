@@ -58,7 +58,7 @@
     // Initialize panzoom instance with configuration
     function initPanzoomElement(element: SVGGElement) {
         panzoomInstance = panzoom(element, {
-            maxZoom: 10,
+            maxZoom: 50,
             minZoom: 0.05,
             smoothScroll: true,
             zoomDoubleClickSpeed: 1, // Disable double-click zoom

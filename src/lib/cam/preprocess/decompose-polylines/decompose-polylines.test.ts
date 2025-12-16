@@ -240,4 +240,56 @@ describe('Decompose Polylines Algorithm', () => {
             expect(result[1].id).not.toBe('poly1');
         });
     });
+
+    describe('Arc Type Preservation', () => {
+        it('should preserve arc types when decomposing polylines with bulges', () => {
+            // Create a polyline with alternating line and arc segments
+            // Bulge of 0.5 creates an arc
+            const polylineShape = createPolylineFromVertices(
+                [
+                    { x: 0, y: 0, bulge: 0 }, // Line to next point
+                    { x: 10, y: 0, bulge: 0.5 }, // Arc to next point
+                    { x: 20, y: 0, bulge: 0 }, // Line to next point
+                    { x: 30, y: 0, bulge: -0.3 }, // Arc to next point
+                    { x: 40, y: 0, bulge: 0 }, // Line (end of open polyline)
+                ],
+                false,
+                { id: 'poly1', layer: 'test' }
+            );
+
+            const shapes: ShapeData[] = [polylineShape];
+            const result = decomposePolylines(shapes.map((s) => new Shape(s)));
+
+            // Should have 4 segments: line, arc, line, arc
+            expect(result).toHaveLength(4);
+
+            // Verify each segment has the correct type
+            expect(result[0].type).toBe(GeometryType.LINE);
+            expect(result[1].type).toBe(GeometryType.ARC);
+            expect(result[2].type).toBe(GeometryType.LINE);
+            expect(result[3].type).toBe(GeometryType.ARC);
+
+            // Verify arc geometries have correct properties
+            const arc1 = result[1].geometry;
+            expect('center' in arc1).toBe(true);
+            expect('radius' in arc1).toBe(true);
+            expect('startAngle' in arc1).toBe(true);
+            expect('endAngle' in arc1).toBe(true);
+
+            const arc2 = result[3].geometry;
+            expect('center' in arc2).toBe(true);
+            expect('radius' in arc2).toBe(true);
+            expect('startAngle' in arc2).toBe(true);
+            expect('endAngle' in arc2).toBe(true);
+
+            // Verify line geometries have correct properties
+            const line1 = result[0].geometry;
+            expect('start' in line1).toBe(true);
+            expect('end' in line1).toBe(true);
+
+            const line3 = result[2].geometry;
+            expect('start' in line3).toBe(true);
+            expect('end' in line3).toBe(true);
+        });
+    });
 });

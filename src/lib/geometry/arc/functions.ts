@@ -3,7 +3,6 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from './interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle/constants';
-import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
@@ -132,100 +131,90 @@ export function isArc(segment: Geometry): segment is Arc {
 export function convertBulgeToArc(
     bulge: number,
     start: Point2D,
-    end: Point2D,
-    tolerance?: number
+    end: Point2D
 ): Arc | null {
-    const effectiveTolerance =
-        tolerance ?? getDefaults().geometry.precisionTolerance;
-    try {
-        // DXF bulge-to-arc conversion algorithm
-        // Reference: AutoCAD DXF documentation - bulge = tan(θ/4) where θ is the included angle
+    // DXF bulge-to-arc conversion algorithm
+    // Reference: AutoCAD DXF documentation - bulge = tan(θ/4) where θ is the included angle
 
-        const dx: number = end.x - start.x;
-        const dy: number = end.y - start.y;
-        const chordLength: number = Math.sqrt(dx * dx + dy * dy);
+    const dx: number = end.x - start.x;
+    const dy: number = end.y - start.y;
+    const chordLength: number = Math.sqrt(dx * dx + dy * dy);
 
-        if (chordLength < EPSILON) {
-            return null; // Degenerate segment
-        }
-
-        // Calculate included angle from bulge: θ = 4 * arctan(|bulge|)
-        const includedAngle: number =
-            QUARTER_CIRCLE_QUADRANTS * Math.atan(Math.abs(bulge));
-
-        // Calculate radius: R = chord / (2 * sin(θ/2))
-        const radius: number = chordLength / (2 * Math.sin(includedAngle / 2));
-
-        // Calculate chord midpoint
-        const chordMidX: number = (start.x + end.x) / 2;
-        const chordMidY: number = (start.y + end.y) / 2;
-
-        // Calculate unit vector perpendicular to chord (rotated 90° CCW)
-        const perpX: number = -dy / chordLength;
-        const perpY: number = dx / chordLength;
-
-        // Distance from chord midpoint to arc center
-        // Using the relationship: d = sqrt(R² - (chord/2)²)
-        const halfChord: number = chordLength / 2;
-        const centerDistance: number = Math.sqrt(
-            radius * radius - halfChord * halfChord
-        );
-
-        // Determine center position based on bulge sign
-        // Positive bulge = counterclockwise = center is on the left side of the chord
-        // Negative bulge = clockwise = center is on the right side of the chord
-        const direction: number =
-            bulge > 0 ? DIRECTION_COUNTERCLOCKWISE : DIRECTION_CLOCKWISE;
-        const centerX: number = chordMidX + direction * centerDistance * perpX;
-        const centerY: number = chordMidY + direction * centerDistance * perpY;
-
-        // Validate the calculation by checking distances from center to endpoints
-        const distToStart: number = Math.sqrt(
-            (start.x - centerX) ** 2 + (start.y - centerY) ** 2
-        );
-        const distToEnd: number = Math.sqrt(
-            (end.x - centerX) ** 2 + (end.y - centerY) ** 2
-        );
-
-        const validationTolerance: number = Math.max(
-            effectiveTolerance,
-            radius * effectiveTolerance
-        );
-        if (
-            Math.abs(distToStart - radius) > validationTolerance ||
-            Math.abs(distToEnd - radius) > validationTolerance
-        ) {
-            // Bulge conversion validation failed - calculated arc center doesn't maintain consistent radius to endpoints
-            return null;
-        }
-
-        // Calculate start and end angles
-        const startAngle: number = Math.atan2(
-            start.y - centerY,
-            start.x - centerX
-        );
-        const endAngle: number = Math.atan2(end.y - centerY, end.x - centerX);
-
-        // Normalize angles to [0, 2π) range
-        const normalizeAngle: (angle: number) => number = (
-            angle: number
-        ): number => {
-            while (angle < 0) angle += 2 * Math.PI;
-            while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
-            return angle;
-        };
-
-        return {
-            center: { x: centerX, y: centerY },
-            radius: Math.abs(radius),
-            startAngle: normalizeAngle(startAngle),
-            endAngle: normalizeAngle(endAngle),
-            clockwise: bulge < 0, // Negative bulge indicates clockwise direction
-        };
-    } catch {
-        // Error in bulge-to-arc conversion - mathematical error during conversion
-        return null;
+    if (chordLength < EPSILON) {
+        return null; // Degenerate segment
     }
+
+    // Calculate included angle from bulge: θ = 4 * arctan(|bulge|)
+    const includedAngle: number =
+        QUARTER_CIRCLE_QUADRANTS * Math.atan(Math.abs(bulge));
+
+    // Calculate radius: R = chord / (2 * sin(θ/2))
+    const radius: number = chordLength / (2 * Math.sin(includedAngle / 2));
+
+    // Calculate chord midpoint
+    const chordMidX: number = (start.x + end.x) / 2;
+    const chordMidY: number = (start.y + end.y) / 2;
+
+    // Calculate unit vector perpendicular to chord (rotated 90° CCW)
+    const perpX: number = -dy / chordLength;
+    const perpY: number = dx / chordLength;
+
+    // Distance from chord midpoint to arc center
+    // Using the relationship: d = sqrt(R² - (chord/2)²)
+    const halfChord: number = chordLength / 2;
+    const centerDistance: number = Math.sqrt(
+        radius * radius - halfChord * halfChord
+    );
+
+    // Determine center position based on bulge sign
+    // Positive bulge = counterclockwise = center is on the left side of the chord
+    // Negative bulge = clockwise = center is on the right side of the chord
+    const direction: number =
+        bulge > 0 ? DIRECTION_COUNTERCLOCKWISE : DIRECTION_CLOCKWISE;
+    const centerX: number = chordMidX + direction * centerDistance * perpX;
+    const centerY: number = chordMidY + direction * centerDistance * perpY;
+
+    // Validate the calculation by checking distances from center to endpoints
+    // const distToStart: number = Math.sqrt(
+    //     (start.x - centerX) ** 2 + (start.y - centerY) ** 2
+    // );
+    // const distToEnd: number = Math.sqrt(
+    //     (end.x - centerX) ** 2 + (end.y - centerY) ** 2
+    // );
+
+    // const validationTolerance: number = Math.max(
+    //     effectiveTolerance,
+    //     radius * effectiveTolerance
+    // );
+    // if (
+    //     Math.abs(distToStart - radius) > validationTolerance ||
+    //     Math.abs(distToEnd - radius) > validationTolerance
+    // ) {
+    //     // Bulge conversion validation failed - calculated arc center doesn't maintain consistent radius to endpoints
+    //     console.log('Bulge conversion validation failed - calculated arc center doesnt maintain consistent radius to endpoints');
+    //     return null;
+    // }
+
+    // Calculate start and end angles
+    const startAngle: number = Math.atan2(start.y - centerY, start.x - centerX);
+    const endAngle: number = Math.atan2(end.y - centerY, end.x - centerX);
+
+    // Normalize angles to [0, 2π) range
+    const normalizeAngle: (angle: number) => number = (
+        angle: number
+    ): number => {
+        while (angle < 0) angle += 2 * Math.PI;
+        while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
+        return angle;
+    };
+
+    return {
+        center: { x: centerX, y: centerY },
+        radius: Math.abs(radius),
+        startAngle: normalizeAngle(startAngle),
+        endAngle: normalizeAngle(endAngle),
+        clockwise: bulge < 0, // Negative bulge indicates clockwise direction
+    };
 }
 
 /**
