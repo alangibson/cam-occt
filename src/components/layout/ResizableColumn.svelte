@@ -28,6 +28,10 @@
         if (savedCollapsed === 'true') {
             isCollapsed = true;
             width = collapsedWidth;
+        } else if (savedCollapsed === null && position === 'left') {
+            // Default left column to collapsed on first load
+            isCollapsed = true;
+            width = collapsedWidth;
         }
     });
 
