@@ -587,7 +587,8 @@ function generateCutCommands(
 
             // Cut lead-in
             // Remove consecutive duplicate points to avoid redundant G-code commands
-            const deduplicatedLeadIn = deduplicateConsecutivePoints(leadInPoints);
+            const deduplicatedLeadIn =
+                deduplicateConsecutivePoints(leadInPoints);
             deduplicatedLeadIn.forEach((point, i) => {
                 if (i > 0) {
                     commands.push({
@@ -679,7 +680,8 @@ function generateCutCommands(
         const leadOutPoints = cut.leadOut;
         if (leadOutPoints.length > 0) {
             // Remove consecutive duplicate points to avoid redundant G-code commands
-            const deduplicatedLeadOut = deduplicateConsecutivePoints(leadOutPoints);
+            const deduplicatedLeadOut =
+                deduplicateConsecutivePoints(leadOutPoints);
             deduplicatedLeadOut.forEach((point, i) => {
                 if (i > 0) {
                     commands.push({

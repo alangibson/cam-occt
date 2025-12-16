@@ -909,13 +909,17 @@ describe('generateGCode', () => {
                 },
             };
 
-            const gcode = generateGCode([cutWithDuplicates], new Drawing(mockDrawing), {
-                units: Unit.MM,
-                safeZ: 10,
-                rapidFeedRate: 5000,
-                includeComments: false,
-                cutterCompensation: CutterCompensation.NONE,
-            });
+            const gcode = generateGCode(
+                [cutWithDuplicates],
+                new Drawing(mockDrawing),
+                {
+                    units: Unit.MM,
+                    safeZ: 10,
+                    rapidFeedRate: 5000,
+                    includeComments: false,
+                    cutterCompensation: CutterCompensation.NONE,
+                }
+            );
 
             // Count G1 commands in the output
             const g1Commands = (gcode.match(/G1 X/g) || []).length;
@@ -929,11 +933,17 @@ describe('generateGCode', () => {
 
             // Verify no consecutive near-duplicate coordinates in output
             const lines = gcode.split('\n');
-            const coordinateLines = lines.filter(line => line.includes('G1 X'));
+            const coordinateLines = lines.filter((line) =>
+                line.includes('G1 X')
+            );
 
             for (let i = 1; i < coordinateLines.length; i++) {
-                const prevMatch = coordinateLines[i - 1].match(/X([\d.-]+) Y([\d.-]+)/);
-                const currMatch = coordinateLines[i].match(/X([\d.-]+) Y([\d.-]+)/);
+                const prevMatch = coordinateLines[i - 1].match(
+                    /X([\d.-]+) Y([\d.-]+)/
+                );
+                const currMatch = coordinateLines[i].match(
+                    /X([\d.-]+) Y([\d.-]+)/
+                );
 
                 if (prevMatch && currMatch) {
                     const prevX = parseFloat(prevMatch[1]);

@@ -32,7 +32,7 @@ describe('ResizableColumn Component', () => {
         localStorageMock.getItem.mockReturnValue(null);
 
         const { container } = render(ResizableColumn, {
-            props: { storageKey: 'test-column', width: 300 },
+            props: { storageKey: 'test-column', width: 300, position: 'right' },
         });
 
         const column = container.querySelector(
@@ -120,7 +120,12 @@ describe('ResizableColumn Component', () => {
 
     it('should respect minimum width constraint', async () => {
         const { container } = render(ResizableColumn, {
-            props: { storageKey: 'test-column', width: 220, minWidth: 200 },
+            props: {
+                storageKey: 'test-column',
+                width: 220,
+                minWidth: 200,
+                position: 'right',
+            },
         });
 
         const resizeHandle = container.querySelector('.resize-handle');
@@ -159,14 +164,14 @@ describe('ResizableColumn Component', () => {
             props: {
                 storageKey: 'keyboard-test',
                 width: 280,
-                position: 'left',
+                position: 'right',
             },
         });
 
         const resizeHandle = container.querySelector('.resize-handle');
 
-        // Press right arrow (should increase width by 10px for left position)
-        await fireEvent.keyDown(resizeHandle!, { key: 'ArrowRight' });
+        // Press left arrow (should increase width by 10px for right position)
+        await fireEvent.keyDown(resizeHandle!, { key: 'ArrowLeft' });
 
         const column = container.querySelector(
             '.resizable-column-wrapper'
@@ -228,7 +233,7 @@ describe('ResizableColumn Component', () => {
 
     it('should apply dragging class during resize', async () => {
         const { container } = render(ResizableColumn, {
-            props: { storageKey: 'test-column' },
+            props: { storageKey: 'test-column', position: 'right' },
         });
 
         const resizeHandle = container.querySelector('.resize-handle');
@@ -250,7 +255,11 @@ describe('ResizableColumn Component', () => {
         localStorageMock.getItem.mockReturnValue(null);
 
         const { container } = render(ResizableColumn, {
-            props: { storageKey: 'collapse-test', width: 300 },
+            props: {
+                storageKey: 'collapse-test',
+                width: 300,
+                position: 'right',
+            },
         });
 
         const resizeHandle = container.querySelector('.resize-handle');
@@ -277,7 +286,7 @@ describe('ResizableColumn Component', () => {
         localStorageMock.getItem.mockReturnValue(null);
 
         const { container } = render(ResizableColumn, {
-            props: { storageKey: 'expand-test', width: 300 },
+            props: { storageKey: 'expand-test', width: 300, position: 'right' },
         });
 
         const resizeHandle = container.querySelector('.resize-handle');
@@ -307,7 +316,11 @@ describe('ResizableColumn Component', () => {
         localStorageMock.getItem.mockReturnValue(null);
 
         const { container } = render(ResizableColumn, {
-            props: { storageKey: 'resize-collapsed-test', width: 300 },
+            props: {
+                storageKey: 'resize-collapsed-test',
+                width: 300,
+                position: 'right',
+            },
         });
 
         const resizeHandle = container.querySelector('.resize-handle');
