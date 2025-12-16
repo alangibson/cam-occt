@@ -30,6 +30,47 @@ const GCODE_TOLERANCE_MM = 0.1;
  */
 const GCODE_TOLERANCE_INCHES = 0.004;
 
+/**
+ * Minimum distance between consecutive points to generate separate G-code commands
+ * Based on GCODE_COORDINATE_PRECISION (4 decimal places)
+ * Points closer than this threshold will be filtered out as duplicates
+ */
+const MIN_POINT_DISTANCE = 0.0001;
+
+/**
+ * Remove consecutive duplicate or near-duplicate points from an array
+ * Keeps the first point and filters out subsequent points that are within tolerance
+ *
+ * @param points Array of points to deduplicate
+ * @param tolerance Minimum distance between consecutive points (default: MIN_POINT_DISTANCE)
+ * @returns Filtered array with consecutive duplicates removed
+ */
+function deduplicateConsecutivePoints(
+    points: Point2D[],
+    tolerance: number = MIN_POINT_DISTANCE
+): Point2D[] {
+    if (points.length <= 1) {
+        return points;
+    }
+
+    const deduplicated: Point2D[] = [points[0]];
+
+    for (let i = 1; i < points.length; i++) {
+        const lastPoint = deduplicated[deduplicated.length - 1];
+        const currentPoint = points[i];
+
+        const dx = currentPoint.x - lastPoint.x;
+        const dy = currentPoint.y - lastPoint.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance >= tolerance) {
+            deduplicated.push(currentPoint);
+        }
+    }
+
+    return deduplicated;
+}
+
 interface GCodeOptions {
     units: Unit;
     safeZ: number;
@@ -545,7 +586,9 @@ function generateCutCommands(
             }
 
             // Cut lead-in
-            leadInPoints.forEach((point, i) => {
+            // Remove consecutive duplicate points to avoid redundant G-code commands
+            const deduplicatedLeadIn = deduplicateConsecutivePoints(leadInPoints);
+            deduplicatedLeadIn.forEach((point, i) => {
                 if (i > 0) {
                     commands.push({
                         code: 'G1',
@@ -600,7 +643,9 @@ function generateCutCommands(
     } else {
         // Fallback to linear interpolation
         const cutPoints: { x: number; y: number }[] = cut.points || [];
-        cutPoints.forEach((point, i) => {
+        // Remove consecutive duplicate points to avoid redundant G-code commands
+        const deduplicatedPoints = deduplicateConsecutivePoints(cutPoints);
+        deduplicatedPoints.forEach((point, i) => {
             if (i > 0) {
                 commands.push({
                     code: 'G1',
@@ -633,7 +678,9 @@ function generateCutCommands(
     if (cut.leadOut && cut.leadOut.length > 0) {
         const leadOutPoints = cut.leadOut;
         if (leadOutPoints.length > 0) {
-            leadOutPoints.forEach((point, i) => {
+            // Remove consecutive duplicate points to avoid redundant G-code commands
+            const deduplicatedLeadOut = deduplicateConsecutivePoints(leadOutPoints);
+            deduplicatedLeadOut.forEach((point, i) => {
                 if (i > 0) {
                     commands.push({
                         code: 'G1',

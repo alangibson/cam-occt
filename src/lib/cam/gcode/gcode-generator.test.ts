@@ -873,4 +873,82 @@ describe('generateGCode', () => {
             expect(gcode).toContain('M5 $2'); // Spot off
         });
     });
+
+    describe('Point deduplication', () => {
+        it('should remove consecutive duplicate points from cut path', () => {
+            const cutWithDuplicates: CutPath = {
+                id: 'path1',
+                shapeId: 'shape1',
+                // Points with near-duplicates that should be filtered out
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 10 },
+                    { x: 10.00001, y: 10.00001 }, // Too close to previous point
+                    { x: 10.00002, y: 10.00002 }, // Too close to previous point
+                    { x: 20, y: 20 }, // Far enough to keep
+                    { x: 20, y: 20 }, // Exact duplicate
+                    { x: 30, y: 30 }, // Far enough to keep
+                ],
+                leadIn: [
+                    { x: -5, y: 0 },
+                    { x: -4.99999, y: 0 }, // Too close to previous point
+                    { x: 0, y: 0 }, // Far enough to keep
+                ],
+                leadOut: [
+                    { x: 30, y: 30 },
+                    { x: 30.00001, y: 30 }, // Too close to previous point
+                    { x: 35, y: 30 }, // Far enough to keep
+                ],
+                isRapid: false,
+                parameters: {
+                    feedRate: 1000,
+                    pierceHeight: 3.8,
+                    pierceDelay: 0.5,
+                    cutHeight: 1.5,
+                    kerf: 1.5,
+                },
+            };
+
+            const gcode = generateGCode([cutWithDuplicates], new Drawing(mockDrawing), {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: false,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            // Count G1 commands in the output
+            const g1Commands = (gcode.match(/G1 X/g) || []).length;
+
+            // Should have fewer G1 commands than original points
+            // Original: 3 lead-in points + 7 cut points + 3 lead-out points = 13 total
+            // After deduplication: 2 lead-in + 4 cut + 2 lead-out = 8 total
+            // But G1 only for points after first, so: 1 lead-in + 3 cut + 1 lead-out = 5 G1 commands
+            expect(g1Commands).toBeLessThan(13);
+            expect(g1Commands).toBeGreaterThan(0);
+
+            // Verify no consecutive near-duplicate coordinates in output
+            const lines = gcode.split('\n');
+            const coordinateLines = lines.filter(line => line.includes('G1 X'));
+
+            for (let i = 1; i < coordinateLines.length; i++) {
+                const prevMatch = coordinateLines[i - 1].match(/X([\d.-]+) Y([\d.-]+)/);
+                const currMatch = coordinateLines[i].match(/X([\d.-]+) Y([\d.-]+)/);
+
+                if (prevMatch && currMatch) {
+                    const prevX = parseFloat(prevMatch[1]);
+                    const prevY = parseFloat(prevMatch[2]);
+                    const currX = parseFloat(currMatch[1]);
+                    const currY = parseFloat(currMatch[2]);
+
+                    const distance = Math.sqrt(
+                        Math.pow(currX - prevX, 2) + Math.pow(currY - prevY, 2)
+                    );
+
+                    // Distance should be at least MIN_POINT_DISTANCE (0.0001)
+                    expect(distance).toBeGreaterThanOrEqual(0.0001);
+                }
+            }
+        });
+    });
 });
