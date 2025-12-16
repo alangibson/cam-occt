@@ -28,7 +28,6 @@ import { shapesBoundingBox } from '$lib/cam/shape/functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Paths64 } from '$lib/wasm/clipper2z';
 import { getClipper2 } from '$lib/cam/offset/clipper-init';
-import { SvelteMap } from 'svelte/reactivity';
 import {
     toClipper2Paths,
     calculateClipper2PathsArea,
@@ -45,7 +44,8 @@ export class Chain implements Geometric, ChainData {
     #tessellated?: Point2D[];
     #paths64?: Paths64;
     #centroid?: Point2D;
-    #pointAt?: Map<number, Point2D>;
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    #pointAt: Map<number, Point2D> = new Map();
     #startPoint?: Point2D;
     #endPoint?: Point2D;
     #midPoint?: Point2D;
@@ -138,10 +138,6 @@ export class Chain implements Geometric, ChainData {
      * @returns Point at the specified position along the chain
      */
     pointAt(t: number): Point2D {
-        if (!this.#pointAt) {
-            this.#pointAt = new SvelteMap();
-        }
-
         if (!this.#pointAt.has(t)) {
             this.#pointAt.set(t, getChainPointAt(this, t));
         }
@@ -534,7 +530,7 @@ export class Chain implements Geometric, ChainData {
         // Clear caches as they're now invalid
         this.#boundary = undefined;
         this.#centroid = undefined;
-        this.#pointAt = undefined;
+        this.#pointAt.clear();
         this.#tessellated = undefined;
         this.#paths64 = undefined;
         this.#area = undefined;
