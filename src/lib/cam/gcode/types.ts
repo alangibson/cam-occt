@@ -1,7 +1,7 @@
-import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 
 /**
- * Lead representation as an array of points
+ * Lead representation as a polyline
  */
 
-export type Lead = Point2D[];
+export type Lead = Polyline;

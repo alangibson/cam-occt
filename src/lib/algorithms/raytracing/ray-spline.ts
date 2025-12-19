@@ -8,6 +8,7 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { sampleSpline } from '$lib/geometry/spline/functions';
@@ -63,10 +64,11 @@ function countRaySplineCrossingsApproximate(
     spline: Spline,
     config: RayTracingConfig
 ): number {
-    const samples: Point2D[] = sampleSpline(
+    const polyline: Polyline = sampleSpline(
         spline,
         config.splineSampleCount || DEFAULT_SPLINE_SAMPLE_COUNT
     );
+    const samples: Point2D[] = polyline.points;
 
     if (samples.length < 2) {
         return 0;
@@ -99,10 +101,11 @@ function findRaySplineIntersectionsApproximate(
     spline: Spline,
     config: RayTracingConfig
 ): RayIntersection[] {
-    const samples: Point2D[] = sampleSpline(
+    const polyline: Polyline = sampleSpline(
         spline,
         config.splineSampleCount || DEFAULT_SPLINE_SAMPLE_COUNT
     );
+    const samples: Point2D[] = polyline.points;
     const intersections: RayIntersection[] = [];
 
     if (samples.length < 2) {

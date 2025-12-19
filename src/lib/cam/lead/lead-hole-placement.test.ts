@@ -27,7 +27,7 @@ describe('Lead Hole Placement Fix', () => {
             const shapePoints = getShapePoints(new Shape(shape), {
                 mode: 'TESSELLATION',
             });
-            points.push(...shapePoints);
+            points.push(...shapePoints.points);
         }
 
         return points;
@@ -124,9 +124,9 @@ describe('Lead Hole Placement Fix', () => {
 
         // Analyze where lead points are
 
-        for (let i: number = 0; i < leadPoints.length - 1; i++) {
+        for (let i: number = 0; i < leadPoints.points.length - 1; i++) {
             // Skip connection point
-            const point = leadPoints[i];
+            const point = leadPoints.points[i];
 
             const inSolid = isPointInSolidArea(point, part5);
             const inVoid = isPointInVoid(point, part5);
@@ -199,8 +199,8 @@ describe('Lead Hole Placement Fix', () => {
         const leadPoints = convertLeadGeometryToPoints(result.leadIn!);
 
         // Count solid area violations
-        for (let i: number = 0; i < leadPoints.length - 1; i++) {
-            if (isPointInSolidArea(leadPoints[i], part5)) {
+        for (let i: number = 0; i < leadPoints.points.length - 1; i++) {
+            if (isPointInSolidArea(leadPoints.points[i], part5)) {
                 // Check for solid area violations
             }
         }
@@ -238,7 +238,7 @@ describe('Lead Hole Placement Fix', () => {
         const shapePoints = getShapePoints(new Shape(shellShape), {
             mode: 'TESSELLATION',
         });
-        const connectionPoint = shapePoints[0] || { x: 0, y: 0 }; // fallback
+        const connectionPoint = shapePoints.points[0] || { x: 0, y: 0 }; // fallback
 
         // Get hole center
         const holePolygon = getPolygonFromChain(part5.voids[0].chain);

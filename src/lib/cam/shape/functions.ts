@@ -4,6 +4,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { hashPoint2D } from '$lib/geometry/point/functions';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
@@ -65,7 +66,6 @@ import {
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
 import { type PartDetectionParameters } from '$lib/cam/part/part-detection.interfaces';
 import {
-    calculatePolylineLength,
     getPolylineEndPoint,
     getPolylinePointAt,
     getPolylineStartPoint,
@@ -75,6 +75,7 @@ import {
     polylineToVertices,
     reversePolyline,
 } from '$lib/geometry/dxf-polyline/functions';
+import { calculatePolylineLength } from '$lib/geometry/polyline/functions';
 import { MIDPOINT_T, QUARTER_CIRCLE_QUADRANTS } from '$lib/geometry/constants';
 import { normalizeVector } from '$lib/geometry/math/functions';
 import { POLYGON_POINTS_MIN } from '$lib/cam/chain/constants';
@@ -95,7 +96,7 @@ import { combineBoundingBoxes } from '$lib/geometry/bounding-box/functions';
 /**
  * TODO get rid of this giant function. Break it down by use case.
  *
- * Converts a shape to an array of Point2D coordinates, with behavior
+ * Converts a shape to a Polyline, with behavior
  * controlled by options.
  *
  * Supports different modes (tessellation, bounds, chain detection,
@@ -105,7 +106,7 @@ import { combineBoundingBoxes } from '$lib/geometry/bounding-box/functions';
 export function getShapePoints(
     shape: Shape,
     optionsOrForNativeShapes: GetShapePointsOptions | boolean = {}
-): Point2D[] {
+): Polyline {
     // Handle backward compatibility: if boolean is passed, convert to options
     const options: GetShapePointsOptions =
         typeof optionsOrForNativeShapes === 'boolean'
@@ -121,55 +122,90 @@ export function getShapePoints(
     switch (shape.type) {
         case GeometryType.POINT:
             const point: Point2D = shape.geometry as Point2D;
-            return [point];
+            return { points: [point] };
 
         case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
-            return [line.start, line.end];
+            return { points: [line.start, line.end] };
 
         case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
 
             if (mode === 'BOUNDS') {
                 // Return bounding box corners for test/analysis purposes
-                return [
-                    {
-                        x: circle.center.x - circle.radius,
-                        y: circle.center.y - circle.radius,
-                    },
-                    {
-                        x: circle.center.x + circle.radius,
-                        y: circle.center.y + circle.radius,
-                    },
-                ];
+                return {
+                    points: [
+                        {
+                            x: circle.center.x - circle.radius,
+                            y: circle.center.y - circle.radius,
+                        },
+                        {
+                            x: circle.center.x + circle.radius,
+                            y: circle.center.y + circle.radius,
+                        },
+                    ],
+                };
             }
 
             if (mode === 'CHAIN_DETECTION') {
                 // For chain detection, use key points around circumference plus center
-                return [
-                    { x: circle.center.x + circle.radius, y: circle.center.y }, // Right
-                    { x: circle.center.x - circle.radius, y: circle.center.y }, // Left
-                    { x: circle.center.x, y: circle.center.y + circle.radius }, // Top
-                    { x: circle.center.x, y: circle.center.y - circle.radius }, // Bottom
-                    circle.center, // Center for connectivity analysis
-                ];
+                return {
+                    points: [
+                        {
+                            x: circle.center.x + circle.radius,
+                            y: circle.center.y,
+                        }, // Right
+                        {
+                            x: circle.center.x - circle.radius,
+                            y: circle.center.y,
+                        }, // Left
+                        {
+                            x: circle.center.x,
+                            y: circle.center.y + circle.radius,
+                        }, // Top
+                        {
+                            x: circle.center.x,
+                            y: circle.center.y - circle.radius,
+                        }, // Bottom
+                        circle.center, // Center for connectivity analysis
+                    ],
+                };
             }
 
             if (mode === 'DIRECTION_ANALYSIS' || resolution === 'LOW') {
                 // For direction analysis, return 4 compass points
-                return [
-                    { x: circle.center.x + circle.radius, y: circle.center.y }, // Right
-                    { x: circle.center.x, y: circle.center.y + circle.radius }, // Top
-                    { x: circle.center.x - circle.radius, y: circle.center.y }, // Left
-                    { x: circle.center.x, y: circle.center.y - circle.radius }, // Bottom
-                ];
+                return {
+                    points: [
+                        {
+                            x: circle.center.x + circle.radius,
+                            y: circle.center.y,
+                        }, // Right
+                        {
+                            x: circle.center.x,
+                            y: circle.center.y + circle.radius,
+                        }, // Top
+                        {
+                            x: circle.center.x - circle.radius,
+                            y: circle.center.y,
+                        }, // Left
+                        {
+                            x: circle.center.x,
+                            y: circle.center.y - circle.radius,
+                        }, // Bottom
+                    ],
+                };
             }
 
             if (forNativeShapes) {
                 // For native G-code generation, return just the start point
-                return [
-                    { x: circle.center.x + circle.radius, y: circle.center.y },
-                ];
+                return {
+                    points: [
+                        {
+                            x: circle.center.x + circle.radius,
+                            y: circle.center.y,
+                        },
+                    ],
+                };
             }
 
             if (resolution === 'HIGH') {
@@ -183,11 +219,15 @@ export function getShapePoints(
                         y: circle.center.y + circle.radius * Math.sin(angle),
                     });
                 }
-                return points;
+                return { points };
             }
 
             // Default tessellation
-            return generateCirclePoints(circle.center, circle.radius);
+            const circlePoints = generateCirclePoints(
+                circle.center,
+                circle.radius
+            );
+            return { points: circlePoints };
 
         case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
@@ -195,7 +235,7 @@ export function getShapePoints(
             if (mode === 'BOUNDS') {
                 // Use actual arc bounds instead of full circle bounds
                 const arcBounds = arcBoundingBox(arc);
-                return [arcBounds.min, arcBounds.max];
+                return { points: [arcBounds.min, arcBounds.max] };
             }
 
             if (mode === 'CHAIN_DETECTION') {
@@ -207,11 +247,13 @@ export function getShapePoints(
                 const endX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
                 const endY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
 
-                return [
-                    { x: startX, y: startY }, // Start point
-                    { x: endX, y: endY }, // End point
-                    arc.center, // Center for connectivity analysis
-                ];
+                return {
+                    points: [
+                        { x: startX, y: startY }, // Start point
+                        { x: endX, y: endY }, // End point
+                        arc.center, // Center for connectivity analysis
+                    ],
+                };
             }
 
             if (forNativeShapes) {
@@ -222,10 +264,12 @@ export function getShapePoints(
                     arc.center.y + arc.radius * Math.sin(arc.startAngle);
                 const endX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
                 const endY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
-                return [
-                    { x: startX, y: startY },
-                    { x: endX, y: endY },
-                ];
+                return {
+                    points: [
+                        { x: startX, y: startY },
+                        { x: endX, y: endY },
+                    ],
+                };
             }
 
             if (resolution === 'HIGH' || resolution === 'ADAPTIVE') {
@@ -258,7 +302,7 @@ export function getShapePoints(
                         y: arc.center.y + arc.radius * Math.sin(angle),
                     });
                 }
-                return arcPoints;
+                return { points: arcPoints };
             }
 
             if (mode === 'DIRECTION_ANALYSIS' || resolution === 'LOW') {
@@ -287,19 +331,20 @@ export function getShapePoints(
                         y: arc.center.y + arc.radius * Math.sin(angle),
                     });
                 }
-                return points;
+                return { points };
             }
 
             // Default to tolerance-based tessellation
-            return tessellateArc(
+            const arcPoints = tessellateArc(
                 arc,
                 getDefaults().geometry.tessellationTolerance
             );
+            return { points: arcPoints };
 
         case GeometryType.POLYLINE:
             const polyline: DxfPolyline = shape.geometry as DxfPolyline;
             // Always return a copy to prevent mutation
-            return [...polylineToPoints(polyline)];
+            return { points: [...polylineToPoints(polyline)] };
 
         case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
@@ -350,17 +395,19 @@ export function getShapePoints(
                         endX * Math.sin(majorAxisAngle) +
                         endY * Math.cos(majorAxisAngle);
 
-                    return [
-                        {
-                            x: ellipse.center.x + rotatedStartX,
-                            y: ellipse.center.y + rotatedStartY,
-                        }, // Start point
-                        {
-                            x: ellipse.center.x + rotatedEndX,
-                            y: ellipse.center.y + rotatedEndY,
-                        }, // End point
-                        ellipse.center, // Center for connectivity analysis
-                    ];
+                    return {
+                        points: [
+                            {
+                                x: ellipse.center.x + rotatedStartX,
+                                y: ellipse.center.y + rotatedStartY,
+                            }, // Start point
+                            {
+                                x: ellipse.center.x + rotatedEndX,
+                                y: ellipse.center.y + rotatedEndY,
+                            }, // End point
+                            ellipse.center, // Center for connectivity analysis
+                        ],
+                    };
                 } else {
                     // Full ellipse - return key points around the perimeter
                     const points: Point2D[] = [];
@@ -387,7 +434,7 @@ export function getShapePoints(
                     }
 
                     points.push(ellipse.center); // Add center point
-                    return points;
+                    return { points };
                 }
             }
 
@@ -404,26 +451,30 @@ export function getShapePoints(
                 try {
                     const start = getSplineStartPoint(spline);
                     const end = getSplineEndPoint(spline);
-                    return [start, end];
+                    return { points: [start, end] };
                 } catch {
                     // Fallback to fit points or control points if NURBS evaluation fails
                     if (spline.fitPoints && spline.fitPoints.length >= 2) {
-                        return [
-                            spline.fitPoints[0],
-                            spline.fitPoints[spline.fitPoints.length - 1],
-                        ];
+                        return {
+                            points: [
+                                spline.fitPoints[0],
+                                spline.fitPoints[spline.fitPoints.length - 1],
+                            ],
+                        };
                     } else if (
                         spline.controlPoints &&
                         spline.controlPoints.length >= 2
                     ) {
-                        return [
-                            spline.controlPoints[0],
-                            spline.controlPoints[
-                                spline.controlPoints.length - 1
+                        return {
+                            points: [
+                                spline.controlPoints[0],
+                                spline.controlPoints[
+                                    spline.controlPoints.length - 1
+                                ],
                             ],
-                        ];
+                        };
                     }
-                    return [];
+                    return { points: [] };
                 }
             }
 
@@ -432,24 +483,25 @@ export function getShapePoints(
                     resolution === 'HIGH'
                         ? ELLIPSE_TESSELLATION_POINTS * 2
                         : ELLIPSE_TESSELLATION_POINTS;
-                return tessellateSpline(spline, {
+                const splineResult = tessellateSpline(spline, {
                     numSamples: tessellationPoints,
-                }).points;
+                });
+                return { points: splineResult.points };
             } catch {
                 // Fallback to fit points or control points if NURBS evaluation fails
                 if (spline.fitPoints && spline.fitPoints.length > 0) {
-                    return [...spline.fitPoints]; // Copy to prevent mutation
+                    return { points: [...spline.fitPoints] }; // Copy to prevent mutation
                 } else if (
                     spline.controlPoints &&
                     spline.controlPoints.length > 0
                 ) {
-                    return [...spline.controlPoints]; // Copy to prevent mutation
+                    return { points: [...spline.controlPoints] }; // Copy to prevent mutation
                 }
-                return [];
+                return { points: [] };
             }
 
         default:
-            return [];
+            return { points: [] };
     }
 }
 
@@ -460,7 +512,7 @@ export function getShapePoints(
 export function tessellateShape(
     shape: Shape,
     params: PartDetectionParameters
-): Point2D[] {
+): Polyline {
     const points: Point2D[] = [];
 
     switch (shape.type) {
@@ -471,19 +523,23 @@ export function tessellateShape(
 
         case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
-            points.push(...tessellateLine(line));
+            const linePolyline = tessellateLine(line);
+            points.push(...linePolyline.points);
             break;
 
         case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
-            points.push(
-                ...tessellateCircle(circle, params.circleTessellationPoints)
+            const circlePolyline = tessellateCircle(
+                circle,
+                params.circleTessellationPoints
             );
+            points.push(...circlePolyline.points);
             break;
 
         case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
-            points.push(...tessellateArc(arc, params.tessellationTolerance));
+            const arcPoints = tessellateArc(arc, params.tessellationTolerance);
+            points.push(...arcPoints);
             break;
 
         case GeometryType.POLYLINE:
@@ -502,7 +558,8 @@ export function tessellateShape(
 
         case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
-            points.push(...tessellateEllipse(ellipse));
+            const ellipsePolyline = tessellateEllipse(ellipse);
+            points.push(...ellipsePolyline.points);
             break;
 
         case GeometryType.SPLINE:
@@ -515,16 +572,13 @@ export function tessellateShape(
             );
 
             // Tessellate with adaptive configuration
-            const sampledPoints: Point2D[] = tessellateSpline(
-                spline,
-                config
-            ).points;
+            const splinePolyline = tessellateSpline(spline, config);
 
-            points.push(...sampledPoints);
+            points.push(...splinePolyline.points);
             break;
     }
 
-    return points;
+    return { points };
 }
 
 /**
@@ -661,9 +715,9 @@ export function getShapeLength(shape: Shape): number {
             // For splines, approximate length by sampling points
             const spline = shape.geometry as Spline;
             try {
-                const points = tessellateSpline(spline).points;
-                if (points.length < 2) return 0;
-                return calculatePolylineLength(points);
+                const polyline = tessellateSpline(spline);
+                if (polyline.points.length < 2) return 0;
+                return calculatePolylineLength(polyline);
             } catch {
                 return 0;
             }
@@ -688,7 +742,7 @@ export function getShapeLength(shape: Shape): number {
                     const t = i / numSamples;
                     points.push(getEllipsePointAt(ellipse, t));
                 }
-                return calculatePolylineLength(points);
+                return calculatePolylineLength({ points });
             } else {
                 // Full ellipse - use Ramanujan's approximation
                 const h = Math.pow((a - b) / (a + b), 2);

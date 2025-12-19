@@ -42,26 +42,6 @@ export function solveQuadratic(
 }
 
 /**
- * Calculates the perimeter of a polygon defined by an array of points
- * @param points array of polygon vertices
- * @returns perimeter length
- */
-export function calculatePerimeter(points: Point2D[]): number {
-    if (points.length < 2) {
-        return 0;
-    }
-
-    let perimeter: number = 0;
-    for (let i = 0; i < points.length; i++) {
-        const j: number = (i + 1) % points.length;
-        const dx: number = points[j].x - points[i].x;
-        const dy: number = points[j].y - points[i].y;
-        perimeter += Math.sqrt(dx * dx + dy * dy);
-    }
-    return perimeter;
-}
-
-/**
  * Calculates the squared distance between two points
  * @param p1 first point
  * @param p2 second point

@@ -8,6 +8,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { Chain } from './classes.svelte';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
@@ -26,10 +27,8 @@ import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import { isEllipseClosed } from '$lib/geometry/ellipse/functions';
 import { WindingDirection } from './enums';
-import {
-    calculatePerimeter,
-    calculateDistanceBetweenPoints,
-} from '$lib/geometry/math/functions';
+import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
+import { calculatePerimeter } from '$lib/geometry/polyline/functions';
 import { combineBoundingBoxes } from '$lib/geometry/bounding-box/functions';
 import { type PartDetectionParameters } from '$lib/cam/part/part-detection.interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
@@ -72,11 +71,11 @@ export function reverseChain(chain: Chain): Chain {
 /**
  * Determine the winding direction of a polygon
  *
- * @param points Array of polygon vertices in order
+ * @param polyline Polygon vertices in order
  * @returns 'CW' for clockwise, 'CCW' for counter-clockwise, 'degenerate' for zero area
  */
-export function getWindingDirection(points: Point2D[]): WindingDirection {
-    const signedArea: number = calculateSignedArea({ points });
+export function getWindingDirection(polyline: Polyline): WindingDirection {
+    const signedArea: number = calculateSignedArea({ points: polyline.points });
 
     if (Math.abs(signedArea) < Number.EPSILON) {
         return WindingDirection.degenerate;
@@ -88,60 +87,61 @@ export function getWindingDirection(points: Point2D[]): WindingDirection {
 /**
  * Check if a polygon is wound clockwise
  *
- * @param points Array of polygon vertices in order
+ * @param polyline Polygon vertices in order
  * @returns True if clockwise, false if counter-clockwise or degenerate
  */
-export function isClockwise(points: Point2D[]): boolean {
-    return calculateSignedArea({ points }) < 0;
+export function isClockwise(polyline: Polyline): boolean {
+    return calculateSignedArea({ points: polyline.points }) < 0;
 }
 
 /**
  * Check if a polygon is wound counter-clockwise
  *
- * @param points Array of polygon vertices in order
+ * @param polyline Polygon vertices in order
  * @returns True if counter-clockwise, false if clockwise or degenerate
  */
-export function isCounterClockwise(points: Point2D[]): boolean {
-    return calculateSignedArea({ points }) > 0;
+export function isCounterClockwise(polyline: Polyline): boolean {
+    return calculateSignedArea({ points: polyline.points }) > 0;
 }
 
 /**
  * Reverse the winding direction of a polygon by reversing the point order
  *
- * @param points Array of polygon vertices
- * @returns New array with reversed point order
+ * @param polyline Polygon vertices
+ * @returns New polyline with reversed point order
  */
-export function reverseWinding(points: Point2D[]): Point2D[] {
-    return [...points].reverse();
+export function reverseWinding(polyline: Polyline): Polyline {
+    return { points: [...polyline.points].reverse() };
 }
 
 /**
  * Ensure a polygon has clockwise winding direction
  *
- * @param points Array of polygon vertices
- * @returns Array with clockwise winding (reversed if originally CCW)
+ * @param polyline Polygon vertices
+ * @returns Polyline with clockwise winding (reversed if originally CCW)
  */
-export function ensureClockwise(points: Point2D[]): Point2D[] {
-    return isClockwise(points) ? points : reverseWinding(points);
+export function ensureClockwise(polyline: Polyline): Polyline {
+    return isClockwise(polyline) ? polyline : reverseWinding(polyline);
 }
 
 /**
  * Ensure a polygon has counter-clockwise winding direction
  *
- * @param points Array of polygon vertices
- * @returns Array with counter-clockwise winding (reversed if originally CW)
+ * @param polyline Polygon vertices
+ * @returns Polyline with counter-clockwise winding (reversed if originally CW)
  */
-export function ensureCounterClockwise(points: Point2D[]): Point2D[] {
-    return isCounterClockwise(points) ? points : reverseWinding(points);
+export function ensureCounterClockwise(polyline: Polyline): Polyline {
+    return isCounterClockwise(polyline) ? polyline : reverseWinding(polyline);
 }
 
 /**
  * Calculate the centroid (geometric center) of a polygon
  *
- * @param points Array of polygon vertices in order
+ * @param polyline Polygon vertices in order
  * @returns Point representing the centroid
  */
-export function calculatePolygonCentroid(points: Point2D[]): Point2D {
+export function calculatePolygonCentroid(polyline: Polyline): Point2D {
+    const points = polyline.points;
     if (points.length === 0) {
         return { x: 0, y: 0 };
     }
@@ -215,14 +215,14 @@ export function getChainCentroid(chain: Chain): Point2D {
     // General case: tessellate all shapes and calculate polygon centroid
     const points: Point2D[] = [];
     for (const shape of chain.shapes) {
-        const shapePoints = tessellateShape(
+        const shapePolyline = tessellateShape(
             shape,
             DEFAULT_PART_DETECTION_PARAMETERS
         );
-        points.push(...shapePoints);
+        points.push(...shapePolyline.points);
     }
 
-    return calculatePolygonCentroid(points);
+    return calculatePolygonCentroid({ points });
 }
 
 /**
@@ -231,10 +231,11 @@ export function getChainCentroid(chain: Chain): Point2D {
  * This is a basic check - it doesn't detect all self-intersections but catches
  * the most common cases like immediately adjacent segments intersecting.
  *
- * @param points Array of polygon vertices in order
+ * @param polyline Polygon vertices in order
  * @returns True if the polygon appears to be simple
  */
-export function isSimplePolygon(points: Point2D[]): boolean {
+export function isSimplePolygon(polyline: Polyline): boolean {
+    const points = polyline.points;
     if (points.length < POLYGON_POINTS_MIN) {
         return false;
     }
@@ -255,11 +256,11 @@ export function isSimplePolygon(points: Point2D[]): boolean {
 /**
  * Calculate the perimeter of a polygon
  *
- * @param points Array of polygon vertices in order
+ * @param polyline Polygon vertices in order
  * @returns Total perimeter length
  */
-export function calculatePolygonPerimeter(points: Point2D[]): number {
-    return calculatePerimeter(points);
+export function calculatePolygonPerimeter(polyline: Polyline): number {
+    return calculatePerimeter(polyline);
 }
 
 /**
@@ -268,29 +269,29 @@ export function calculatePolygonPerimeter(points: Point2D[]): number {
 export function tessellateChain(
     chain: Chain,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
-): Point2D[] {
+): Polyline {
     const points: Point2D[] = [];
 
     for (const shape of chain.shapes) {
-        const shapePoints = tessellateShape(shape, params);
-        points.push(...shapePoints);
+        const shapePolyline = tessellateShape(shape, params);
+        points.push(...shapePolyline.points);
     }
 
-    return points;
+    return { points };
 }
 
 /**
  * Tessellate chain preserving individual shape boundaries
- * Returns array of point arrays (one per shape) for Clipper2 offsetting
+ * Returns array of polylines (one per shape) for Clipper2 offsetting
  *
  * @param chain - The chain to tessellate
  * @param params - Tessellation parameters
- * @returns Array of point arrays, one per shape
+ * @returns Array of polylines, one per shape
  */
 export function tessellateChainToShapes(
     chain: Chain,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
-): Point2D[][] {
+): Polyline[] {
     return chain.shapes.map((shape) => tessellateShape(shape, params));
 }
 /**
@@ -361,7 +362,7 @@ export function isChainClosed(
 /**
  * Extracts a polygon representation from a chain for geometric operations
  */
-export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
+export function extractPolygonFromChain(chain: Chain): Polyline | null {
     if (!chain || !chain.shapes || chain.shapes.length === 0) {
         return null;
     }
@@ -369,26 +370,26 @@ export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     const points: Point2D[] = [];
 
     for (const shape of chain.shapes) {
-        const shapePoints: Point2D[] = getShapePoints(shape, {
+        const shapePolyline: Polyline = getShapePoints(shape, {
             resolution: 'HIGH',
         });
-        if (shapePoints && shapePoints.length > 0) {
+        if (shapePolyline && shapePolyline.points.length > 0) {
             // Add points, but avoid duplicating the last point of previous shape with first point of next
             if (points.length === 0) {
-                points.push(...shapePoints);
+                points.push(...shapePolyline.points);
             } else {
                 // Skip first point if it's close to the last added point
                 const lastPoint = points[points.length - 1];
-                const firstNewPoint = shapePoints[0];
+                const firstNewPoint = shapePolyline.points[0];
                 const distance = calculateDistanceBetweenPoints(
                     lastPoint,
                     firstNewPoint
                 );
 
                 if (distance > getDefaults().geometry.precisionTolerance) {
-                    points.push(...shapePoints);
+                    points.push(...shapePolyline.points);
                 } else {
-                    points.push(...shapePoints.slice(1));
+                    points.push(...shapePolyline.points.slice(1));
                 }
             }
         }
@@ -397,24 +398,24 @@ export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     // Remove duplicate points and ensure we have enough for a polygon
     const cleanedPolygon = removeDuplicatePoints({ points });
     return cleanedPolygon.points.length >= POLYGON_POINTS_MIN
-        ? cleanedPolygon.points
+        ? { points: cleanedPolygon.points }
         : null;
 }
 
 /**
  * Extract all points from a chain for area calculation
  */
-export function getChainPoints(chain: Chain): Point2D[] {
+export function getChainPoints(chain: Chain): Polyline {
     const points: Point2D[] = [];
 
     for (const shape of chain.shapes) {
-        const shapePoints: Point2D[] = getShapePoints(shape, {
+        const shapePolyline: Polyline = getShapePoints(shape, {
             resolution: 'HIGH',
         });
-        points.push(...shapePoints);
+        points.push(...shapePolyline.points);
     }
 
-    return points;
+    return { points };
 }
 
 /**

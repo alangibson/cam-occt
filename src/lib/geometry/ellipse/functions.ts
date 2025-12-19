@@ -11,6 +11,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import { hashObject } from '$lib/geometry/hash/functions';
 import type { Ellipse, EllipseTessellationConfig } from './interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { MAX_TESSELLATION_POINTS, MIN_TESSELLATION_POINTS } from './constants';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
@@ -109,7 +110,7 @@ export function generateEllipsePoints(
  * Tessellate ellipse with specified number of points
  * Provides a simpler interface to ellipse tessellation
  */
-export function sampleEllipse(ellipse: Ellipse, numPoints: number): Point2D[] {
+export function sampleEllipse(ellipse: Ellipse, numPoints: number): Polyline {
     const majorAxisLength = Math.sqrt(
         ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
             ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
@@ -149,10 +150,16 @@ export function sampleEllipse(ellipse: Ellipse, numPoints: number): Point2D[] {
                 )
             );
         }
-        return points;
+        return { points };
     } else {
         // Full ellipse
-        return generateEllipsePoints(ellipse, 0, 2 * Math.PI, numPoints);
+        const points = generateEllipsePoints(
+            ellipse,
+            0,
+            2 * Math.PI,
+            numPoints
+        );
+        return { points };
     }
 }
 
@@ -749,9 +756,9 @@ export function validateEllipseGeometry(ellipse: Ellipse): string[] {
  * Tessellate an ellipse into points
  * Handles both full ellipses and ellipse arcs
  * @param ellipse Ellipse to tessellate
- * @returns Array of points representing the tessellated ellipse
+ * @returns Polyline representing the tessellated ellipse
  */
-export function tessellateEllipse(ellipse: Ellipse): Point2D[] {
+export function tessellateEllipse(ellipse: Ellipse): Polyline {
     const points: Point2D[] = [];
 
     const majorAxisLength: number = Math.sqrt(
@@ -822,7 +829,7 @@ export function tessellateEllipse(ellipse: Ellipse): Point2D[] {
         }
     }
 
-    return points;
+    return { points };
 }
 
 /**

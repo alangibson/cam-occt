@@ -11,6 +11,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
 import type { ChainData } from '$lib/cam/chain/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { Chain } from '$lib/cam/chain/classes.svelte';
 import { Shape } from '$lib/cam/shape/classes';
 import type { Part } from '$lib/cam/part/classes.svelte';
@@ -145,7 +146,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
     // Tessellate the cut chain to a single polyline for Clipper2
     performance.mark(`cutToKerf-${cut.id}-tessellate-start`);
 
-    const shapePointArrays: Point2D[][] = tessellateChainToShapes(cut.chain, {
+    const shapePointArrays: Polyline[] = tessellateChainToShapes(cut.chain, {
         circleTessellationPoints: CIRCLE_POINTS,
         tessellationTolerance: getDefaults().geometry.tessellationTolerance,
         decimalPrecision: DECIMAL_PRECISION,
@@ -154,17 +155,21 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
 
     // Flatten all chain points into a single array
     const chainPoints: Point2D[] = [];
-    for (const points of shapePointArrays) {
-        chainPoints.push(...points);
+    for (const polyline of shapePointArrays) {
+        chainPoints.push(...polyline.points);
     }
     performance.mark(`cutToKerf-${cut.id}-tessellate-end`);
 
     // Get lead geometry points if present
-    const leadInPoints: Point2D[] = cut.leadIn
+    const leadInPolyline = cut.leadIn
         ? convertLeadGeometryToPoints(cut.leadIn)
-        : [];
-    const leadOutPoints: Point2D[] = cut.leadOut
+        : undefined;
+    const leadOutPolyline = cut.leadOut
         ? convertLeadGeometryToPoints(cut.leadOut)
+        : undefined;
+    const leadInPoints: Point2D[] = leadInPolyline ? leadInPolyline.points : [];
+    const leadOutPoints: Point2D[] = leadOutPolyline
+        ? leadOutPolyline.points
         : [];
 
     // Combine: lead-in + chain + lead-out
@@ -176,7 +181,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
 
     // When leads are present, treat as open path
     const hasLeads = leadInPoints.length > 0 || leadOutPoints.length > 0;
-    const pointArrays: Point2D[][] = [combinedPoints];
+    const polylines: Polyline[] = [{ points: combinedPoints }];
 
     // Get Clipper2 module for accessing JoinType and EndType enums
     const clipper = await getClipper2();
@@ -194,9 +199,9 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
 
     // Perform bi-directional offset using Clipper2
     performance.mark(`cutToKerf-${cut.id}-offset-main-start`);
-    const { inner, outer }: { inner: Point2D[][]; outer: Point2D[][] } =
+    const { inner, outer }: { inner: Polyline[]; outer: Polyline[] } =
         await offsetPaths(
-            pointArrays,
+            polylines,
             offsetDistance,
             isClosedForOffset,
             offsetOptions
@@ -239,9 +244,9 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
     let leadOutOuterChain: OffsetChain | undefined;
 
     if (leadInPoints.length > 1) {
-        const leadInOffset: { inner: Point2D[][]; outer: Point2D[][] } =
+        const leadInOffset: { inner: Polyline[]; outer: Polyline[] } =
             await offsetPaths(
-                [leadInPoints],
+                [{ points: leadInPoints }],
                 offsetDistance,
                 false, // Leads are always open paths
                 {
@@ -268,7 +273,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
 
     if (leadOutPoints.length > 1) {
         const leadOutOffset = await offsetPaths(
-            [leadOutPoints],
+            [{ points: leadOutPoints }],
             offsetDistance,
             false, // Leads are always open paths
             {

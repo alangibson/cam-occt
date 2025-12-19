@@ -10,6 +10,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
 import {
@@ -22,6 +23,7 @@ import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { getShapePointAt } from '$lib/cam/shape/functions';
 import { Shape } from '$lib/cam/shape/classes';
+import { calculatePolylineLength } from '$lib/geometry/polyline/functions';
 
 // Constants
 const MM_TO_INCH_RATIO = 25.4;
@@ -90,23 +92,6 @@ export function getFeedRateForCut(
 }
 
 /**
- * Calculate the length of a polyline
- */
-export function calculatePolylineLength(points: Point2D[]): number {
-    if (points.length < 2) return 0;
-
-    let length = 0;
-    for (let i = 0; i < points.length - 1; i++) {
-        const p1 = points[i];
-        const p2 = points[i + 1];
-        length += Math.sqrt(
-            Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
-        );
-    }
-    return length;
-}
-
-/**
  * Get position along a series of points at given target distance
  */
 function getPositionOnPointSequence(
@@ -147,7 +132,8 @@ export function getPositionOnPolyline(
     progress: number
 ): Point2D {
     progress = Math.max(0, Math.min(1, progress));
-    const totalLength = calculatePolylineLength(points);
+    const polyline: Polyline = { points };
+    const totalLength = calculatePolylineLength(polyline);
     const targetDistance = totalLength * progress;
     return getPositionOnPointSequence(points, targetDistance);
 }

@@ -38,7 +38,7 @@
             shape,
             DEFAULT_PART_DETECTION_PARAMETERS.tessellationTolerance
         );
-        return pointsToRawPathData(tessellated, closed);
+        return pointsToRawPathData(tessellated.points, closed);
     });
 </script>
 

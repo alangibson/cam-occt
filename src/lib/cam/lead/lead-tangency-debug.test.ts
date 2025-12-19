@@ -45,12 +45,12 @@ describe('Lead Tangency Debug', () => {
 
         if (result.leadIn) {
             const points = convertLeadGeometryToPoints(result.leadIn);
-            points.forEach(() => {
+            points.points.forEach(() => {
                 // Process points
             });
 
-            const connectionPoint = points[points.length - 1];
-            const previousPoint = points[points.length - 2];
+            const connectionPoint = points.points[points.points.length - 1];
+            const previousPoint = points.points[points.points.length - 2];
 
             const leadTangentFromPoints = {
                 x: connectionPoint.x - previousPoint.x,
@@ -58,9 +58,9 @@ describe('Lead Tangency Debug', () => {
             };
 
             // Let's also calculate the theoretical arc center and tangent
-            if (points.length >= 3) {
+            if (points.points.length >= 3) {
                 // Use 3-point method to find arc center
-                const p1 = points[0];
+                const p1 = points.points[0];
                 const p3 = connectionPoint;
 
                 // For an arc, the tangent at any point is perpendicular to the radius at that point

@@ -1,8 +1,9 @@
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 
 export interface Geometric {
-    tessellated: Point2D[];
+    tessellated: Polyline;
     startPoint: Point2D;
     endPoint: Point2D;
     midPoint: Point2D;

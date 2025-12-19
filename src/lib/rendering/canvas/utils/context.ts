@@ -3,6 +3,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { TransformState } from '$lib/rendering/canvas/state/render-state';
 
 /**
@@ -144,14 +145,14 @@ export class DrawingContext {
     /**
      * Draw a polyline in world coordinates
      */
-    drawPolyline(points: Point2D[], closed: boolean = false): void {
-        if (points.length < 2) return;
+    drawPolyline(polyline: Polyline, closed: boolean = false): void {
+        if (polyline.points.length < 2) return;
 
         this.ctx.beginPath();
-        this.ctx.moveTo(points[0].x, points[0].y);
+        this.ctx.moveTo(polyline.points[0].x, polyline.points[0].y);
 
-        for (let i = 1; i < points.length; i++) {
-            this.ctx.lineTo(points[i].x, points[i].y);
+        for (let i = 1; i < polyline.points.length; i++) {
+            this.ctx.lineTo(polyline.points[i].x, polyline.points[i].y);
         }
 
         if (closed) {

@@ -28,7 +28,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
             const shapePoints = getShapePoints(new Shape(shape), {
                 mode: 'TESSELLATION',
             });
-            points.push(...shapePoints);
+            points.push(...shapePoints.points);
         }
 
         return points;
@@ -89,9 +89,9 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
         // Check how many lead points are inside the solid area
         let pointsInside = 0;
-        const connectionPoint = leadPoints[leadPoints.length - 1];
+        const connectionPoint = leadPoints.points[leadPoints.points.length - 1];
 
-        for (const point of leadPoints) {
+        for (const point of leadPoints.points) {
             // Skip connection point as it's on the boundary
             if (
                 Math.abs(point.x - connectionPoint.x) < 0.001 &&
@@ -106,7 +106,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         }
 
         // Log first few points for debugging
-        leadPoints.slice(0, 5).forEach((p) => {
+        leadPoints.points.slice(0, 5).forEach((p) => {
             isPointInPolygon(p, { points: shellPolygon });
         });
 
@@ -122,7 +122,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
         // Verify the algorithm attempted to find a solution
         expect(pointsInside).toBeGreaterThanOrEqual(0); // Algorithm ran and detected violations
-        expect(leadPoints.length).toBeGreaterThan(0); // Lead was generated
+        expect(leadPoints.points.length).toBeGreaterThan(0); // Lead was generated
 
         // For this specific geometry, having some violations is expected
         // The important thing is that the algorithm used the improved approach
@@ -164,10 +164,11 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
             if (!result.leadIn) continue;
 
             const leadPoints = convertLeadGeometryToPoints(result.leadIn);
-            const connectionPoint = leadPoints[leadPoints.length - 1];
+            const connectionPoint =
+                leadPoints.points[leadPoints.points.length - 1];
 
             let pointsInside = 0;
-            for (const point of leadPoints) {
+            for (const point of leadPoints.points) {
                 if (
                     Math.abs(point.x - connectionPoint.x) < 0.001 &&
                     Math.abs(point.y - connectionPoint.y) < 0.001
@@ -179,10 +180,10 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
                 }
             }
 
-            ((pointsInside / leadPoints.length) * 100).toFixed(1);
+            ((pointsInside / leadPoints.points.length) * 100).toFixed(1);
 
             // Each length should show improvement over the old algorithm
-            expect(pointsInside).toBeLessThan(leadPoints.length); // At least some improvement
+            expect(pointsInside).toBeLessThan(leadPoints.points.length); // At least some improvement
         }
     });
 });

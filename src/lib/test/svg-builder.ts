@@ -5,6 +5,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
@@ -483,10 +484,11 @@ export class SVGBuilder {
         dashArray?: string,
         showEndpoints: boolean = true
     ) {
-        const points: Point2D[] = sampleEllipse(
+        const polyline: Polyline = sampleEllipse(
             ellipse,
             ELLIPSE_TESSELLATION_POINTS
         );
+        const points: Point2D[] = polyline.points;
         const isArc: boolean =
             typeof ellipse.startParam === 'number' &&
             typeof ellipse.endParam === 'number';

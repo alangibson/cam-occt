@@ -6,6 +6,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { MainModule, Path64, Paths64 } from '$lib/wasm/clipper2z';
 import { CURVE_TESSELLATION_TOLERANCE_MM } from '$lib/config/defaults/geometry-defaults';
 import { MM_PER_INCH } from '$lib/config/units/units';
@@ -51,17 +52,17 @@ function calculateScaleFactor(): number {
 export const SCALE_FACTOR = calculateScaleFactor();
 
 /**
- * Convert MetalHead Point2D array to Clipper2 Path64
+ * Convert MetalHead Polyline to Clipper2 Path64
  *
- * @param points - Array of Point2D coordinates
+ * @param polyline - Polyline with Point2D coordinates
  * @param clipper - Clipper2 MainModule instance
  * @returns Clipper2 Path64 object
  */
-function toClipper2Path(points: Point2D[], clipper: MainModule): Path64 {
+function toClipper2Path(polyline: Polyline, clipper: MainModule): Path64 {
     const { MakePath64 } = clipper;
     const coords: bigint[] = [];
 
-    for (const pt of points) {
+    for (const pt of polyline.points) {
         // Scale coordinates and convert to bigint for Clipper2
         coords.push(BigInt(Math.round(pt.x * SCALE_FACTOR)));
         coords.push(BigInt(Math.round(pt.y * SCALE_FACTOR)));
@@ -71,21 +72,21 @@ function toClipper2Path(points: Point2D[], clipper: MainModule): Path64 {
 }
 
 /**
- * Convert MetalHead Point2D array array to Clipper2 Paths64
+ * Convert MetalHead Polyline array to Clipper2 Paths64
  *
- * @param pointArrays - Array of Point2D arrays (one per shape)
+ * @param polylines - Array of Polylines (one per shape)
  * @param clipper - Clipper2 MainModule instance
  * @returns Clipper2 Paths64 object
  */
 export function toClipper2Paths(
-    pointArrays: Point2D[][],
+    polylines: Polyline[],
     clipper: MainModule
 ): Paths64 {
     const { Paths64 } = clipper;
     const paths = new Paths64();
 
-    for (const points of pointArrays) {
-        const path = toClipper2Path(points, clipper);
+    for (const polyline of polylines) {
+        const path = toClipper2Path(polyline, clipper);
         paths.push_back(path);
     }
 
@@ -93,13 +94,13 @@ export function toClipper2Paths(
 }
 
 /**
- * Convert Clipper2 Paths64 back to MetalHead Point2D arrays
+ * Convert Clipper2 Paths64 back to MetalHead Polylines
  *
  * @param paths - Clipper2 Paths64 object
- * @returns Array of Point2D arrays
+ * @returns Array of Polylines
  */
-export function fromClipper2Paths(paths: Paths64): Point2D[][] {
-    const result: Point2D[][] = [];
+export function fromClipper2Paths(paths: Paths64): Polyline[] {
+    const result: Polyline[] = [];
     const pathCount = paths.size();
 
     for (let i = 0; i < pathCount; i++) {
@@ -116,7 +117,7 @@ export function fromClipper2Paths(paths: Paths64): Point2D[][] {
             });
         }
 
-        result.push(points);
+        result.push({ points });
     }
 
     return result;

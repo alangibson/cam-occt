@@ -6,20 +6,25 @@ import type { Lead, LeadConfig } from './interfaces';
 import { normalizeVector } from '$lib/geometry/math/functions';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import type { Cut } from '$lib/cam/cut/classes.svelte';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 
 /**
- * Convert LeadGeometry (Arc) to Point2D array for testing
+ * Convert LeadGeometry (Arc) to Polyline for testing
  */
-export function convertLeadGeometryToPoints(lead: Lead): Point2D[] {
+export function convertLeadGeometryToPoints(lead: Lead): Polyline {
     if (lead.type === LeadType.ARC) {
         const arc = lead.geometry as Arc;
         // Check for invalid arc geometry (zero radius)
         if (arc.radius <= 0) {
-            return [];
+            return { points: [] };
         }
-        return tessellateArc(arc, getDefaults().geometry.tessellationTolerance);
+        const points = tessellateArc(
+            arc,
+            getDefaults().geometry.tessellationTolerance
+        );
+        return { points };
     }
-    return [];
+    return { points: [] };
 }
 
 /**

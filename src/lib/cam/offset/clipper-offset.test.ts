@@ -1,19 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { offsetPaths } from './clipper-offset';
 import { reconstructChain } from './reconstruct';
-import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 
 describe('offsetPaths', () => {
     it('should return closed polygons for closed input paths', async () => {
         // Create a simple square: (0,0) -> (100,0) -> (100,100) -> (0,100)
-        const square: Point2D[] = [
-            { x: 0, y: 0 },
-            { x: 100, y: 0 },
-            { x: 100, y: 100 },
-            { x: 0, y: 100 },
-        ];
+        const square: Polyline = {
+            points: [
+                { x: 0, y: 0 },
+                { x: 100, y: 0 },
+                { x: 100, y: 100 },
+                { x: 0, y: 100 },
+            ],
+        };
 
         const offsetDistance = 10;
         const isClosed = true;
@@ -30,22 +32,24 @@ describe('offsetPaths', () => {
         expect(result.inner.length).toBe(1);
         expect(result.outer.length).toBe(1);
 
-        const innerPoints = result.inner[0];
-        const outerPoints = result.outer[0];
+        const innerPolyline = result.inner[0];
+        const outerPolyline = result.outer[0];
 
         // Check if polygons are closed (first point equals last point)
-        const innerFirstPoint = innerPoints[0];
-        const innerLastPoint = innerPoints[innerPoints.length - 1];
+        const innerFirstPoint = innerPolyline.points[0];
+        const innerLastPoint =
+            innerPolyline.points[innerPolyline.points.length - 1];
 
-        const outerFirstPoint = outerPoints[0];
-        const outerLastPoint = outerPoints[outerPoints.length - 1];
+        const outerFirstPoint = outerPolyline.points[0];
+        const outerLastPoint =
+            outerPolyline.points[outerPolyline.points.length - 1];
 
         console.log('Inner polygon:');
         console.log(
             `  First point: (${innerFirstPoint.x}, ${innerFirstPoint.y})`
         );
         console.log(`  Last point: (${innerLastPoint.x}, ${innerLastPoint.y})`);
-        console.log(`  Total points: ${innerPoints.length}`);
+        console.log(`  Total points: ${innerPolyline.points.length}`);
         console.log(
             `  Points equal: ${innerFirstPoint.x === innerLastPoint.x && innerFirstPoint.y === innerLastPoint.y}`
         );
@@ -55,7 +59,7 @@ describe('offsetPaths', () => {
             `  First point: (${outerFirstPoint.x}, ${outerFirstPoint.y})`
         );
         console.log(`  Last point: (${outerLastPoint.x}, ${outerLastPoint.y})`);
-        console.log(`  Total points: ${outerPoints.length}`);
+        console.log(`  Total points: ${outerPolyline.points.length}`);
         console.log(
             `  Points equal: ${outerFirstPoint.x === outerLastPoint.x && outerFirstPoint.y === outerLastPoint.y}`
         );
@@ -89,19 +93,23 @@ describe('offsetPaths', () => {
 
     it('should handle multiple point arrays correctly', async () => {
         // Create two separate squares
-        const square1: Point2D[] = [
-            { x: 0, y: 0 },
-            { x: 10, y: 0 },
-            { x: 10, y: 10 },
-            { x: 0, y: 10 },
-        ];
+        const square1: Polyline = {
+            points: [
+                { x: 0, y: 0 },
+                { x: 10, y: 0 },
+                { x: 10, y: 10 },
+                { x: 0, y: 10 },
+            ],
+        };
 
-        const square2: Point2D[] = [
-            { x: 100, y: 100 },
-            { x: 110, y: 100 },
-            { x: 110, y: 110 },
-            { x: 100, y: 110 },
-        ];
+        const square2: Polyline = {
+            points: [
+                { x: 100, y: 100 },
+                { x: 110, y: 100 },
+                { x: 110, y: 110 },
+                { x: 100, y: 110 },
+            ],
+        };
 
         const offsetDistance = 2;
         const isClosed = true;
@@ -123,12 +131,14 @@ describe('offsetPaths', () => {
 
     it('should reconstruct closed chains correctly', async () => {
         // Create a simple square
-        const square: Point2D[] = [
-            { x: 0, y: 0 },
-            { x: 100, y: 0 },
-            { x: 100, y: 100 },
-            { x: 0, y: 100 },
-        ];
+        const square: Polyline = {
+            points: [
+                { x: 0, y: 0 },
+                { x: 100, y: 0 },
+                { x: 100, y: 100 },
+                { x: 0, y: 100 },
+            ],
+        };
 
         const offsetDistance = 10;
         const isClosed = true;
@@ -179,19 +189,23 @@ describe('offsetPaths', () => {
 
     it('should reconstruct multiple disconnected polygons with proper closing segments', async () => {
         // Create two separate squares (disconnected)
-        const square1: Point2D[] = [
-            { x: 0, y: 0 },
-            { x: 10, y: 0 },
-            { x: 10, y: 10 },
-            { x: 0, y: 10 },
-        ];
+        const square1: Polyline = {
+            points: [
+                { x: 0, y: 0 },
+                { x: 10, y: 0 },
+                { x: 10, y: 10 },
+                { x: 0, y: 10 },
+            ],
+        };
 
-        const square2: Point2D[] = [
-            { x: 100, y: 100 },
-            { x: 110, y: 100 },
-            { x: 110, y: 110 },
-            { x: 100, y: 110 },
-        ];
+        const square2: Polyline = {
+            points: [
+                { x: 100, y: 100 },
+                { x: 110, y: 100 },
+                { x: 110, y: 110 },
+                { x: 100, y: 110 },
+            ],
+        };
 
         const offsetDistance = 2;
         const isClosed = true;

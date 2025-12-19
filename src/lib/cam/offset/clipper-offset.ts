@@ -5,7 +5,7 @@
  * Handles both inward and outward offsetting in a single operation.
  */
 
-import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { getClipper2 } from './clipper-init';
 import { toClipper2Paths, fromClipper2Paths, SCALE_FACTOR } from './convert';
 import type { JoinType, EndType } from '$lib/wasm/clipper2z';
@@ -42,23 +42,23 @@ export interface OffsetOptions {
  * using Clipper2's robust offsetting algorithm. Clipper2 automatically handles
  * trimming overlaps and filling gaps.
  *
- * @param pointArrays - Array of point arrays to offset (tessellated shapes)
+ * @param polylines - Array of polylines to offset (tessellated shapes)
  * @param distance - Offset distance in original units (positive value)
  * @param isClosed - Whether the chain is closed (affects end treatment)
  * @param options - Optional configuration for join/end types
- * @returns Object containing inner and outer offset results as point arrays
+ * @returns Object containing inner and outer offset results as polylines
  */
 export async function offsetPaths(
-    pointArrays: Point2D[][],
+    polylines: Polyline[],
     distance: number,
     isClosed: boolean,
     options?: OffsetOptions
-): Promise<{ inner: Point2D[][]; outer: Point2D[][] }> {
+): Promise<{ inner: Polyline[]; outer: Polyline[] }> {
     const clipper = await getClipper2();
     const { InflatePaths64, JoinType, EndType } = clipper;
 
     // Convert to Clipper2 format
-    const paths = toClipper2Paths(pointArrays, clipper);
+    const paths = toClipper2Paths(polylines, clipper);
 
     // Ensure correct winding order for closed paths
     // Clipper2 expects counter-clockwise (positive) orientation for outer boundaries
@@ -107,7 +107,7 @@ export async function offsetPaths(
         arcTolerance
     );
 
-    // Convert back to Point2D arrays
+    // Convert back to Polylines
     return {
         inner: fromClipper2Paths(innerPaths),
         outer: fromClipper2Paths(outerPaths),

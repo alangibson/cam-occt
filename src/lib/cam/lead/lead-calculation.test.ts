@@ -105,11 +105,11 @@ describe('calculateLeads', () => {
             expect(result.leadIn).toBeDefined();
             expect(result.leadIn?.type).toBe('arc');
 
-            const points = convertLeadGeometryToPoints(result.leadIn!);
-            expect(points.length).toBeGreaterThan(2); // Arc should have multiple points
+            const polyline = convertLeadGeometryToPoints(result.leadIn!);
+            expect(polyline.points.length).toBeGreaterThan(2); // Arc should have multiple points
 
             // Lead-in should end at the start of the line
-            const lastPoint = points[points.length - 1];
+            const lastPoint = polyline.points[polyline.points.length - 1];
             expect(lastPoint?.x).toBeCloseTo(0, 5);
             expect(lastPoint?.y).toBeCloseTo(0, 5);
         });
@@ -131,11 +131,11 @@ describe('calculateLeads', () => {
             expect(result.leadOut).toBeDefined();
             expect(result.leadOut?.type).toBe('arc');
 
-            const points = convertLeadGeometryToPoints(result.leadOut!);
-            expect(points.length).toBeGreaterThan(2);
+            const polyline = convertLeadGeometryToPoints(result.leadOut!);
+            expect(polyline.points.length).toBeGreaterThan(2);
 
             // Lead-out should start at the end of the line
-            const firstPoint = points[0];
+            const firstPoint = polyline.points[0];
             expect(firstPoint?.x).toBeCloseTo(10, 5);
             expect(firstPoint?.y).toBeCloseTo(0, 5);
         });
@@ -200,8 +200,8 @@ describe('calculateLeads', () => {
             expect(result.leadIn?.type).toBe('arc');
 
             // Circle starts at rightmost point (8, 5)
-            const points = convertLeadGeometryToPoints(result.leadIn!);
-            const lastPoint = points[points.length - 1];
+            const polyline = convertLeadGeometryToPoints(result.leadIn!);
+            const lastPoint = polyline.points[polyline.points.length - 1];
             expect(lastPoint?.x).toBeCloseTo(8, 5);
             expect(lastPoint?.y).toBeCloseTo(5, 5);
         });
@@ -262,12 +262,12 @@ describe('calculateLeads', () => {
 
             // For a hole, the lead should be inside the circle
             // The hole starts at (8, 5), and the lead should curve inward
-            const points = convertLeadGeometryToPoints(result.leadIn!);
+            const polyline = convertLeadGeometryToPoints(result.leadIn!);
 
             // Check that lead points are inside the circle (distance from center < radius)
-            for (let i: number = 0; i < points.length - 1; i++) {
+            for (let i: number = 0; i < polyline.points.length - 1; i++) {
                 // Exclude last point which is on the circle
-                const point = points[i];
+                const point = polyline.points[i];
                 const distFromCenter = Math.sqrt(
                     Math.pow(point.x - 5, 2) + Math.pow(point.y - 5, 2)
                 );
@@ -314,12 +314,12 @@ describe('calculateLeads', () => {
 
             // For a shell, the lead should be outside the circle
             // The shell starts at (8, 5), and the lead should curve outward
-            const points = convertLeadGeometryToPoints(result.leadIn!);
+            const polyline = convertLeadGeometryToPoints(result.leadIn!);
 
             // Check that lead points are mostly outside the circle
             // Note: With lead length=2 on radius=3 circle, some overlap is expected
             // The important thing is the lead is in the correct DIRECTION (outward)
-            const firstPoint = points[0];
+            const firstPoint = polyline.points[0];
             // First point should be in outward direction even if it overlaps shell
             const distFromCenter = Math.sqrt(
                 Math.pow(firstPoint.x - 5, 2) + Math.pow(firstPoint.y - 5, 2)

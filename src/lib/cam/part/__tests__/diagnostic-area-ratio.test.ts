@@ -55,7 +55,7 @@ describe('Diagnostic - Area Ratio Analysis', () => {
             console.log(
                 `\nchain-1 (${chain1.shapes.map((s) => s.type).join(', ')}):`
             );
-            console.log(`  Tessellated to ${innerPoints.length} points`);
+            console.log(`  Tessellated to ${innerPoints.points.length} points`);
 
             const innerPaths = toClipper2Paths([innerPoints], clipper);
             const outerPaths = toClipper2Paths([outerPoints], clipper);
@@ -92,7 +92,7 @@ describe('Diagnostic - Area Ratio Analysis', () => {
             console.log(
                 `\nchain-2 (${chain2.shapes.map((s) => s.type).join(', ')}):`
             );
-            console.log(`  Tessellated to ${innerPoints.length} points`);
+            console.log(`  Tessellated to ${innerPoints.points.length} points`);
 
             const innerPaths = toClipper2Paths([innerPoints], clipper);
             const outerPaths = toClipper2Paths([outerPoints], clipper);
@@ -157,7 +157,7 @@ describe('Diagnostic - Area Ratio Analysis', () => {
             console.log(
                 `\nchain-1 (${chain1.shapes.map((s) => s.type).join(', ')}):`
             );
-            console.log(`  Tessellated to ${innerPoints.length} points`);
+            console.log(`  Tessellated to ${innerPoints.points.length} points`);
 
             const innerPaths = toClipper2Paths([innerPoints], clipper);
             const outerPaths = toClipper2Paths([outerPoints], clipper);

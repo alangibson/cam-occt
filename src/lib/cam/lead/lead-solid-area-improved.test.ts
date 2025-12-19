@@ -55,7 +55,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
 
         expect(result.leadIn).toBeDefined();
         const points = convertLeadGeometryToPoints(result.leadIn!);
-        expect(points.length).toBeGreaterThan(0);
+        expect(points.points.length).toBeGreaterThan(0);
 
         // The improved algorithm should either:
         // 1. Find a valid position without warnings, OR
@@ -72,7 +72,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         }
 
         // Algorithm should have tried to find a solution (no crashes)
-        expect(points.length).toBeGreaterThan(0);
+        expect(points.points.length).toBeGreaterThan(0);
     });
 
     it('should generate different warnings for lead-in vs lead-out', async () => {

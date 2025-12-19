@@ -101,10 +101,12 @@ describe('cutToToolPath', () => {
                 },
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -181,10 +183,12 @@ describe('cutToToolPath', () => {
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 1, y: 1 },
-                { x: 11, y: 1 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 1, y: 1 },
+                    { x: 11, y: 1 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -216,10 +220,12 @@ describe('cutToToolPath', () => {
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -252,14 +258,18 @@ describe('cutToToolPath', () => {
             ];
 
             mockGetShapePoints
-                .mockReturnValueOnce([
-                    { x: 0, y: 0 },
-                    { x: 5, y: 0 },
-                ])
-                .mockReturnValueOnce([
-                    { x: 5, y: 0 },
-                    { x: 10, y: 0 },
-                ]);
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 5, y: 0 },
+                    ],
+                })
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 5, y: 0 },
+                        { x: 10, y: 0 },
+                    ],
+                });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -283,14 +293,18 @@ describe('cutToToolPath', () => {
             ];
 
             mockGetShapePoints
-                .mockReturnValueOnce([
-                    { x: 0, y: 0 },
-                    { x: 5, y: 0 },
-                ])
-                .mockReturnValueOnce([
-                    { x: 5, y: 0 },
-                    { x: 10, y: 0 },
-                ]);
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 5, y: 0 },
+                    ],
+                })
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 5, y: 0 },
+                        { x: 10, y: 0 },
+                    ],
+                });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -315,14 +329,18 @@ describe('cutToToolPath', () => {
             ];
 
             mockGetShapePoints
-                .mockReturnValueOnce([
-                    { x: 0, y: 0 },
-                    { x: 5, y: 0 },
-                ])
-                .mockReturnValueOnce([
-                    { x: 6, y: 0 },
-                    { x: 10, y: 0 },
-                ]);
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 5, y: 0 },
+                    ],
+                })
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 6, y: 0 },
+                        { x: 10, y: 0 },
+                    ],
+                });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -347,14 +365,18 @@ describe('cutToToolPath', () => {
             ];
 
             mockGetShapePoints
-                .mockReturnValueOnce([
-                    { x: 0, y: 0 },
-                    { x: 5, y: 0 },
-                ])
-                .mockReturnValueOnce([
-                    { x: 5.0005, y: 0 },
-                    { x: 10, y: 0 },
-                ]);
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 5, y: 0 },
+                    ],
+                })
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 5.0005, y: 0 },
+                        { x: 10, y: 0 },
+                    ],
+                });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -397,10 +419,12 @@ describe('cutToToolPath', () => {
 
             // Using real convertLeadGeometryToPoints function
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -411,14 +435,15 @@ describe('cutToToolPath', () => {
 
             // Check that leadIn exists and has correct start/end points
             expect(result.leadIn).toBeDefined();
-            expect(result.leadIn!.length).toBeGreaterThan(2); // Arc tessellation has multiple points
+            expect(result.leadIn!.points.length).toBeGreaterThan(2); // Arc tessellation has multiple points
 
             // Check start point (approximately, due to floating point precision)
-            expect(result.leadIn![0].x).toBeCloseTo(expectedStart.x, 5);
-            expect(result.leadIn![0].y).toBeCloseTo(expectedStart.y, 5);
+            expect(result.leadIn!.points[0].x).toBeCloseTo(expectedStart.x, 5);
+            expect(result.leadIn!.points[0].y).toBeCloseTo(expectedStart.y, 5);
 
             // Check end point
-            const lastPoint = result.leadIn![result.leadIn!.length - 1];
+            const lastPoint =
+                result.leadIn!.points[result.leadIn!.points.length - 1];
             expect(lastPoint.x).toBeCloseTo(expectedEnd.x, 5);
             expect(lastPoint.y).toBeCloseTo(expectedEnd.y, 5);
         });
@@ -475,10 +500,12 @@ describe('cutToToolPath', () => {
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 1, y: 1 },
-                { x: 11, y: 1 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 1, y: 1 },
+                    { x: 11, y: 1 },
+                ],
+            });
 
             // Using real convertLeadGeometryToPoints function
 
@@ -491,10 +518,11 @@ describe('cutToToolPath', () => {
 
             // Arc lead may be undefined if it doesn't connect properly to offset geometry
             if (result.leadIn) {
-                expect(result.leadIn.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
+                expect(result.leadIn.points.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
                 // Verify arc lead connects to offset geometry at (1,1)
-                const leadInEnd = result.leadIn[result.leadIn.length - 1];
+                const leadInEnd =
+                    result.leadIn.points[result.leadIn.points.length - 1];
                 expect(leadInEnd.x).toBeCloseTo(1, 1);
                 expect(leadInEnd.y).toBeCloseTo(1, 1);
             }
@@ -552,10 +580,12 @@ describe('cutToToolPath', () => {
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 1, y: 1 },
-                { x: 11, y: 1 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 1, y: 1 },
+                    { x: 11, y: 1 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -587,10 +617,12 @@ describe('cutToToolPath', () => {
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -603,7 +635,7 @@ describe('cutToToolPath', () => {
             // or may be defined if it connects - both are acceptable outcomes
             if (result.leadIn) {
                 // If lead is present, it should be valid arc tessellation
-                expect(result.leadIn.length).toBeGreaterThan(0);
+                expect(result.leadIn.points.length).toBeGreaterThan(0);
             }
             // If undefined, that's also acceptable for connection mismatch cases
         });
@@ -630,10 +662,12 @@ describe('cutToToolPath', () => {
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -644,11 +678,11 @@ describe('cutToToolPath', () => {
 
             // Arc lead should be tessellated into multiple points
             expect(result.leadOut).toBeDefined();
-            expect(result.leadOut!.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
+            expect(result.leadOut!.points.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
             // Arc lead connection point may vary significantly due to arc geometry
             // Just verify that we have a valid tessellated lead
-            const leadOutStart = result.leadOut![0];
+            const leadOutStart = result.leadOut!.points[0];
             expect(typeof leadOutStart.x).toBe('number');
             expect(typeof leadOutStart.y).toBe('number');
         });
@@ -705,10 +739,12 @@ describe('cutToToolPath', () => {
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 1, y: 1 },
-                { x: 11, y: 1 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 1, y: 1 },
+                    { x: 11, y: 1 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -720,10 +756,10 @@ describe('cutToToolPath', () => {
             // Lead may be undefined if it doesn't connect properly to offset geometry
             if (result.leadOut) {
                 // If lead is present, it should be valid arc tessellation
-                expect(result.leadOut.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
+                expect(result.leadOut.points.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
                 // Verify arc lead starts from offset cut end at (11,1)
-                const leadOutStart = result.leadOut[0];
+                const leadOutStart = result.leadOut.points[0];
                 expect(leadOutStart.x).toBeCloseTo(11, 1);
                 expect(leadOutStart.y).toBeCloseTo(1, 1);
             }
@@ -781,10 +817,12 @@ describe('cutToToolPath', () => {
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 1, y: 1 },
-                { x: 11, y: 1 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 1, y: 1 },
+                    { x: 11, y: 1 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -818,7 +856,9 @@ describe('cutToToolPath', () => {
                 createMockLine('point', { x: 5, y: 5 }, { x: 5, y: 5 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([{ x: 5, y: 5 }]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [{ x: 5, y: 5 }],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -886,10 +926,12 @@ describe('cutsToToolPaths', () => {
                 ],
             ]);
 
-            mockGetShapePoints.mockReturnValue([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValue({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutsToToolPaths(
                 cuts.map((c) => new Cut(c)),
@@ -920,10 +962,12 @@ describe('cutsToToolPaths', () => {
                 ],
             ]);
 
-            mockGetShapePoints.mockReturnValue([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValue({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutsToToolPaths(
                 cuts.map((c) => new Cut(c)),
@@ -951,10 +995,12 @@ describe('cutsToToolPaths', () => {
                 ],
             ]);
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutsToToolPaths(
                 cuts.map((c) => new Cut(c)),
@@ -982,10 +1028,12 @@ describe('cutsToToolPaths', () => {
                 ],
             ]);
 
-            mockGetShapePoints.mockReturnValue([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValue({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutsToToolPaths(
                 cuts.map((c) => new Cut(c)),
@@ -1035,10 +1083,12 @@ describe('cutsToToolPaths', () => {
                 ],
             ]);
 
-            mockGetShapePoints.mockReturnValue([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValue({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutsToToolPaths(
                 cuts.map((c) => new Cut(c)),
@@ -1068,7 +1118,7 @@ describe('cutsToToolPaths', () => {
                 ], // Same start/end
             ]);
 
-            mockGetShapePoints.mockReturnValue([{ x: 0, y: 0 }]);
+            mockGetShapePoints.mockReturnValue({ points: [{ x: 0, y: 0 }] });
 
             const result = await cutsToToolPaths(
                 cuts.map((c) => new Cut(c)),
@@ -1101,14 +1151,18 @@ describe('cutsToToolPaths', () => {
             ]);
 
             mockGetShapePoints
-                .mockReturnValueOnce([
-                    { x: 0, y: 0 },
-                    { x: 0.0005, y: 0 },
-                ])
-                .mockReturnValueOnce([
-                    { x: 0, y: 0 },
-                    { x: 0.0005, y: 0 },
-                ]);
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 0.0005, y: 0 },
+                    ],
+                })
+                .mockReturnValueOnce({
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 0.0005, y: 0 },
+                    ],
+                });
 
             const result = await cutsToToolPaths(
                 cuts.map((c) => new Cut(c)),
@@ -1161,7 +1215,9 @@ describe('cutsToToolPaths', () => {
                 createMockLine('line1', { x: 50, y: 50 }, { x: 50, y: 50 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([{ x: 50, y: 50 }]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [{ x: 50, y: 50 }],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -1182,10 +1238,12 @@ describe('cutsToToolPaths', () => {
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),
@@ -1205,10 +1263,12 @@ describe('cutsToToolPaths', () => {
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
-            mockGetShapePoints.mockReturnValueOnce([
-                { x: 0, y: 0 },
-                { x: 10, y: 0 },
-            ]);
+            mockGetShapePoints.mockReturnValueOnce({
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 10, y: 0 },
+                ],
+            });
 
             const result = await cutToToolPath(
                 new Cut(cut),

@@ -13,6 +13,7 @@ import {
 } from '$lib/geometry/math/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { hashObject } from '$lib/geometry/hash/functions';
 import {
     DEFAULT_CONFIG,
@@ -974,29 +975,29 @@ export function getSplineTangent(spline: Spline, _isStart: boolean): Point2D {
  *
  * @param spline - The spline to sample
  * @param _sampleCount - Ignored, kept for API compatibility
- * @returns Array of points along the spline
+ * @returns Polyline of points along the spline
  */
-export function sampleSpline(spline: Spline, _sampleCount: number): Point2D[] {
+export function sampleSpline(spline: Spline, _sampleCount: number): Polyline {
     const points: Point2D[] = [];
 
     // Handle degenerate cases
     if (spline.controlPoints.length === 0) {
-        return points;
+        return { points };
     }
 
     // For linear splines (degree 1), just sample control points
     if (spline.degree <= 1) {
-        return spline.controlPoints.slice();
+        return { points: spline.controlPoints.slice() };
     }
 
     // Use fit points if available (these are often more accurate for visualization)
     if (spline.fitPoints && spline.fitPoints.length >= 2) {
-        return spline.fitPoints.slice();
+        return { points: spline.fitPoints.slice() };
     }
 
     // For 2-point splines, return a line
     if (spline.controlPoints.length === 2) {
-        return [spline.controlPoints[0], spline.controlPoints[1]];
+        return { points: [spline.controlPoints[0], spline.controlPoints[1]] };
     }
 
     // Use verb.js adaptive tessellation for proper NURBS evaluation
@@ -1013,10 +1014,10 @@ export function sampleSpline(spline: Spline, _sampleCount: number): Point2D[] {
             points.push({ x: point3d[0], y: point3d[1] });
         }
 
-        return points;
+        return { points };
     } catch {
         // verb.js NURBS tessellation failed - falling back to control points
-        return spline.controlPoints.slice();
+        return { points: spline.controlPoints.slice() };
     }
 }
 

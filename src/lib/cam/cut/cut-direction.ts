@@ -39,14 +39,14 @@ export function detectCutDirection(
     }
 
     // Get all points from the chain
-    const points: Point2D[] = getChainPoints(chain);
+    const polyline = getChainPoints(chain);
 
-    if (points.length < POLYGON_POINTS_MIN) {
+    if (polyline.points.length < POLYGON_POINTS_MIN) {
         return CutDirection.NONE; // Need at least 3 points to determine direction
     }
 
     // Calculate signed area using shoelace formula
-    const signedArea: number = calculateSignedArea({ points });
+    const signedArea: number = calculateSignedArea(polyline);
 
     // Positive area = counterclockwise, negative area = clockwise
     return signedArea > 0

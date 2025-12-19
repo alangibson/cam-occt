@@ -59,21 +59,21 @@ describe('Diagnostic - Tessellation Analysis', () => {
                 chain1,
                 DEFAULT_PART_DETECTION_PARAMETERS
             );
-            console.log(`\nTessellated to ${tessellated.length} points`);
+            console.log(`\nTessellated to ${tessellated.points.length} points`);
             console.log('First 10 points:');
-            tessellated.slice(0, 10).forEach((p, idx) => {
+            tessellated.points.slice(0, 10).forEach((p, idx) => {
                 console.log(`  ${idx}: (${p.x.toFixed(4)}, ${p.y.toFixed(4)})`);
             });
             console.log('Last 10 points:');
-            tessellated.slice(-10).forEach((p, idx) => {
+            tessellated.points.slice(-10).forEach((p, idx) => {
                 console.log(
-                    `  ${tessellated.length - 10 + idx}: (${p.x.toFixed(4)}, ${p.y.toFixed(4)})`
+                    `  ${tessellated.points.length - 10 + idx}: (${p.x.toFixed(4)}, ${p.y.toFixed(4)})`
                 );
             });
 
             // Check if first and last points match (closed polygon)
-            const first = tessellated[0];
-            const last = tessellated[tessellated.length - 1];
+            const first = tessellated.points[0];
+            const last = tessellated.points[tessellated.points.length - 1];
             const dist = Math.sqrt(
                 Math.pow(first.x - last.x, 2) + Math.pow(first.y - last.y, 2)
             );

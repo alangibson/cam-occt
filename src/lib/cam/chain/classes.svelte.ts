@@ -1,6 +1,7 @@
 import type { ChainData } from './interfaces';
 import { Shape } from '$lib/cam/shape/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
@@ -41,7 +42,7 @@ export class Chain implements Geometric, ChainData {
     #boundary?: BoundingBox;
     #area?: number;
     #isClosed?: boolean;
-    #tessellated?: Point2D[];
+    #tessellated?: Polyline;
     #paths64?: Paths64;
     #centroid?: Point2D;
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -244,9 +245,9 @@ export class Chain implements Geometric, ChainData {
      * Lazily calculates and caches the result on first access
      * Uses default part detection parameters
      *
-     * @returns Array of tessellated points
+     * @returns Polyline of tessellated points
      */
-    get tessellated(): Point2D[] {
+    get tessellated(): Polyline {
         if (this.#tessellated === undefined) {
             this.#tessellated = tessellateChain(
                 this,

@@ -78,7 +78,7 @@ describe('Lead Concave Area Fix', () => {
         );
 
         expect(result.leadIn).toBeDefined();
-        const points = convertLeadGeometryToPoints(result.leadIn!);
+        const polyline = convertLeadGeometryToPoints(result.leadIn!);
 
         // Get the polygon for point-in-polygon testing
         const polygon: Point2D[] = [
@@ -96,9 +96,9 @@ describe('Lead Concave Area Fix', () => {
 
         // Check if any lead points are inside the polygon (excluding connection point)
         let pointsInside = 0;
-        const connectionPoint = points[points.length - 1];
+        const connectionPoint = polyline.points[polyline.points.length - 1];
 
-        for (const point of points) {
+        for (const point of polyline.points) {
             // Skip connection point
             if (
                 Math.abs(point.x - connectionPoint.x) < 0.001 &&
@@ -112,13 +112,13 @@ describe('Lead Concave Area Fix', () => {
             }
         }
 
-        points.slice(0, 3).forEach((p) => {
+        polyline.points.slice(0, 3).forEach((p) => {
             isPointInPolygon(p, { points: polygon });
         });
 
         // With the improved algorithm, we should have fewer points inside the solid area
         // The exact number depends on the specific geometry, but it should be better than before
-        expect(pointsInside).toBeLessThan(points.length); // At least some points should be outside
+        expect(pointsInside).toBeLessThan(polyline.points.length); // At least some points should be outside
     });
 
     it('should show difference between old and new algorithm', () => {
@@ -182,7 +182,7 @@ describe('Lead Concave Area Fix', () => {
         // The key is that the algorithm now uses local curvature analysis
         // instead of just centroid-based direction, which should work better
         // for concave areas
-        const points_result = convertLeadGeometryToPoints(result.leadIn!);
-        expect(points_result.length).toBeGreaterThan(0);
+        const polyline_result = convertLeadGeometryToPoints(result.leadIn!);
+        expect(polyline_result.points.length).toBeGreaterThan(0);
     });
 });

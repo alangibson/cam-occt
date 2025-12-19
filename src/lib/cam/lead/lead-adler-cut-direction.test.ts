@@ -27,7 +27,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
             const shapePoints = getShapePoints(new Shape(shape), {
                 mode: 'TESSELLATION',
             });
-            points.push(...shapePoints);
+            points.push(...shapePoints.points);
         }
 
         return points;
@@ -103,8 +103,8 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
                 let solidPoints = 0;
                 if (result.leadIn) {
                     const points = convertLeadGeometryToPoints(result.leadIn);
-                    for (let i: number = 0; i < points.length - 1; i++) {
-                        if (isPointInSolidArea(points[i], part5)) {
+                    for (let i: number = 0; i < points.points.length - 1; i++) {
+                        if (isPointInSolidArea(points.points[i], part5)) {
                             solidPoints++;
                         }
                     }
@@ -137,8 +137,8 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         if (shortResult.leadIn) {
             let solidPoints = 0;
             const shortPoints = convertLeadGeometryToPoints(shortResult.leadIn);
-            for (let i: number = 0; i < shortPoints.length - 1; i++) {
-                if (isPointInSolidArea(shortPoints[i], part5)) {
+            for (let i: number = 0; i < shortPoints.points.length - 1; i++) {
+                if (isPointInSolidArea(shortPoints.points[i], part5)) {
                     solidPoints++;
                 }
             }
@@ -170,10 +170,10 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         const points = getShapePoints(new Shape(shellShape), {
             mode: 'TESSELLATION',
         });
-        if (points.length > 0) {
+        if (points.points.length > 0) {
             // Find the nearest edge of the bounding box to understand constraints
             const bbox = part5.boundingBox;
-            const connectionPoint = points[0];
+            const connectionPoint = points.points[0];
 
             const distToLeft = connectionPoint.x - bbox.min.x;
             const distToRight = bbox.max.x - connectionPoint.x;
@@ -198,23 +198,23 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
             const holePoints = getShapePoints(new Shape(holeShape), {
                 mode: 'TESSELLATION',
             });
-            if (holePoints.length > 0) {
+            if (holePoints.points.length > 0) {
                 const holeCenter = {
                     x:
-                        holePoints.reduce(
+                        holePoints.points.reduce(
                             (sum: number, p: { x: number; y: number }) =>
                                 sum + p.x,
                             0
-                        ) / holePoints.length,
+                        ) / holePoints.points.length,
                     y:
-                        holePoints.reduce(
+                        holePoints.points.reduce(
                             (sum: number, p: { x: number; y: number }) =>
                                 sum + p.y,
                             0
-                        ) / holePoints.length,
+                        ) / holePoints.points.length,
                 };
 
-                const connectionPoint = points[0];
+                const connectionPoint = points.points[0];
                 const _distToHole = Math.sqrt(
                     (connectionPoint.x - holeCenter.x) ** 2 +
                         (connectionPoint.y - holeCenter.y) ** 2

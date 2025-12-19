@@ -20,6 +20,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D, PointGeometry } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { DxfPolyline } from '$lib/geometry/dxf-polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { BoundingBox } from '$lib/geometry/bounding-box/classes';
@@ -29,10 +30,10 @@ import { MIDPOINT_T } from '$lib/geometry/constants';
 export class Shape implements Geometric, ShapeData {
     #data: ShapeData;
     #tessellationCache?: TessellationCache;
-    #tessellated?: Point2D[];
+    #tessellated?: Polyline;
     #startPoint?: Point2D;
     #endPoint?: Point2D;
-    #points?: Point2D[];
+    #points?: Polyline;
     #boundary?: BoundingBox;
     #midPoint?: Point2D;
     #normal?: Point2D;
@@ -85,12 +86,12 @@ export class Shape implements Geometric, ShapeData {
 
     get tessellation(): TessellationCache {
         if (!this.#tessellationCache) {
-            const points = tessellateShape(
+            const polyline = tessellateShape(
                 this,
                 DEFAULT_PART_DETECTION_PARAMETERS
             );
             this.#tessellationCache = {
-                points,
+                points: polyline.points,
                 tolerance:
                     DEFAULT_PART_DETECTION_PARAMETERS.tessellationTolerance,
                 timestamp: Date.now(),
@@ -99,7 +100,7 @@ export class Shape implements Geometric, ShapeData {
         return this.#tessellationCache;
     }
 
-    get tessellated(): Point2D[] {
+    get tessellated(): Polyline {
         if (!this.#tessellated) {
             this.#tessellated = tessellateShape(
                 this,
@@ -123,7 +124,7 @@ export class Shape implements Geometric, ShapeData {
         return this.#endPoint;
     }
 
-    get points(): Point2D[] {
+    get points(): Polyline {
         if (!this.#points) {
             this.#points = getShapePoints(this, {
                 mode: 'CHAIN_DETECTION',

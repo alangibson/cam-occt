@@ -67,14 +67,14 @@ describe('Lead Geometry Debug', () => {
         );
 
         expect(result.leadIn).toBeDefined();
-        const points = convertLeadGeometryToPoints(result.leadIn!);
+        const polyline = convertLeadGeometryToPoints(result.leadIn!);
 
-        points.forEach((_point, _i) => {
+        polyline.points.forEach((_point, _i) => {
             // Log each point for debugging
         });
 
         // Check: lead should start away from line and end at (0,0)
-        const endPoint = points[points.length - 1];
+        const endPoint = polyline.points[polyline.points.length - 1];
 
         expect(endPoint.x).toBeCloseTo(0, 5);
         expect(endPoint.y).toBeCloseTo(0, 5);
@@ -131,14 +131,14 @@ describe('Lead Geometry Debug', () => {
         );
 
         expect(result.leadIn).toBeDefined();
-        const points = convertLeadGeometryToPoints(result.leadIn!);
+        const polyline = convertLeadGeometryToPoints(result.leadIn!);
 
-        points.forEach((point, i) => {
+        polyline.points.forEach((point, i) => {
             const inShell = isPointInRectangle(point, 0, 0, 100, 100);
             const inHole = isPointInRectangle(point, 70, 70, 90, 90);
             const _inSolid = inShell && !inHole;
 
-            if (i < 5 || i >= points.length - 2) {
+            if (i < 5 || i >= polyline.points.length - 2) {
                 // Show first few and last few points
                 // Log detailed point information
             }

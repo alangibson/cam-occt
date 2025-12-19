@@ -268,9 +268,9 @@ describe('ellipse-utils', () => {
         it('should tessellate full ellipse', () => {
             const result = sampleEllipse(unitCircle, 8);
 
-            expect(result).toHaveLength(8);
+            expect(result.points).toHaveLength(8);
             // Should be evenly spaced around circle
-            result.forEach((point) => {
+            result.points.forEach((point) => {
                 const distance = Math.sqrt(
                     point.x * point.x + point.y * point.y
                 );
@@ -281,14 +281,14 @@ describe('ellipse-utils', () => {
         it('should tessellate ellipse arc', () => {
             const result = sampleEllipse(ellipseArc, 4);
 
-            expect(result).toHaveLength(5); // numPoints + 1 for arc
+            expect(result.points).toHaveLength(5); // numPoints + 1 for arc
         });
 
         it('should handle full ellipse parameter calculation', () => {
             const result = sampleEllipse(horizontalEllipse, 4);
 
-            expect(result).toHaveLength(4);
-            result.forEach((point) => {
+            expect(result.points).toHaveLength(4);
+            result.points.forEach((point) => {
                 expect(Number.isFinite(point.x)).toBe(true);
                 expect(Number.isFinite(point.y)).toBe(true);
             });
@@ -303,8 +303,8 @@ describe('ellipse-utils', () => {
 
             const result = sampleEllipse(wrappingArc, 4);
 
-            expect(result).toHaveLength(5);
-            result.forEach((point) => {
+            expect(result.points).toHaveLength(5);
+            result.points.forEach((point) => {
                 expect(Number.isFinite(point.x)).toBe(true);
                 expect(Number.isFinite(point.y)).toBe(true);
             });
@@ -313,13 +313,13 @@ describe('ellipse-utils', () => {
         it('should handle zero points gracefully', () => {
             const result = sampleEllipse(unitCircle, 0);
 
-            expect(result).toHaveLength(0);
+            expect(result.points).toHaveLength(0);
         });
 
         it('should handle single point tessellation', () => {
             const result = sampleEllipse(unitCircle, 1);
 
-            expect(result).toHaveLength(1);
+            expect(result.points).toHaveLength(1);
         });
     });
 

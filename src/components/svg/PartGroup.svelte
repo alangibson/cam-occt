@@ -117,7 +117,7 @@
 
         let pathData = '';
         for (const shape of shapes) {
-            const tessellated = shape.tessellated;
+            const tessellated = shape.tessellated.points;
             if (tessellated.length === 0) continue;
 
             if (pathData === '') {
@@ -425,7 +425,7 @@
     {#if visualizationStore.showPartTessellation}
         <g id="part-tessellation">
             {#each allPartChains as { chain } (chain.id)}
-                {@const tessellationPoints = chain.tessellated}
+                {@const tessellationPoints = chain.tessellated.points}
                 <TessellationGraphic
                     points={tessellationPoints}
                     {unitScale}

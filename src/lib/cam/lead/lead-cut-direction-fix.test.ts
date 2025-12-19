@@ -28,7 +28,7 @@ describe('Lead Cut Direction Fix', () => {
             const shapePoints = getShapePoints(new Shape(shape), {
                 mode: 'TESSELLATION',
             });
-            points.push(...shapePoints);
+            points.push(...shapePoints.points);
         }
 
         return points;
@@ -115,37 +115,50 @@ describe('Lead Cut Direction Fix', () => {
 
         // Count solid area violations for each approach
         if (noCutDirResult.leadIn) {
-            const noCutDirPoints = convertLeadGeometryToPoints(
+            const noCutDirPolyline = convertLeadGeometryToPoints(
                 noCutDirResult.leadIn
             );
-            for (let i: number = 0; i < noCutDirPoints.length - 1; i++) {
-                if (isPointInSolidArea(noCutDirPoints[i], part5)) {
+            for (
+                let i: number = 0;
+                i < noCutDirPolyline.points.length - 1;
+                i++
+            ) {
+                if (isPointInSolidArea(noCutDirPolyline.points[i], part5)) {
                     noCutDirSolid++;
                 }
             }
         }
 
         if (clockwiseResult.leadIn) {
-            const clockwisePoints = convertLeadGeometryToPoints(
+            const clockwisePolyline = convertLeadGeometryToPoints(
                 clockwiseResult.leadIn
             );
-            for (let i: number = 0; i < clockwisePoints.length - 1; i++) {
-                if (isPointInSolidArea(clockwisePoints[i], part5)) {
+            for (
+                let i: number = 0;
+                i < clockwisePolyline.points.length - 1;
+                i++
+            ) {
+                if (isPointInSolidArea(clockwisePolyline.points[i], part5)) {
                     clockwiseSolid++;
                 }
             }
         }
 
         if (counterclockwiseResult.leadIn) {
-            const counterclockwisePoints = convertLeadGeometryToPoints(
+            const counterclockwisePolyline = convertLeadGeometryToPoints(
                 counterclockwiseResult.leadIn
             );
             for (
                 let i: number = 0;
-                i < counterclockwisePoints.length - 1;
+                i < counterclockwisePolyline.points.length - 1;
                 i++
             ) {
-                if (isPointInSolidArea(counterclockwisePoints[i], part5)) {
+                if (
+                    isPointInSolidArea(
+                        counterclockwisePolyline.points[i],
+                        part5
+                    )
+                ) {
                     counterclockwiseSolid++;
                 }
             }
@@ -198,14 +211,14 @@ describe('Lead Cut Direction Fix', () => {
         );
 
         if (clockwiseResult.leadIn && counterclockwiseResult.leadIn) {
-            const clockwisePoints = convertLeadGeometryToPoints(
+            const clockwisePolyline = convertLeadGeometryToPoints(
                 clockwiseResult.leadIn
             );
-            const counterclockwisePoints = convertLeadGeometryToPoints(
+            const counterclockwisePolyline = convertLeadGeometryToPoints(
                 counterclockwiseResult.leadIn
             );
-            const clockwiseStart = clockwisePoints[0];
-            const counterclockwiseStart = counterclockwisePoints[0];
+            const clockwiseStart = clockwisePolyline.points[0];
+            const counterclockwiseStart = counterclockwisePolyline.points[0];
 
             // With the fixed behavior, leads should curve toward the path consistently
             // Start positions should be similar (same curve direction) but sweep directions differ
@@ -226,11 +239,12 @@ describe('Lead Cut Direction Fix', () => {
 
             // But sweep directions should differ - check by comparing second points
             if (
-                clockwisePoints.length > 1 &&
-                counterclockwisePoints.length > 1
+                clockwisePolyline.points.length > 1 &&
+                counterclockwisePolyline.points.length > 1
             ) {
-                const clockwiseSecond = clockwisePoints[1];
-                const counterclockwiseSecond = counterclockwisePoints[1];
+                const clockwiseSecond = clockwisePolyline.points[1];
+                const counterclockwiseSecond =
+                    counterclockwisePolyline.points[1];
 
                 const _sweepDistance = Math.sqrt(
                     (clockwiseSecond.x - counterclockwiseSecond.x) ** 2 +

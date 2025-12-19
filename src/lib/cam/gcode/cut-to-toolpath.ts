@@ -82,10 +82,8 @@ export async function cutToToolPath(
     // Combine all points from the shapes
     const points: Point2D[] = [];
     shapesToUse.forEach((shape) => {
-        const shapePoints: Point2D[] = getShapePoints(
-            shape,
-            canUseNativeShapes
-        );
+        const shapePolyline = getShapePoints(shape, canUseNativeShapes);
+        const shapePoints = shapePolyline.points;
         // For the first shape, add all points
         // For subsequent shapes, skip the first point to avoid duplication at connection points
         if (points.length === 0) {
@@ -114,7 +112,8 @@ export async function cutToToolPath(
 
     // First check for existing calculatedLeadIn (backward compatibility)
     if (cut.leadIn) {
-        const cachedLeadInPoints = convertLeadGeometryToPoints(cut.leadIn);
+        const cachedLeadInPolyline = convertLeadGeometryToPoints(cut.leadIn);
+        const cachedLeadInPoints = cachedLeadInPolyline.points;
         // Check if lead is valid (not zero-length line)
         const isZeroLengthLine =
             cachedLeadInPoints.length === 2 &&
@@ -132,13 +131,13 @@ export async function cutToToolPath(
                     Math.abs(leadEnd.x - cutStart.x) <= tolerance &&
                     Math.abs(leadEnd.y - cutStart.y) <= tolerance
                 ) {
-                    leadIn = convertLeadGeometryToPoints(cut.leadIn);
+                    leadIn = cachedLeadInPolyline;
                 } else {
                     // Cached lead-in doesn't connect to offset cut - lead endpoint doesn't match cut start point
                     leadIn = undefined; // Don't use disconnected lead
                 }
             } else {
-                leadIn = convertLeadGeometryToPoints(cut.leadIn);
+                leadIn = cachedLeadInPolyline;
             }
         }
     }
@@ -152,9 +151,10 @@ export async function cutToToolPath(
         if (hasValidCachedLeads(cut)) {
             const cached: LeadResult = getCachedLeadGeometry(cut);
             if (cached.leadIn) {
-                const cachedLeadInPoints = convertLeadGeometryToPoints(
+                const cachedLeadInPolyline = convertLeadGeometryToPoints(
                     cached.leadIn
                 );
+                const cachedLeadInPoints = cachedLeadInPolyline.points;
                 // Check if lead is valid (not zero-length line)
                 const isZeroLengthLine =
                     cachedLeadInPoints.length === 2 &&
@@ -171,7 +171,7 @@ export async function cutToToolPath(
                         Math.abs(leadEnd.x - cutStart.x) <= tolerance &&
                         Math.abs(leadEnd.y - cutStart.y) <= tolerance
                     ) {
-                        leadIn = convertLeadGeometryToPoints(cached.leadIn);
+                        leadIn = cachedLeadInPolyline;
                     } else {
                         // Cached lead-in doesn't connect to current geometry - will trigger recalculation
                         leadIn = undefined; // Will trigger recalculation below
@@ -189,7 +189,7 @@ export async function cutToToolPath(
                 'leadIn'
             );
             if (leadInPoints && leadInPoints.length >= 2) {
-                leadIn = leadInPoints;
+                leadIn = { points: leadInPoints };
             }
         }
     }
@@ -199,7 +199,8 @@ export async function cutToToolPath(
 
     // First check for existing calculatedLeadOut (backward compatibility)
     if (cut.leadOut) {
-        const cachedLeadOutPoints = convertLeadGeometryToPoints(cut.leadOut);
+        const cachedLeadOutPolyline = convertLeadGeometryToPoints(cut.leadOut);
+        const cachedLeadOutPoints = cachedLeadOutPolyline.points;
         // Check if lead is valid (not zero-length line)
         const isZeroLengthLine =
             cachedLeadOutPoints.length === 2 &&
@@ -216,13 +217,13 @@ export async function cutToToolPath(
                     Math.abs(leadStart.x - cutEnd.x) <= tolerance &&
                     Math.abs(leadStart.y - cutEnd.y) <= tolerance
                 ) {
-                    leadOut = convertLeadGeometryToPoints(cut.leadOut);
+                    leadOut = cachedLeadOutPolyline;
                 } else {
                     // Cached lead-out doesn't connect to offset cut - lead start point doesn't match cut end point
                     leadOut = undefined; // Don't use disconnected lead
                 }
             } else {
-                leadOut = convertLeadGeometryToPoints(cut.leadOut);
+                leadOut = cachedLeadOutPolyline;
             }
         }
     }
@@ -236,9 +237,10 @@ export async function cutToToolPath(
         if (hasValidCachedLeads(cut)) {
             const cached = getCachedLeadGeometry(cut);
             if (cached.leadOut) {
-                const cachedLeadOutPoints = convertLeadGeometryToPoints(
+                const cachedLeadOutPolyline = convertLeadGeometryToPoints(
                     cached.leadOut
                 );
+                const cachedLeadOutPoints = cachedLeadOutPolyline.points;
                 // Check if lead is valid (not zero-length line)
                 const isZeroLengthLine =
                     cachedLeadOutPoints.length === 2 &&
@@ -254,7 +256,7 @@ export async function cutToToolPath(
                         Math.abs(leadStart.x - cutEnd.x) <= tolerance &&
                         Math.abs(leadStart.y - cutEnd.y) <= tolerance
                     ) {
-                        leadOut = convertLeadGeometryToPoints(cached.leadOut);
+                        leadOut = cachedLeadOutPolyline;
                     } else {
                         // Cached lead-out doesn't connect to current geometry - will trigger recalculation
                         leadOut = undefined; // Will trigger recalculation below
@@ -272,7 +274,7 @@ export async function cutToToolPath(
                 'leadOut'
             );
             if (leadOutPoints && leadOutPoints.length >= 2) {
-                leadOut = leadOutPoints;
+                leadOut = { points: leadOutPoints };
             }
         }
     }
@@ -374,8 +376,9 @@ export async function cutsToToolPaths(
             const currentEnd: Point2D =
                 toolPaths[i].points[toolPaths[i].points.length - 1];
             const nextStart: Point2D =
-                toolPaths[i + 1].leadIn && toolPaths[i + 1].leadIn!.length > 0
-                    ? toolPaths[i + 1].leadIn![0]
+                toolPaths[i + 1].leadIn &&
+                toolPaths[i + 1].leadIn!.points.length > 0
+                    ? toolPaths[i + 1].leadIn!.points[0]
                     : toolPaths[i + 1].points[0];
 
             // Only add rapid if there's actual movement needed

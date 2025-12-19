@@ -99,11 +99,11 @@ describe('Lead Fit Feature', () => {
         expect(result.leadOut).toBeDefined();
         if (result.leadIn) {
             const leadInPoints = convertLeadGeometryToPoints(result.leadIn);
-            expect(leadInPoints.length).toBeGreaterThan(0);
+            expect(leadInPoints.points.length).toBeGreaterThan(0);
         }
         if (result.leadOut) {
             const leadOutPoints = convertLeadGeometryToPoints(result.leadOut);
-            expect(leadOutPoints.length).toBeGreaterThan(0);
+            expect(leadOutPoints.points.length).toBeGreaterThan(0);
         }
     });
 
@@ -134,11 +134,11 @@ describe('Lead Fit Feature', () => {
         expect(result.leadOut).toBeDefined();
         if (result.leadIn) {
             const leadInPoints = convertLeadGeometryToPoints(result.leadIn);
-            expect(leadInPoints.length).toBeGreaterThan(0);
+            expect(leadInPoints.points.length).toBeGreaterThan(0);
         }
         if (result.leadOut) {
             const leadOutPoints = convertLeadGeometryToPoints(result.leadOut);
-            expect(leadOutPoints.length).toBeGreaterThan(0);
+            expect(leadOutPoints.points.length).toBeGreaterThan(0);
         }
     });
 

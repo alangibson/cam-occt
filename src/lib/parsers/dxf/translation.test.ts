@@ -38,8 +38,8 @@ function calculateBounds(shapes: ShapeData[]) {
         maxY = -Infinity;
 
     shapes.forEach((shape) => {
-        const points = getShapePoints(new Shape(shape), { mode: 'BOUNDS' });
-        points.forEach((point) => {
+        const polyline = getShapePoints(new Shape(shape), { mode: 'BOUNDS' });
+        polyline.points.forEach((point) => {
             minX = Math.min(minX, point.x);
             maxX = Math.max(maxX, point.x);
             minY = Math.min(minY, point.y);

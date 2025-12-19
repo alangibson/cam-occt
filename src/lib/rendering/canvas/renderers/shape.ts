@@ -386,7 +386,7 @@ export class ShapeRenderer extends BaseRenderer {
             );
 
             // Draw each tessellation point as a small circle
-            for (const point of tessellationPoints) {
+            for (const point of tessellationPoints.points) {
                 drawTessellationPoint(
                     ctx,
                     state,

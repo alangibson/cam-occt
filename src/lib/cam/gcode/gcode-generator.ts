@@ -569,8 +569,8 @@ function generateCutCommands(
     }
 
     // Lead-in if present
-    if (cut.leadIn && cut.leadIn.length > 0) {
-        const leadInPoints = cut.leadIn;
+    if (cut.leadIn && cut.leadIn.points.length > 0) {
+        const leadInPoints = cut.leadIn.points;
         if (leadInPoints.length > 0) {
             // Rapid to lead-in start
             const leadInStart: { x: number; y: number } = leadInPoints[0];
@@ -676,8 +676,8 @@ function generateCutCommands(
     }
 
     // Lead-out if present
-    if (cut.leadOut && cut.leadOut.length > 0) {
-        const leadOutPoints = cut.leadOut;
+    if (cut.leadOut && cut.leadOut.points.length > 0) {
+        const leadOutPoints = cut.leadOut.points;
         if (leadOutPoints.length > 0) {
             // Remove consecutive duplicate points to avoid redundant G-code commands
             const deduplicatedLeadOut =

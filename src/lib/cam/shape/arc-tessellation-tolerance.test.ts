@@ -72,8 +72,8 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(new Shape(shape), params);
-        const maxError = calculateMaxChordError(arc, points);
+        const polyline = tessellateShape(new Shape(shape), params);
+        const maxError = calculateMaxChordError(arc, polyline.points);
 
         // The maximum error should not exceed the tolerance
         expect(maxError).toBeLessThanOrEqual(0.1);
@@ -104,8 +104,8 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(new Shape(shape), params);
-        const maxError = calculateMaxChordError(arc, points);
+        const polyline = tessellateShape(new Shape(shape), params);
+        const maxError = calculateMaxChordError(arc, polyline.points);
 
         expect(maxError).toBeLessThanOrEqual(0.01);
         expect(maxError).toBeGreaterThan(0.005);
@@ -141,11 +141,13 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const pointsCoarse = tessellateShape(new Shape(shape), paramsCoarse);
-        const pointsFine = tessellateShape(new Shape(shape), paramsFine);
+        const polylineCoarse = tessellateShape(new Shape(shape), paramsCoarse);
+        const polylineFine = tessellateShape(new Shape(shape), paramsFine);
 
         // Finer tolerance should produce more points
-        expect(pointsFine.length).toBeGreaterThan(pointsCoarse.length);
+        expect(polylineFine.points.length).toBeGreaterThan(
+            polylineCoarse.points.length
+        );
     });
 
     it('should handle small radius arcs appropriately', () => {
@@ -171,13 +173,13 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(new Shape(shape), params);
-        const maxError = calculateMaxChordError(arc, points);
+        const polyline = tessellateShape(new Shape(shape), params);
+        const maxError = calculateMaxChordError(arc, polyline.points);
 
         // Should still respect tolerance
         expect(maxError).toBeLessThanOrEqual(0.1);
         // Should use fewer points than a larger arc
-        expect(points.length).toBeLessThan(50);
+        expect(polyline.points.length).toBeLessThan(50);
     });
 
     it('should handle large radius arcs appropriately', () => {
@@ -203,13 +205,13 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(new Shape(shape), params);
-        const maxError = calculateMaxChordError(arc, points);
+        const polyline = tessellateShape(new Shape(shape), params);
+        const maxError = calculateMaxChordError(arc, polyline.points);
 
         // Should still respect tolerance
         expect(maxError).toBeLessThanOrEqual(0.1);
         // Large radius should require more points for same tolerance
-        expect(points.length).toBeGreaterThan(20);
+        expect(polyline.points.length).toBeGreaterThan(20);
     });
 
     it('should handle clockwise arcs correctly', () => {
@@ -235,8 +237,8 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(new Shape(shape), params);
-        const maxError = calculateMaxChordError(arc, points);
+        const polyline = tessellateShape(new Shape(shape), params);
+        const maxError = calculateMaxChordError(arc, polyline.points);
 
         // Should respect tolerance regardless of direction
         expect(maxError).toBeLessThanOrEqual(0.1);
@@ -265,10 +267,10 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(new Shape(shape), params);
+        const polyline = tessellateShape(new Shape(shape), params);
 
         // First point should be at start angle
-        const startPoint = points[0];
+        const startPoint = polyline.points[0];
         const expectedStartX =
             arc.center.x + arc.radius * Math.cos(arc.startAngle);
         const expectedStartY =
@@ -277,7 +279,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
         expect(startPoint.y).toBeCloseTo(expectedStartY, 5);
 
         // Last point should be at end angle
-        const endPoint = points[points.length - 1];
+        const endPoint = polyline.points[polyline.points.length - 1];
         const expectedEndX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
         const expectedEndY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
         expect(endPoint.x).toBeCloseTo(expectedEndX, 5);
@@ -307,9 +309,9 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             enableTessellation: false,
         };
 
-        const points = tessellateShape(new Shape(shape), params);
+        const polyline = tessellateShape(new Shape(shape), params);
 
         // Should be clamped to maximum
-        expect(points.length).toBeLessThanOrEqual(1001); // 1000 segments = 1001 points
+        expect(polyline.points.length).toBeLessThanOrEqual(1001); // 1000 segments = 1001 points
     });
 });

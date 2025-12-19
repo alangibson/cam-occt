@@ -56,9 +56,9 @@ describe('Lead Direction Debug', () => {
             { x: 1, y: 0 }
         );
         if (noneResult.leadIn) {
-            const points = convertLeadGeometryToPoints(noneResult.leadIn);
-            const _start = points[0];
-            const _end = points[points.length - 1];
+            const polyline = convertLeadGeometryToPoints(noneResult.leadIn);
+            const _start = polyline.points[0];
+            const _end = polyline.points[polyline.points.length - 1];
         }
 
         const clockwiseResult = calculateLeads(
@@ -70,9 +70,11 @@ describe('Lead Direction Debug', () => {
             { x: 1, y: 0 }
         );
         if (clockwiseResult.leadIn) {
-            const points = convertLeadGeometryToPoints(clockwiseResult.leadIn);
-            const _start = points[0];
-            const _end = points[points.length - 1];
+            const polyline = convertLeadGeometryToPoints(
+                clockwiseResult.leadIn
+            );
+            const _start = polyline.points[0];
+            const _end = polyline.points[polyline.points.length - 1];
         }
 
         const counterclockwiseResult = calculateLeads(
@@ -84,19 +86,19 @@ describe('Lead Direction Debug', () => {
             { x: 1, y: 0 }
         );
         if (counterclockwiseResult.leadIn) {
-            const points = convertLeadGeometryToPoints(
+            const polyline = convertLeadGeometryToPoints(
                 counterclockwiseResult.leadIn
             );
-            const _start = points[0];
-            const _end = points[points.length - 1];
+            const _start = polyline.points[0];
+            const _end = polyline.points[polyline.points.length - 1];
         }
 
         // Test if results are different
         const results = [noneResult, clockwiseResult, counterclockwiseResult];
         const positions = results.map((r) => {
             if (r.leadIn) {
-                const points = convertLeadGeometryToPoints(r.leadIn);
-                return `(${points[0].x.toFixed(3)}, ${points[0].y.toFixed(3)})`;
+                const polyline = convertLeadGeometryToPoints(r.leadIn);
+                return `(${polyline.points[0].x.toFixed(3)}, ${polyline.points[0].y.toFixed(3)})`;
             }
             return 'none';
         });
@@ -164,8 +166,8 @@ describe('Lead Direction Debug', () => {
             counterclockwiseResult,
         ].map((r) => {
             if (r.leadIn) {
-                const points = convertLeadGeometryToPoints(r.leadIn);
-                return `(${points[0].x.toFixed(3)}, ${points[0].y.toFixed(3)})`;
+                const polyline = convertLeadGeometryToPoints(r.leadIn);
+                return `(${polyline.points[0].x.toFixed(3)}, ${polyline.points[0].y.toFixed(3)})`;
             }
             return 'none';
         });

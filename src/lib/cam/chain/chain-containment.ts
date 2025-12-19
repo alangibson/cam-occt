@@ -88,14 +88,14 @@ export function isChainContainedInChain_Geometric(
     outerChain: Chain
 ): boolean {
     // Extract polygon points from both chains
-    const innerPolygon: Point2D[] | null = extractPolygonFromChain(innerChain);
-    const outerPolygon: Point2D[] | null = extractPolygonFromChain(outerChain);
+    const innerPolygon = extractPolygonFromChain(innerChain);
+    const outerPolygon = extractPolygonFromChain(outerChain);
 
     if (
         !innerPolygon ||
         !outerPolygon ||
-        innerPolygon.length < POLYGON_POINTS_MIN ||
-        outerPolygon.length < POLYGON_POINTS_MIN
+        innerPolygon.points.length < POLYGON_POINTS_MIN ||
+        outerPolygon.points.length < POLYGON_POINTS_MIN
     ) {
         throw new Error(
             `Failed to extract polygons for containment check: inner chain ${innerChain.id}=${!!innerPolygon}, outer chain ${outerChain.id}=${!!outerPolygon}. Chains may have gaps preventing polygon creation.`
@@ -103,10 +103,7 @@ export function isChainContainedInChain_Geometric(
     }
 
     // Check if all points of inner polygon are inside outer polygon
-    return isPolygonContained(
-        { points: innerPolygon },
-        { points: outerPolygon }
-    );
+    return isPolygonContained(innerPolygon, outerPolygon);
 }
 /**
  * Checks if one closed chain is contained within another using sample-based point testing.

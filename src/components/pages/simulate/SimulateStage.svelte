@@ -48,10 +48,10 @@
     } from '$lib/cam/cut/lead-persistence';
     import { Chain } from '$lib/cam/chain/classes.svelte';
     import { Shape } from '$lib/cam/shape/classes';
+    import { calculatePolylineLength } from '$lib/geometry/polyline/functions';
     import {
         convertDistanceToDisplayUnit,
         getFeedRateForCut,
-        calculatePolylineLength,
         getPositionOnPolyline,
         getShapeLength,
         getChainDistance,
@@ -387,9 +387,9 @@
                     const cachedLeadInPoints = convertLeadGeometryToPoints(
                         cached.leadIn
                     );
-                    if (cachedLeadInPoints.length > 0) {
+                    if (cachedLeadInPoints.points.length > 0) {
                         // Return the first point of the cached lead-in (start of lead-in)
-                        return cachedLeadInPoints[0];
+                        return cachedLeadInPoints.points[0];
                     }
                 }
             }
@@ -447,8 +447,8 @@
                     const points = convertLeadGeometryToPoints(
                         leadResult.leadIn
                     );
-                    if (points.length > 0) {
-                        return points[0];
+                    if (points.points.length > 0) {
+                        return points.points[0];
                     }
                 }
             } catch (error) {
@@ -520,7 +520,7 @@
                         const cachedLeadInPoints = convertLeadGeometryToPoints(
                             cached.leadIn
                         );
-                        if (cachedLeadInPoints.length > 1) {
+                        if (cachedLeadInPoints.points.length > 1) {
                             leadInDistance =
                                 calculatePolylineLength(cachedLeadInPoints);
                         }
@@ -529,7 +529,7 @@
                         const cachedLeadOutPoints = convertLeadGeometryToPoints(
                             cached.leadOut
                         );
-                        if (cachedLeadOutPoints.length > 1) {
+                        if (cachedLeadOutPoints.points.length > 1) {
                             leadOutDistance =
                                 calculatePolylineLength(cachedLeadOutPoints);
                         }
@@ -581,7 +581,7 @@
                             const points = convertLeadGeometryToPoints(
                                 leadResult.leadIn
                             );
-                            if (points.length > 1) {
+                            if (points.points.length > 1) {
                                 leadInDistance =
                                     calculatePolylineLength(points);
                             }
@@ -590,7 +590,7 @@
                             const points = convertLeadGeometryToPoints(
                                 leadResult.leadOut
                             );
-                            if (points.length > 1) {
+                            if (points.points.length > 1) {
                                 leadOutDistance =
                                     calculatePolylineLength(points);
                             }
@@ -801,16 +801,16 @@
                         const cachedLeadInPoints = convertLeadGeometryToPoints(
                             cached.leadIn
                         );
-                        if (cachedLeadInPoints.length > 1) {
-                            leadInGeometry = cachedLeadInPoints;
+                        if (cachedLeadInPoints.points.length > 1) {
+                            leadInGeometry = cachedLeadInPoints.points;
                         }
                     }
                     if (cached.leadOut) {
                         const cachedLeadOutPoints = convertLeadGeometryToPoints(
                             cached.leadOut
                         );
-                        if (cachedLeadOutPoints.length > 1) {
-                            leadOutGeometry = cachedLeadOutPoints;
+                        if (cachedLeadOutPoints.points.length > 1) {
+                            leadOutGeometry = cachedLeadOutPoints.points;
                         }
                     }
                 } else {
@@ -860,16 +860,16 @@
                             const points = convertLeadGeometryToPoints(
                                 leadResult.leadIn
                             );
-                            if (points.length > 1) {
-                                leadInGeometry = points;
+                            if (points.points.length > 1) {
+                                leadInGeometry = points.points;
                             }
                         }
                         if (leadResult.leadOut) {
                             const points = convertLeadGeometryToPoints(
                                 leadResult.leadOut
                             );
-                            if (points.length > 1) {
-                                leadOutGeometry = points;
+                            if (points.points.length > 1) {
+                                leadOutGeometry = points.points;
                             }
                         }
                     }
@@ -884,7 +884,9 @@
         }
 
         // Calculate lengths
-        const leadInLength = calculatePolylineLength(leadInGeometry);
+        const leadInLength = calculatePolylineLength({
+            points: leadInGeometry,
+        });
         const chainLength =
             chain && shapes
                 ? getChainDistance({
@@ -894,7 +896,9 @@
                       ),
                   })
                 : 0; // Use offset shapes if available
-        const leadOutLength = calculatePolylineLength(leadOutGeometry);
+        const leadOutLength = calculatePolylineLength({
+            points: leadOutGeometry,
+        });
         const totalLength = leadInLength + chainLength + leadOutLength;
 
         const targetDistance = totalLength * progress;

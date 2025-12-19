@@ -115,10 +115,12 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         );
 
         if (clockwiseResult.leadIn) {
-            const points = convertLeadGeometryToPoints(clockwiseResult.leadIn);
-            if (points.length >= 2) {
-                const leadStart = points[0];
-                const leadEnd = points[points.length - 1];
+            const polyline = convertLeadGeometryToPoints(
+                clockwiseResult.leadIn
+            );
+            if (polyline.points.length >= 2) {
+                const leadStart = polyline.points[0];
+                const leadEnd = polyline.points[polyline.points.length - 1];
                 const _leadDirection = getVectorAngle(leadStart, leadEnd);
             }
         }
@@ -136,12 +138,12 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         );
 
         if (counterclockwiseResult.leadIn) {
-            const points = convertLeadGeometryToPoints(
+            const polyline = convertLeadGeometryToPoints(
                 counterclockwiseResult.leadIn
             );
-            if (points.length >= 2) {
-                const leadStart = points[0];
-                const leadEnd = points[points.length - 1];
+            if (polyline.points.length >= 2) {
+                const leadStart = polyline.points[0];
+                const leadEnd = polyline.points[polyline.points.length - 1];
                 const _leadDirection = getVectorAngle(leadStart, leadEnd);
             }
         }
@@ -164,10 +166,14 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         );
 
         if (clockwiseResult.leadIn) {
-            const points = convertLeadGeometryToPoints(clockwiseResult.leadIn);
-            if (points.length >= 2) {
-                const connectionPoint = points[points.length - 1];
-                const secondToLast = points[points.length - 2];
+            const polyline = convertLeadGeometryToPoints(
+                clockwiseResult.leadIn
+            );
+            if (polyline.points.length >= 2) {
+                const connectionPoint =
+                    polyline.points[polyline.points.length - 1];
+                const secondToLast =
+                    polyline.points[polyline.points.length - 2];
 
                 // The lead should approach the rectangle tangentially
                 const _approachAngle = getVectorAngle(
@@ -196,12 +202,14 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         );
 
         if (counterclockwiseResult.leadIn) {
-            const points = convertLeadGeometryToPoints(
+            const polyline = convertLeadGeometryToPoints(
                 counterclockwiseResult.leadIn
             );
-            if (points.length >= 2) {
-                const connectionPoint = points[points.length - 1];
-                const secondToLast = points[points.length - 2];
+            if (polyline.points.length >= 2) {
+                const connectionPoint =
+                    polyline.points[polyline.points.length - 1];
+                const secondToLast =
+                    polyline.points[polyline.points.length - 2];
 
                 // The lead should approach the rectangle tangentially
                 const _approachAngle = getVectorAngle(

@@ -445,21 +445,6 @@ export function getPolylinePointAt(polyline: DxfPolyline, t: number): Point2D {
 }
 
 /**
- * Calculate total length of a polyline from its points
- * @param points - Array of 2D points
- * @returns Total length of the polyline
- */
-export function calculatePolylineLength(points: Point2D[]): number {
-    let length = 0;
-    for (let i = 1; i < points.length; i++) {
-        const dx = points[i].x - points[i - 1].x;
-        const dy = points[i].y - points[i - 1].y;
-        length += Math.sqrt(dx * dx + dy * dy);
-    }
-    return length;
-}
-
-/**
  * Generate a content hash for a Polyline
  * @param polyline - The polyline to hash
  * @returns A SHA-256 hash as a hex string

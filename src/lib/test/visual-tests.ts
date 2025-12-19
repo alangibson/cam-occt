@@ -306,11 +306,10 @@ function shapeToSVG(shape: ShapeData): string {
 
         case 'spline': {
             const spline: Spline = shape.geometry as Spline;
-            const tessellationResult: { points: { x: number; y: number }[] } =
-                tessellateSpline(spline, {
-                    method: 'verb-nurbs',
-                    numSamples: 50,
-                });
+            const tessellationResult = tessellateSpline(spline, {
+                method: 'verb-nurbs',
+                numSamples: 50,
+            });
             const points: string = tessellationResult.points
                 .map((p) => `${p.x},${p.y}`)
                 .join(' ');
@@ -319,11 +318,8 @@ function shapeToSVG(shape: ShapeData): string {
 
         case 'ellipse': {
             const ellipse: Ellipse = shape.geometry as Ellipse;
-            const points: { x: number; y: number }[] = sampleEllipse(
-                ellipse,
-                32
-            );
-            const pointsStr: string = points
+            const polyline = sampleEllipse(ellipse, 32);
+            const pointsStr: string = polyline.points
                 .map((p) => `${p.x},${p.y}`)
                 .join(' ');
             return `<polyline points="${pointsStr}" />`;

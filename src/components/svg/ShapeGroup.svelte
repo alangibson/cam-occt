@@ -192,7 +192,7 @@
     {#if visualizationStore.showShapeTessellation}
         <g id="shape-tessellation">
             {#each shapes as shape (shape.id)}
-                {@const tessellationPoints = shape.tessellated}
+                {@const tessellationPoints = shape.tessellated.points}
                 <TessellationGraphic
                     points={tessellationPoints}
                     {unitScale}

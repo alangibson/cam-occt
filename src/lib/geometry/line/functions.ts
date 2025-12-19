@@ -8,6 +8,7 @@ import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';
 import type { SegmentPosition } from './types';
 import { hashObject } from '$lib/geometry/hash/functions';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 
 export function getLineStartPoint(line: Line): Point2D {
     return line.start;
@@ -329,8 +330,8 @@ export function getLineTangent(line: Line): Point2D {
  * Tessellate a line into points
  * Lines are already defined by two points, so just return start and end
  */
-export function tessellateLine(line: Line): Point2D[] {
-    return [line.start, line.end];
+export function tessellateLine(line: Line): Polyline {
+    return { points: [line.start, line.end] };
 }
 
 /**

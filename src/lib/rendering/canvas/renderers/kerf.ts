@@ -188,7 +188,7 @@ export class KerfRenderer extends BaseRenderer {
         color: string
     ): void {
         const points = convertLeadGeometryToPoints(lead);
-        if (points.length < 2) return;
+        if (points.points.length < 2) return;
 
         ctx.save();
         ctx.strokeStyle = color;
@@ -199,10 +199,10 @@ export class KerfRenderer extends BaseRenderer {
         ctx.lineJoin = 'round';
 
         ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
+        ctx.moveTo(points.points[0].x, points.points[0].y);
 
-        for (let i = 1; i < points.length; i++) {
-            ctx.lineTo(points[i].x, points[i].y);
+        for (let i = 1; i < points.points.length; i++) {
+            ctx.lineTo(points.points[i].x, points.points[i].y);
         }
 
         ctx.stroke();
@@ -412,13 +412,20 @@ export class KerfRenderer extends BaseRenderer {
                         const leadInPoints = convertLeadGeometryToPoints(
                             cut.leadIn
                         );
-                        if (leadInPoints.length >= 2) {
+                        if (leadInPoints.points.length >= 2) {
                             ctx.beginPath();
-                            ctx.moveTo(leadInPoints[0].x, leadInPoints[0].y);
-                            for (let i = 1; i < leadInPoints.length; i++) {
+                            ctx.moveTo(
+                                leadInPoints.points[0].x,
+                                leadInPoints.points[0].y
+                            );
+                            for (
+                                let i = 1;
+                                i < leadInPoints.points.length;
+                                i++
+                            ) {
                                 ctx.lineTo(
-                                    leadInPoints[i].x,
-                                    leadInPoints[i].y
+                                    leadInPoints.points[i].x,
+                                    leadInPoints.points[i].y
                                 );
                             }
                             ctx.stroke();
@@ -434,13 +441,20 @@ export class KerfRenderer extends BaseRenderer {
                         const leadOutPoints = convertLeadGeometryToPoints(
                             cut.leadOut
                         );
-                        if (leadOutPoints.length >= 2) {
+                        if (leadOutPoints.points.length >= 2) {
                             ctx.beginPath();
-                            ctx.moveTo(leadOutPoints[0].x, leadOutPoints[0].y);
-                            for (let i = 1; i < leadOutPoints.length; i++) {
+                            ctx.moveTo(
+                                leadOutPoints.points[0].x,
+                                leadOutPoints.points[0].y
+                            );
+                            for (
+                                let i = 1;
+                                i < leadOutPoints.points.length;
+                                i++
+                            ) {
                                 ctx.lineTo(
-                                    leadOutPoints[i].x,
-                                    leadOutPoints[i].y
+                                    leadOutPoints.points[i].x,
+                                    leadOutPoints.points[i].y
                                 );
                             }
                             ctx.stroke();

@@ -99,9 +99,9 @@ describe('Lead Tangency Tests', () => {
 
             expect(result.leadIn).toBeDefined();
             const points = convertLeadGeometryToPoints(result.leadIn!);
-            expect(points.length).toBeGreaterThan(2);
-            const connectionPoint = points[points.length - 1]; // Last point should connect to chain
-            const previousPoint = points[points.length - 2]; // Second to last point
+            expect(points.points.length).toBeGreaterThan(2);
+            const connectionPoint = points.points[points.points.length - 1]; // Last point should connect to chain
+            const previousPoint = points.points[points.points.length - 2]; // Second to last point
 
             // Connection point should be at chain start (0, 0)
             expect(connectionPoint.x).toBeCloseTo(0, 5);
@@ -168,9 +168,9 @@ describe('Lead Tangency Tests', () => {
 
             expect(result.leadOut).toBeDefined();
             const points = convertLeadGeometryToPoints(result.leadOut!);
-            expect(points.length).toBeGreaterThan(2);
-            const connectionPoint = points[0]; // First point should connect to chain
-            const nextPoint = points[1]; // Second point
+            expect(points.points.length).toBeGreaterThan(2);
+            const connectionPoint = points.points[0]; // First point should connect to chain
+            const nextPoint = points.points[1]; // Second point
 
             // Connection point should be at chain end (10, 0)
             expect(connectionPoint.x).toBeCloseTo(10, 5);
@@ -237,9 +237,9 @@ describe('Lead Tangency Tests', () => {
 
             expect(result.leadIn).toBeDefined();
             const points = convertLeadGeometryToPoints(result.leadIn!);
-            expect(points.length).toBeGreaterThan(2);
-            const connectionPoint = points[points.length - 1]; // Last point connects to circle
-            const previousPoint = points[points.length - 2]; // Second to last point
+            expect(points.points.length).toBeGreaterThan(2);
+            const connectionPoint = points.points[points.points.length - 1]; // Last point connects to circle
+            const previousPoint = points.points[points.points.length - 2]; // Second to last point
 
             // Connection point should be on the circle (rightmost point by default)
             expect(connectionPoint.x).toBeCloseTo(8, 5); // 5 + 3 = 8
@@ -378,7 +378,7 @@ describe('Lead Tangency Tests', () => {
             const shellPoints = convertLeadGeometryToPoints(
                 shellResult.leadIn!
             );
-            const shellStart = shellPoints[0];
+            const shellStart = shellPoints.points[0];
             const shellDistFromCenter = Math.sqrt(
                 Math.pow(shellStart.x - 5, 2) + Math.pow(shellStart.y - 5, 2)
             );
@@ -386,7 +386,7 @@ describe('Lead Tangency Tests', () => {
 
             // Hole lead should curve toward center (radius should be < hole radius from shell center)
             const holePoints = convertLeadGeometryToPoints(holeResult.leadIn!);
-            const holeStart = holePoints[0];
+            const holeStart = holePoints.points[0];
             const holeDistFromShellCenter = Math.sqrt(
                 Math.pow(holeStart.x - 5, 2) + Math.pow(holeStart.y - 5, 2)
             );
@@ -418,9 +418,9 @@ describe('Lead Tangency Tests', () => {
 
             // Calculate total arc length by summing segment lengths
             let totalLength = 0;
-            for (let i: number = 1; i < points.length; i++) {
-                const dx: number = points[i].x - points[i - 1].x;
-                const dy: number = points[i].y - points[i - 1].y;
+            for (let i: number = 1; i < points.points.length; i++) {
+                const dx: number = points.points[i].x - points.points[i - 1].x;
+                const dy: number = points.points[i].y - points.points[i - 1].y;
                 totalLength += Math.sqrt(dx * dx + dy * dy);
             }
 
@@ -450,8 +450,8 @@ describe('Lead Tangency Tests', () => {
             const points = convertLeadGeometryToPoints(result.leadIn!);
 
             // With maximum 90° sweep, the arc should not curve more than a quarter circle
-            const start = points[0];
-            const end = points[points.length - 1];
+            const start = points.points[0];
+            const end = points.points[points.points.length - 1];
 
             // For a horizontal line, 90° lead-in should result in points where
             // the start point is roughly perpendicular to the end point direction

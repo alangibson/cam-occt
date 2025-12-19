@@ -7,6 +7,7 @@ import {
 } from '$lib/geometry/constants';
 import { hashObject } from '$lib/geometry/hash/functions';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 
 export function getCircleStartPoint(circle: Circle): Point2D {
     return { x: circle.center.x + circle.radius, y: circle.center.y };
@@ -75,9 +76,9 @@ export function getCircleTangent(circle: Circle, point: Point2D): Point2D {
  * Tessellate a circle into points
  * @param circle Circle to tessellate
  * @param numPoints Number of points to generate around the circle
- * @returns Array of points around the circle
+ * @returns Polyline of points around the circle
  */
-export function tessellateCircle(circle: Circle, numPoints: number): Point2D[] {
+export function tessellateCircle(circle: Circle, numPoints: number): Polyline {
     const points: Point2D[] = [];
     for (let i: number = 0; i < numPoints; i++) {
         const angle: number = (i / numPoints) * 2 * Math.PI;
@@ -86,7 +87,7 @@ export function tessellateCircle(circle: Circle, numPoints: number): Point2D[] {
             y: circle.center.y + circle.radius * Math.sin(angle),
         });
     }
-    return points;
+    return { points };
 }
 
 /**

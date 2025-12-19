@@ -89,8 +89,8 @@ function areShapesConnected(
     shapeB: Shape,
     tolerance: number
 ): boolean {
-    const pointsA: Point2D[] = shapeA.points;
-    const pointsB: Point2D[] = shapeB.points;
+    const pointsA: Point2D[] = shapeA.points.points;
+    const pointsB: Point2D[] = shapeB.points.points;
 
     // Check if any point from shape A is within tolerance of any point from shape B
     for (const pointA of pointsA) {

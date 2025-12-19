@@ -13,6 +13,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes.svelte';
 import {
@@ -68,32 +69,32 @@ export async function offsetChain(
         const DECIMAL_PRECISION = 3;
         const SKIP_LAST_POINT = -1;
 
-        const shapePointArrays = tessellateChainToShapes(chainObj, {
+        const shapePolylines = tessellateChainToShapes(chainObj, {
             circleTessellationPoints: CIRCLE_POINTS,
             tessellationTolerance: getDefaults().geometry.tessellationTolerance,
             decimalPrecision: DECIMAL_PRECISION,
             enableTessellation: false,
         });
 
-        // For closed chains, merge all shape point arrays into a single continuous path
+        // For closed chains, merge all shape polylines into a single continuous path
         // For open chains, keep them separate
-        let pointArrays: Point2D[][];
-        if (isClosed && shapePointArrays.length > 1) {
+        let polylines: Polyline[];
+        if (isClosed && shapePolylines.length > 1) {
             // Merge all points into one continuous path
             const mergedPoints: Point2D[] = [];
-            for (const points of shapePointArrays) {
+            for (const polyline of shapePolylines) {
                 // Skip the last point of each shape except the last shape (to avoid duplicates at joins)
-                const pointsToAdd = points.slice(0, SKIP_LAST_POINT);
+                const pointsToAdd = polyline.points.slice(0, SKIP_LAST_POINT);
                 mergedPoints.push(...pointsToAdd);
             }
-            pointArrays = [mergedPoints];
+            polylines = [{ points: mergedPoints }];
         } else {
-            pointArrays = shapePointArrays;
+            polylines = shapePolylines;
         }
 
         // 3. Call Clipper2 offset (async because WASM initialization)
         const { inner, outer } = await offsetPaths(
-            pointArrays,
+            polylines,
             Math.abs(distance),
             isClosed
         );

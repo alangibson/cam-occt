@@ -539,13 +539,13 @@ export class ChainRenderer extends BaseRenderer {
             if (chain.shapes.length === 0) continue;
 
             // Tessellate the chain to get all points
-            const tessellationPoints = tessellateChain(
+            const tessellationPolyline = tessellateChain(
                 chain,
                 DEFAULT_PART_DETECTION_PARAMETERS
             );
 
             // Draw each tessellation point as a small circle
-            for (const point of tessellationPoints) {
+            for (const point of tessellationPolyline.points) {
                 drawTessellationPoint(
                     ctx,
                     state,

@@ -115,7 +115,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toEqual([
+        expect(points.points).toEqual([
             { x: 0, y: 0 },
             { x: 10, y: 10 },
         ]);
@@ -143,7 +143,7 @@ describe('getShapePoints', () => {
 
         const points = getShapePoints(new Shape(shape));
         expect(generateCirclePoints).toHaveBeenCalledWith({ x: 0, y: 0 }, 5);
-        expect(points).toBe(mockPoints);
+        expect(points.points).toEqual(mockPoints);
     });
 
     it('should call tessellateArc for arc shape', () => {
@@ -173,7 +173,7 @@ describe('getShapePoints', () => {
             arcGeometry,
             expect.any(Number)
         );
-        expect(points).toBe(mockPoints);
+        expect(points.points).toEqual(mockPoints);
     });
 
     it('should call polylineToPoints for polyline shape', () => {
@@ -197,7 +197,7 @@ describe('getShapePoints', () => {
 
         const points = getShapePoints(new Shape(shape));
         expect(polylineToPoints).toHaveBeenCalledWith(polylineGeometry);
-        expect(points).toStrictEqual(mockPoints);
+        expect(points.points).toStrictEqual(mockPoints);
     });
 
     it('should call tessellateEllipse for ellipse shape with correct parameters', () => {
@@ -207,7 +207,9 @@ describe('getShapePoints', () => {
             { x: -10, y: 0 },
             { x: 0, y: -5 },
         ];
-        (sampleEllipse as ReturnType<typeof vi.fn>).mockReturnValue(mockPoints);
+        (sampleEllipse as ReturnType<typeof vi.fn>).mockReturnValue({
+            points: mockPoints,
+        });
 
         const ellipseGeometry: Ellipse = {
             center: { x: 0, y: 0 },
@@ -223,7 +225,7 @@ describe('getShapePoints', () => {
 
         const points = getShapePoints(new Shape(shape));
         expect(sampleEllipse).toHaveBeenCalledWith(ellipseGeometry, 64);
-        expect(points).toBe(mockPoints);
+        expect(points.points).toEqual(mockPoints);
     });
 
     it('should call tessellateSpline for spline shape', () => {
@@ -265,7 +267,7 @@ describe('getShapePoints', () => {
         expect(tessellateSpline).toHaveBeenCalledWith(splineGeometry, {
             numSamples: 64,
         });
-        expect(points).toBe(mockPoints);
+        expect(points.points).toEqual(mockPoints);
     });
 
     it('should fallback to fitPoints when NURBS evaluation fails', () => {
@@ -298,7 +300,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toStrictEqual(fitPoints);
+        expect(points.points).toStrictEqual(fitPoints);
     });
 
     it('should fallback to controlPoints when NURBS fails and no fitPoints', () => {
@@ -328,7 +330,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toStrictEqual(controlPoints);
+        expect(points.points).toStrictEqual(controlPoints);
     });
 
     it('should return empty array when NURBS fails and no fallback points', () => {
@@ -352,7 +354,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toEqual([]);
+        expect(points.points).toEqual([]);
     });
 
     it('should return empty array for empty fitPoints array', () => {
@@ -376,7 +378,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toEqual([]);
+        expect(points.points).toEqual([]);
     });
 
     it('should return empty array for unknown shape type', () => {
@@ -387,7 +389,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toEqual([]);
+        expect(points.points).toEqual([]);
     });
 
     it('should handle multiple line segments correctly', () => {
@@ -403,7 +405,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toEqual([
+        expect(points.points).toEqual([
             { x: -5, y: -10 },
             { x: 15, y: 25 },
         ]);
@@ -422,7 +424,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toEqual([
+        expect(points.points).toEqual([
             { x: 5, y: 5 },
             { x: 5, y: 5 },
         ]);
@@ -456,7 +458,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toStrictEqual(fitPoints);
+        expect(points.points).toStrictEqual(fitPoints);
     });
 
     it('should handle spline with only controlPoints', () => {
@@ -487,7 +489,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(new Shape(shape));
-        expect(points).toStrictEqual(controlPoints);
+        expect(points.points).toStrictEqual(controlPoints);
     });
 });
 
@@ -1566,7 +1568,7 @@ describe('tessellateShape', () => {
         };
 
         const result = tessellateShape(new Shape(clockwiseArc), mockParams);
-        expect(result.length).toBeGreaterThan(2);
+        expect(result.points.length).toBeGreaterThan(2);
     });
 
     it('should tessellate arc with counterclockwise direction (negative deltaAngle)', () => {
@@ -1583,7 +1585,7 @@ describe('tessellateShape', () => {
         };
 
         const result = tessellateShape(new Shape(ccwArc), mockParams);
-        expect(result.length).toBeGreaterThan(2);
+        expect(result.points.length).toBeGreaterThan(2);
     });
 
     it('should tessellate ellipse arc', async () => {
@@ -1608,7 +1610,7 @@ describe('tessellateShape', () => {
         };
 
         const result = tessellateShape(new Shape(ellipseArc), mockParams);
-        expect(result.length).toBeGreaterThan(2);
+        expect(result.points.length).toBeGreaterThan(2);
     });
 
     it('should tessellate full ellipse', async () => {
@@ -1631,7 +1633,7 @@ describe('tessellateShape', () => {
         };
 
         const result = tessellateShape(new Shape(ellipse), mockParams);
-        expect(result.length).toBe(32); // numEllipsePoints
+        expect(result.points.length).toBe(32); // numEllipsePoints
     });
 
     it('should tessellate polyline using vertices when available', () => {
@@ -1652,7 +1654,7 @@ describe('tessellateShape', () => {
         ]);
 
         const result = tessellateShape(new Shape(polyline), mockParams);
-        expect(result.length).toBe(3);
+        expect(result.points.length).toBe(3);
     });
 
     it('should tessellate polyline using points when vertices are null', () => {
@@ -1673,7 +1675,7 @@ describe('tessellateShape', () => {
         ]);
 
         const result = tessellateShape(new Shape(polyline), mockParams);
-        expect(result.length).toBe(2);
+        expect(result.points.length).toBe(2);
     });
 });
 
@@ -1689,7 +1691,7 @@ describe('getShapePoints for native shapes', () => {
         };
 
         const result = getShapePoints(new Shape(circle), true);
-        expect(result).toEqual([{ x: 7, y: 3 }]); // center.x + radius, center.y
+        expect(result.points).toEqual([{ x: 7, y: 3 }]); // center.x + radius, center.y
     });
 
     it('should return start and end points for arc when forNativeShapes is true', () => {
@@ -1705,10 +1707,10 @@ describe('getShapePoints for native shapes', () => {
         };
 
         const result = getShapePoints(new Shape(arc), true);
-        expect(result).toHaveLength(2);
-        expect(result[0]).toEqual({ x: 5, y: 0 }); // Start point
-        expect(result[1].x).toBeCloseTo(0, 5);
-        expect(result[1].y).toBeCloseTo(5, 5); // End point
+        expect(result.points).toHaveLength(2);
+        expect(result.points[0]).toEqual({ x: 5, y: 0 }); // Start point
+        expect(result.points[1].x).toBeCloseTo(0, 5);
+        expect(result.points[1].y).toBeCloseTo(5, 5); // End point
     });
 
     it('should handle spline NURBS sampling failure with fitPoints fallback', () => {
@@ -1733,7 +1735,7 @@ describe('getShapePoints for native shapes', () => {
         });
 
         const result = getShapePoints(new Shape(spline));
-        expect(result).toEqual([
+        expect(result.points).toEqual([
             { x: 1, y: 1 },
             { x: 2, y: 2 },
         ]);
@@ -1761,7 +1763,7 @@ describe('getShapePoints for native shapes', () => {
         });
 
         const result = getShapePoints(new Shape(spline));
-        expect(result).toEqual([
+        expect(result.points).toEqual([
             { x: 3, y: 3 },
             { x: 4, y: 4 },
         ]);
@@ -1786,7 +1788,7 @@ describe('getShapePoints for native shapes', () => {
         });
 
         const result = getShapePoints(new Shape(spline));
-        expect(result).toEqual([]);
+        expect(result.points).toEqual([]);
     });
 });
 
@@ -1807,7 +1809,7 @@ describe('getShapePoints - direction analysis mode', () => {
         const result = getShapePoints(new Shape(clockwiseArc), {
             mode: 'DIRECTION_ANALYSIS',
         });
-        expect(result.length).toBeGreaterThan(2);
+        expect(result.points.length).toBeGreaterThan(2);
     });
 
     it('should handle arc with counterclockwise property correctly', () => {
@@ -1826,6 +1828,6 @@ describe('getShapePoints - direction analysis mode', () => {
         const result = getShapePoints(new Shape(ccwArc), {
             mode: 'DIRECTION_ANALYSIS',
         });
-        expect(result.length).toBeGreaterThan(2);
+        expect(result.points.length).toBeGreaterThan(2);
     });
 });

@@ -4,13 +4,13 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 
 describe('calculatePolygonCentroid', () => {
     it('should return origin for empty array', () => {
-        const result = calculatePolygonCentroid([]);
+        const result = calculatePolygonCentroid({ points: [] });
         expect(result).toEqual({ x: 0, y: 0 });
     });
 
     it('should return the point itself for single point', () => {
         const points: Point2D[] = [{ x: 5, y: 10 }];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result).toEqual({ x: 5, y: 10 });
     });
 
@@ -22,7 +22,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 6, y: 0 },
             { x: 3, y: 6 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result.x).toBeCloseTo(3, 5);
         expect(result.y).toBeCloseTo(2, 5);
     });
@@ -36,7 +36,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 10, y: 10 },
             { x: 0, y: 10 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result.x).toBeCloseTo(5, 5);
         expect(result.y).toBeCloseTo(5, 5);
     });
@@ -50,7 +50,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 20, y: 10 },
             { x: 0, y: 10 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result.x).toBeCloseTo(10, 5);
         expect(result.y).toBeCloseTo(5, 5);
     });
@@ -63,7 +63,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 10, y: 10 },
             { x: 10, y: 0 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result.x).toBeCloseTo(5, 5);
         expect(result.y).toBeCloseTo(5, 5);
     });
@@ -75,7 +75,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 5, y: 0 },
             { x: 10, y: 0 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result.x).toBeCloseTo(5, 5);
         expect(result.y).toBeCloseTo(0, 5);
     });
@@ -91,7 +91,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 4, y: 10 },
             { x: 0, y: 10 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         // Expected centroid can be calculated as weighted average of two rectangles:
         // Rectangle 1 (base): 10x4 at center (5, 2), area = 40
         // Rectangle 2 (vertical): 4x6 at center (2, 7), area = 24
@@ -109,7 +109,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 5, y: 5 },
             { x: -5, y: 5 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result.x).toBeCloseTo(0, 5);
         expect(result.y).toBeCloseTo(0, 5);
     });
@@ -124,7 +124,7 @@ describe('calculatePolygonCentroid', () => {
                 y: 10 * Math.sin(angle),
             });
         }
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         // Centroid should be at origin (0, 0)
         expect(result.x).toBeCloseTo(0, 5);
         expect(result.y).toBeCloseTo(0, 5);
@@ -139,7 +139,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 110, y: 110 },
             { x: 100, y: 110 },
         ];
-        const result = calculatePolygonCentroid(points);
+        const result = calculatePolygonCentroid({ points });
         expect(result.x).toBeCloseTo(105, 5);
         expect(result.y).toBeCloseTo(105, 5);
     });

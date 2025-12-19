@@ -108,12 +108,12 @@ function drawEllipse(
     _shape: ShapeData
 ): void {
     // Tessellate ellipse directly
-    const tessellatedPoints = sampleEllipse(
+    const tessellatedPolyline = sampleEllipse(
         ellipse,
         ELLIPSE_TESSELLATION_POINTS
     );
 
-    if (tessellatedPoints.length < 2) return;
+    if (tessellatedPolyline.points.length < 2) return;
 
     // Determine if this is an ellipse arc or full ellipse
     const isArc =
@@ -121,10 +121,16 @@ function drawEllipse(
         typeof ellipse.endParam === 'number';
 
     ctx.beginPath();
-    ctx.moveTo(tessellatedPoints[0].x, tessellatedPoints[0].y);
+    ctx.moveTo(
+        tessellatedPolyline.points[0].x,
+        tessellatedPolyline.points[0].y
+    );
 
-    for (let i = 1; i < tessellatedPoints.length; i++) {
-        ctx.lineTo(tessellatedPoints[i].x, tessellatedPoints[i].y);
+    for (let i = 1; i < tessellatedPolyline.points.length; i++) {
+        ctx.lineTo(
+            tessellatedPolyline.points[i].x,
+            tessellatedPolyline.points[i].y
+        );
     }
 
     // Close path for full ellipse
@@ -144,18 +150,18 @@ function drawSpline(
     shape: ShapeData
 ): void {
     // Get tessellation
-    const tessellatedPoints = tessellateShape(
+    const polyline = tessellateShape(
         new Shape(shape),
         DEFAULT_PART_DETECTION_PARAMETERS
     );
 
-    if (tessellatedPoints.length < 2) return;
+    if (polyline.points.length < 2) return;
 
     ctx.beginPath();
-    ctx.moveTo(tessellatedPoints[0].x, tessellatedPoints[0].y);
+    ctx.moveTo(polyline.points[0].x, polyline.points[0].y);
 
-    for (let i = 1; i < tessellatedPoints.length; i++) {
-        ctx.lineTo(tessellatedPoints[i].x, tessellatedPoints[i].y);
+    for (let i = 1; i < polyline.points.length; i++) {
+        ctx.lineTo(polyline.points[i].x, polyline.points[i].y);
     }
 
     if (spline.closed) {

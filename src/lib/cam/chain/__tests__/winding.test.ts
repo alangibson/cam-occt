@@ -106,43 +106,45 @@ describe('Chain Winding and Properties', () => {
 
     describe('getWindingDirection', () => {
         it('should detect clockwise winding', () => {
-            expect(getWindingDirection(unitSquareCW)).toBe('CW');
+            expect(getWindingDirection({ points: unitSquareCW })).toBe('CW');
         });
 
         it('should detect counter-clockwise winding', () => {
-            expect(getWindingDirection(unitSquareCCW)).toBe('CCW');
+            expect(getWindingDirection({ points: unitSquareCCW })).toBe('CCW');
         });
 
         it('should detect degenerate polygon', () => {
-            expect(getWindingDirection(degenerate)).toBe('degenerate');
+            expect(getWindingDirection({ points: degenerate })).toBe(
+                'degenerate'
+            );
         });
 
         it('should handle empty array', () => {
-            expect(getWindingDirection([])).toBe('degenerate');
+            expect(getWindingDirection({ points: [] })).toBe('degenerate');
         });
     });
 
     describe('isClockwise and isCounterClockwise', () => {
         it('should correctly identify clockwise polygons', () => {
-            expect(isClockwise(unitSquareCW)).toBe(true);
-            expect(isClockwise(unitSquareCCW)).toBe(false);
+            expect(isClockwise({ points: unitSquareCW })).toBe(true);
+            expect(isClockwise({ points: unitSquareCCW })).toBe(false);
         });
 
         it('should correctly identify counter-clockwise polygons', () => {
-            expect(isCounterClockwise(unitSquareCCW)).toBe(true);
-            expect(isCounterClockwise(unitSquareCW)).toBe(false);
+            expect(isCounterClockwise({ points: unitSquareCCW })).toBe(true);
+            expect(isCounterClockwise({ points: unitSquareCW })).toBe(false);
         });
 
         it('should return false for degenerate polygons', () => {
-            expect(isClockwise(degenerate)).toBe(false);
-            expect(isCounterClockwise(degenerate)).toBe(false);
+            expect(isClockwise({ points: degenerate })).toBe(false);
+            expect(isCounterClockwise({ points: degenerate })).toBe(false);
         });
     });
 
     describe('reverseWinding', () => {
         it('should reverse the order of points', () => {
-            const reversed = reverseWinding(unitSquareCW);
-            expect(reversed).toEqual([
+            const reversed = reverseWinding({ points: unitSquareCW });
+            expect(reversed.points).toEqual([
                 { x: 1, y: 0 },
                 { x: 1, y: 1 },
                 { x: 0, y: 1 },
@@ -152,54 +154,56 @@ describe('Chain Winding and Properties', () => {
 
         it('should not modify the original array', () => {
             const original = [...unitSquareCW];
-            const reversed = reverseWinding(unitSquareCW);
+            const reversed = reverseWinding({ points: unitSquareCW });
             expect(unitSquareCW).toEqual(original);
-            expect(reversed).not.toBe(unitSquareCW);
+            expect(reversed.points).not.toBe(unitSquareCW);
         });
 
         it('should handle empty array', () => {
-            expect(reverseWinding([])).toEqual([]);
+            expect(reverseWinding({ points: [] }).points).toEqual([]);
         });
     });
 
     describe('ensureClockwise', () => {
         it('should leave clockwise polygons unchanged', () => {
-            const result = ensureClockwise(unitSquareCW);
-            expect(result).toBe(unitSquareCW); // Same reference
+            const result = ensureClockwise({ points: unitSquareCW });
+            expect(result.points).toBe(unitSquareCW); // Same reference
         });
 
         it('should reverse counter-clockwise polygons', () => {
-            const result = ensureClockwise(unitSquareCCW);
+            const result = ensureClockwise({ points: unitSquareCCW });
             expect(isClockwise(result)).toBe(true);
         });
     });
 
     describe('ensureCounterClockwise', () => {
         it('should leave counter-clockwise polygons unchanged', () => {
-            const result = ensureCounterClockwise(unitSquareCCW);
-            expect(result).toBe(unitSquareCCW); // Same reference
+            const result = ensureCounterClockwise({ points: unitSquareCCW });
+            expect(result.points).toBe(unitSquareCCW); // Same reference
         });
 
         it('should reverse clockwise polygons', () => {
-            const result = ensureCounterClockwise(unitSquareCW);
+            const result = ensureCounterClockwise({ points: unitSquareCW });
             expect(isCounterClockwise(result)).toBe(true);
         });
     });
 
     describe('isSimplePolygon', () => {
         it('should return true for simple polygons', () => {
-            expect(isSimplePolygon(unitSquareCW)).toBe(true);
-            expect(isSimplePolygon(triangle)).toBe(true);
+            expect(isSimplePolygon({ points: unitSquareCW })).toBe(true);
+            expect(isSimplePolygon({ points: triangle })).toBe(true);
         });
 
         it('should return false for polygons with too few points', () => {
-            expect(isSimplePolygon([])).toBe(false);
-            expect(isSimplePolygon([{ x: 0, y: 0 }])).toBe(false);
+            expect(isSimplePolygon({ points: [] })).toBe(false);
+            expect(isSimplePolygon({ points: [{ x: 0, y: 0 }] })).toBe(false);
             expect(
-                isSimplePolygon([
-                    { x: 0, y: 0 },
-                    { x: 1, y: 1 },
-                ])
+                isSimplePolygon({
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 1, y: 1 },
+                    ],
+                })
             ).toBe(false);
         });
 
@@ -210,29 +214,33 @@ describe('Chain Winding and Properties', () => {
                 { x: 1, y: 0 }, // Duplicate
                 { x: 1, y: 1 },
             ];
-            expect(isSimplePolygon(withDuplicates)).toBe(false);
+            expect(isSimplePolygon({ points: withDuplicates })).toBe(false);
         });
     });
 
     describe('calculatePolygonPerimeter', () => {
         it('should calculate perimeter of unit square', () => {
-            const perimeter = calculatePolygonPerimeter(unitSquareCW);
+            const perimeter = calculatePolygonPerimeter({
+                points: unitSquareCW,
+            });
             expect(perimeter).toBeCloseTo(4); // 4 sides of length 1
         });
 
         it('should calculate perimeter of triangle', () => {
-            const perimeter = calculatePolygonPerimeter(triangle);
+            const perimeter = calculatePolygonPerimeter({ points: triangle });
             // Side lengths: 2, sqrt(5), sqrt(5)
             const expected = 2 + 2 * Math.sqrt(5);
             expect(perimeter).toBeCloseTo(expected);
         });
 
         it('should handle empty array', () => {
-            expect(calculatePolygonPerimeter([])).toBe(0);
+            expect(calculatePolygonPerimeter({ points: [] })).toBe(0);
         });
 
         it('should handle single point', () => {
-            expect(calculatePolygonPerimeter([{ x: 0, y: 0 }])).toBe(0);
+            expect(
+                calculatePolygonPerimeter({ points: [{ x: 0, y: 0 }] })
+            ).toBe(0);
         });
     });
 
@@ -246,7 +254,7 @@ describe('Chain Winding and Properties', () => {
                 { x: 50, y: 10 },
             ];
 
-            expect(getWindingDirection(cadRectangle)).toBe('CW');
+            expect(getWindingDirection({ points: cadRectangle })).toBe('CW');
             expect(calculatePolygonArea({ points: cadRectangle })).toBeCloseTo(
                 800
             ); // 40 * 20
@@ -276,8 +284,8 @@ describe('Chain Winding and Properties', () => {
                 { x: 100, y: 0 },
             ];
 
-            expect(getWindingDirection(lBracket)).toBe('CW');
-            expect(isSimplePolygon(lBracket)).toBe(true);
+            expect(getWindingDirection({ points: lBracket })).toBe('CW');
+            expect(isSimplePolygon({ points: lBracket })).toBe(true);
 
             const area = calculatePolygonArea({ points: lBracket });
             const expectedArea = 100 * 20 + 20 * 60; // Two rectangles

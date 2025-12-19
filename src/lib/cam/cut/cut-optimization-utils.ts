@@ -133,9 +133,9 @@ export function getCutStartPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
 
             if (leadResult.leadIn) {
                 // Convert geometry to points and return the first point (start of lead-in)
-                const points = convertLeadGeometryToPoints(leadResult.leadIn);
-                if (points.length > 0) {
-                    return points[0];
+                const polyline = convertLeadGeometryToPoints(leadResult.leadIn);
+                if (polyline.points.length > 0) {
+                    return polyline.points[0];
                 }
             }
         } catch {

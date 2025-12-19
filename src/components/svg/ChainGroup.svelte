@@ -210,7 +210,7 @@
     {#if visualizationStore.showChainTessellation}
         <g id="chain-tessellation">
             {#each chains as chain (chain.id)}
-                {@const tessellationPoints = chain.tessellated}
+                {@const tessellationPoints = chain.tessellated.points}
                 <TessellationGraphic
                     points={tessellationPoints}
                     {unitScale}

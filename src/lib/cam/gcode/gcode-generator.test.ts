@@ -30,14 +30,18 @@ describe('generateGCode', () => {
             { x: 0, y: 100 },
             { x: 0, y: 0 },
         ],
-        leadIn: [
-            { x: -5, y: 0 },
-            { x: 0, y: 0 },
-        ],
-        leadOut: [
-            { x: 0, y: 0 },
-            { x: -5, y: 0 },
-        ],
+        leadIn: {
+            points: [
+                { x: -5, y: 0 },
+                { x: 0, y: 0 },
+            ],
+        },
+        leadOut: {
+            points: [
+                { x: 0, y: 0 },
+                { x: -5, y: 0 },
+            ],
+        },
         isRapid: false,
         parameters: {
             feedRate: 1000,
@@ -889,16 +893,20 @@ describe('generateGCode', () => {
                     { x: 20, y: 20 }, // Exact duplicate
                     { x: 30, y: 30 }, // Far enough to keep
                 ],
-                leadIn: [
-                    { x: -5, y: 0 },
-                    { x: -4.99999, y: 0 }, // Too close to previous point
-                    { x: 0, y: 0 }, // Far enough to keep
-                ],
-                leadOut: [
-                    { x: 30, y: 30 },
-                    { x: 30.00001, y: 30 }, // Too close to previous point
-                    { x: 35, y: 30 }, // Far enough to keep
-                ],
+                leadIn: {
+                    points: [
+                        { x: -5, y: 0 },
+                        { x: -4.99999, y: 0 }, // Too close to previous point
+                        { x: 0, y: 0 }, // Far enough to keep
+                    ],
+                },
+                leadOut: {
+                    points: [
+                        { x: 30, y: 30 },
+                        { x: 30.00001, y: 30 }, // Too close to previous point
+                        { x: 35, y: 30 }, // Far enough to keep
+                    ],
+                },
                 isRapid: false,
                 parameters: {
                     feedRate: 1000,

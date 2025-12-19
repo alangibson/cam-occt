@@ -143,10 +143,12 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
 
             if (leadResult.leadOut) {
                 // Convert geometry to points and return the last point (end of lead-out)
-                const points = convertLeadGeometryToPoints(leadResult.leadOut);
-                if (points.length > 0) {
-                    return points[
-                        points.length + DEFAULT_ARRAY_NOT_FOUND_INDEX
+                const polyline = convertLeadGeometryToPoints(
+                    leadResult.leadOut
+                );
+                if (polyline.points.length > 0) {
+                    return polyline.points[
+                        polyline.points.length + DEFAULT_ARRAY_NOT_FOUND_INDEX
                     ];
                 }
             }

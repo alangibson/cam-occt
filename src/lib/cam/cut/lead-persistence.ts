@@ -30,12 +30,12 @@ export function hasValidCachedLeads(cut: Cut): boolean {
     const hasLeadIn: boolean | undefined =
         cut.leadIn &&
         cut.leadIn.version === currentVersion &&
-        convertLeadGeometryToPoints(cut.leadIn).length > 0;
+        convertLeadGeometryToPoints(cut.leadIn).points.length > 0;
 
     const hasLeadOut: boolean | undefined =
         cut.leadOut &&
         cut.leadOut.version === currentVersion &&
-        convertLeadGeometryToPoints(cut.leadOut).length > 0;
+        convertLeadGeometryToPoints(cut.leadOut).points.length > 0;
 
     // Get lead types from config or use defaults
     const leadInType = cut.leadInConfig?.type || LeadType.NONE;
@@ -106,9 +106,9 @@ export async function calculateLeadPoints(
             leadType === 'leadIn' ? leadResult.leadIn : leadResult.leadOut;
 
         if (lead) {
-            const points = convertLeadGeometryToPoints(lead);
-            if (points.length > 0) {
-                return points;
+            const polyline = convertLeadGeometryToPoints(lead);
+            if (polyline.points.length > 0) {
+                return polyline.points;
             }
         }
 

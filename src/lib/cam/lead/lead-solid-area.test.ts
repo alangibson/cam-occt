@@ -176,9 +176,9 @@ describe('Lead Solid Area Avoidance', () => {
 
             // Check if any lead points are in the solid area (excluding connection point)
             let pointsInSolidArea = 0;
-            const connectionPoint = points[points.length - 1]; // Lead-in ends at connection point
+            const connectionPoint = points.points[points.points.length - 1]; // Lead-in ends at connection point
 
-            for (const point of points) {
+            for (const point of points.points) {
                 // Skip the connection point as it's expected to be on the boundary
                 if (
                     Math.abs(point.x - connectionPoint.x) < 0.001 &&
@@ -254,9 +254,9 @@ describe('Lead Solid Area Avoidance', () => {
 
             // Check if any lead points are in the solid area (excluding connection point)
             let pointsInSolidArea = 0;
-            const connectionPoint = points[points.length - 1]; // Lead-in ends at connection point
+            const connectionPoint = points.points[points.points.length - 1]; // Lead-in ends at connection point
 
-            for (const point of points) {
+            for (const point of points.points) {
                 // Skip the connection point as it's expected to be on the boundary
                 if (
                     Math.abs(point.x - connectionPoint.x) < 0.001 &&
@@ -351,10 +351,10 @@ describe('Lead Solid Area Avoidance', () => {
             let solidAreaViolations1 = 0;
             let solidAreaViolations2 = 0;
 
-            const connectionPoint1 = points1[points1.length - 1];
-            const connectionPoint2 = points2[points2.length - 1];
+            const connectionPoint1 = points1.points[points1.points.length - 1];
+            const connectionPoint2 = points2.points[points2.points.length - 1];
 
-            for (const point of points1) {
+            for (const point of points1.points) {
                 // Skip connection point
                 if (
                     Math.abs(point.x - connectionPoint1.x) < 0.001 &&
@@ -365,7 +365,7 @@ describe('Lead Solid Area Avoidance', () => {
                 if (isPointInSolidArea(point, part)) solidAreaViolations1++;
             }
 
-            for (const point of points2) {
+            for (const point of points2.points) {
                 // Skip connection point
                 if (
                     Math.abs(point.x - connectionPoint2.x) < 0.001 &&
@@ -414,7 +414,7 @@ describe('Lead Solid Area Avoidance', () => {
             expect(result1.leadIn).toBeDefined();
 
             const points1 = convertLeadGeometryToPoints(result1.leadIn!);
-            const startPoint1 = points1[0];
+            const startPoint1 = points1.points[0];
 
             // We need to be able to generate leads in different directions to avoid solid areas
             // This test just verifies the lead generation works - actual rotation will be implemented

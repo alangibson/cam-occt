@@ -189,8 +189,8 @@ describe('calculatePolygonCentroid', () => {
             { x: 10, y: 0 },
         ];
 
-        const centroid1 = calculatePolygonCentroid(ccwSquare);
-        const centroid2 = calculatePolygonCentroid(cwSquare);
+        const centroid1 = calculatePolygonCentroid({ points: ccwSquare });
+        const centroid2 = calculatePolygonCentroid({ points: cwSquare });
 
         expect(centroid1).not.toBeNull();
         expect(centroid2).not.toBeNull();
@@ -206,7 +206,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 1, y: 1 },
             { x: 1, y: 0 },
         ];
-        const centroid = calculatePolygonCentroid(unitSquareCW);
+        const centroid = calculatePolygonCentroid({ points: unitSquareCW });
         expect(centroid.x).toBeCloseTo(0.5);
         expect(centroid.y).toBeCloseTo(0.5);
     });
@@ -218,13 +218,13 @@ describe('calculatePolygonCentroid', () => {
             { x: 2, y: 0 },
             { x: 1, y: 2 },
         ];
-        const centroid = calculatePolygonCentroid(triangle);
+        const centroid = calculatePolygonCentroid({ points: triangle });
         expect(centroid.x).toBeCloseTo(1); // (0+2+1)/3 = 1 for arithmetic mean
         expect(centroid.y).toBeCloseTo(2 / 3); // (0+0+2)/3 = 2/3 for arithmetic mean (approximate)
     });
 
     it('should handle empty array', () => {
-        const centroid = calculatePolygonCentroid([]);
+        const centroid = calculatePolygonCentroid({ points: [] });
         expect(centroid).toEqual({ x: 0, y: 0 });
     });
 
@@ -234,7 +234,7 @@ describe('calculatePolygonCentroid', () => {
             { x: 1, y: 0 },
             { x: 2, y: 0 }, // All collinear
         ];
-        const centroid = calculatePolygonCentroid(degenerate);
+        const centroid = calculatePolygonCentroid({ points: degenerate });
         expect(centroid.x).toBeCloseTo(1); // (0+1+2)/3 = 1
         expect(centroid.y).toBeCloseTo(0); // (0+0+0)/3 = 0
     });

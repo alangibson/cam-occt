@@ -1,12 +1,12 @@
 /**
  * Reconstruction Module
  *
- * Converts Clipper2 offset results (Point2D arrays) back to MetalHead Shape and Chain structures.
- * Clipper2 returns point arrays which are converted to chains of Line shapes.
+ * Converts Clipper2 offset results (Polylines) back to MetalHead Shape and Chain structures.
+ * Clipper2 returns polylines which are converted to chains of Line shapes.
  */
 
 import { Shape } from '$lib/cam/shape/classes';
-import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { generateId } from '$lib/domain/id';
@@ -14,9 +14,9 @@ import type { OffsetChain } from './types';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 
 /**
- * Reconstruct MetalHead shapes from Clipper2 point arrays
+ * Reconstruct MetalHead shapes from Clipper2 polylines
  *
- * Each point array is converted to an array of Line shapes connecting consecutive points.
+ * Each polyline is converted to an array of Line shapes connecting consecutive points.
  * This follows the codebase convention: polylines are only used during DXF import,
  * internally they are represented as Chains containing arrays of Line shapes.
  *
@@ -24,18 +24,20 @@ import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
  * the last point back to the first point. This ensures proper rendering with canvas
  * fill operations using the evenodd rule.
  *
- * @param pointArrays - Array of point arrays from Clipper2 (can be multiple polygons)
+ * @param polylines - Array of polylines from Clipper2 (can be multiple polygons)
  * @returns Array of Shape instances representing all polygons concatenated together
  */
-export function reconstructChain(pointArrays: Point2D[][]): Shape[] {
+export function reconstructChain(polylines: Polyline[]): Shape[] {
     // Handle empty input
-    if (pointArrays.length === 0) {
+    if (polylines.length === 0) {
         return [];
     }
 
     const allShapes: Shape[] = [];
 
-    for (const points of pointArrays) {
+    for (const polyline of polylines) {
+        const points = polyline.points;
+
         // Skip empty point arrays
         if (points.length < 2) {
             continue;

@@ -253,20 +253,22 @@ describe('G-code generation with offset cuts', () => {
 
         // Arc leads may be undefined if they don't connect properly to offset cuts
         if (toolPaths[0].leadIn) {
-            expect(toolPaths[0].leadIn.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
+            expect(toolPaths[0].leadIn.points.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
             // Verify lead-in ends at cut start (connection point should be close to (1,1))
             const leadInEnd =
-                toolPaths[0].leadIn[toolPaths[0].leadIn.length - 1];
+                toolPaths[0].leadIn.points[
+                    toolPaths[0].leadIn.points.length - 1
+                ];
             expect(leadInEnd.x).toBeCloseTo(1, 1);
             expect(leadInEnd.y).toBeCloseTo(1, 1);
         }
 
         if (toolPaths[0].leadOut) {
-            expect(toolPaths[0].leadOut.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
+            expect(toolPaths[0].leadOut.points.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
             // Verify lead-out starts from cut end (connection point should be close to (1,1))
-            const leadOutStart = toolPaths[0].leadOut[0];
+            const leadOutStart = toolPaths[0].leadOut.points[0];
             expect(leadOutStart.x).toBeCloseTo(1, 1);
             expect(leadOutStart.y).toBeCloseTo(1, 1);
         }
