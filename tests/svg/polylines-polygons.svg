@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200">
+  <polyline points="10,10 50,10 50,50 10,50" />
+  <polygon points="100,10 150,10 125,60" />
+  <polyline points="200,10 220,30 240,10 260,30" />
+</svg>

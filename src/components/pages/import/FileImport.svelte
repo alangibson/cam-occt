@@ -1,6 +1,7 @@
 <script lang="ts">
     import { untrack } from 'svelte';
     import { parseDXF } from '$lib/parsers/dxf/functions';
+    import { parseSVG } from '$lib/parsers/svg/functions';
     import { drawingStore } from '$lib/stores/drawing/store.svelte';
     import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { Unit, measurementSystemToUnit } from '$lib/config/units/units';
@@ -148,8 +149,33 @@
                         fileName: file.name,
                         originalUnits,
                     });
+                } else if (file.name.toLowerCase().endsWith('.svg')) {
+                    // Parse SVG file
+                    const parsedDrawing: DrawingData = await parseSVG(content);
+
+                    // Store original drawing and units before conversion
+                    originalDrawing = parsedDrawing;
+                    originalUnits = parsedDrawing.units;
+
+                    // Apply unit conversion based on application settings
+                    drawing = applyImportUnitConversion(
+                        parsedDrawing,
+                        settings
+                    );
+
+                    // Add fileName to the drawing data
+                    drawing.fileName = file.name;
+
+                    drawingStore.setDrawing(new Drawing(drawing), file.name);
+                    onfileImported?.({
+                        drawing,
+                        fileName: file.name,
+                        originalUnits,
+                    });
                 } else {
-                    alert('Unsupported file format. Please use DXF files.');
+                    alert(
+                        'Unsupported file format. Please use DXF or SVG files.'
+                    );
                     return;
                 }
             } catch {
@@ -188,14 +214,14 @@
     <input
         bind:this={fileInput}
         type="file"
-        accept=".dxf"
+        accept=".dxf,.svg"
         onchange={(e) => handleFiles(e.currentTarget.files)}
         style="display: none;"
     />
 
     <div class="button-container">
         <button class="import-button" onclick={() => fileInput?.click()}>
-            Open DXF
+            Open DXF/SVG
         </button>
         <button
             class="advance-button"

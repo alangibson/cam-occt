@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+  <g id="layer1">
+    <line x1="0" y1="0" x2="100" y2="0" />
+    <circle cx="50" cy="50" r="20" />
+  </g>
+  <g id="layer2">
+    <rect x="100" y="100" width="50" height="50" />
+  </g>
+</svg>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+  <g id="layer1">
+    <line x1="0" y1="0" x2="100" y2="0" />
+    <circle cx="50" cy="50" r="20" />
+    <ellipse cx="150" cy="50" rx="30" ry="15" />
+  </g>
+  <g id="layer2">
+    <rect x="200" y="0" width="50" height="30" />
+    <polyline points="300,0 320,20 300,40" />
+  </g>
+  <polygon points="0,100 50,100 25,150" />
+</svg>

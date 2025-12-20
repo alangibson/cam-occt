@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Single cubic Bezier curve -->
+  <path d="M 10 80 C 40 10, 65 10, 95 80" stroke="black" fill="none" id="simple-cubic"/>
+
+  <!-- Multiple cubic Bezier curves -->
+  <path d="M 10 100 C 20 120, 40 120, 50 100 C 60 80, 80 80, 90 100" stroke="black" fill="none" id="multi-cubic"/>
+
+  <!-- Smooth cubic Bezier (S command) -->
+  <path d="M 110 80 C 140 10, 165 10, 195 80 S 220 150, 250 80" stroke="black" fill="none" id="smooth-cubic"/>
+
+  <!-- Closed path with cubic Bezier -->
+  <path d="M 10 150 C 20 130, 40 130, 50 150 C 60 170, 40 170, 30 150 Z" stroke="black" fill="none" id="closed-cubic"/>
+
+  <!-- Mixed path with lines and cubic Bezier -->
+  <path d="M 100 150 L 120 150 C 130 130, 150 130, 160 150 L 180 150" stroke="black" fill="none" id="mixed-cubic"/>
+</svg>

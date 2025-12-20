@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+  <line x1="10.5" y1="20.25" x2="30.75" y2="40.125" />
+  <circle cx="50.5" cy="60.25" r="25.75" />
+  <rect x="100.5" y="100.25" width="50.75" height="30.125" />
+</svg>

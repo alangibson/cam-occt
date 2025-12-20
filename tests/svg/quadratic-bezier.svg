@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Single quadratic Bezier curve -->
+  <path d="M 10 80 Q 50 10, 90 80" stroke="black" fill="none" id="simple-quadratic"/>
+
+  <!-- Multiple quadratic Bezier curves -->
+  <path d="M 10 100 Q 30 120, 50 100 Q 70 80, 90 100" stroke="black" fill="none" id="multi-quadratic"/>
+
+  <!-- Smooth quadratic Bezier (T command) -->
+  <path d="M 110 80 Q 140 10, 170 80 T 230 80" stroke="black" fill="none" id="smooth-quadratic"/>
+
+  <!-- Closed path with quadratic Bezier -->
+  <path d="M 10 150 Q 30 130, 50 150 Q 30 170, 10 150 Z" stroke="black" fill="none" id="closed-quadratic"/>
+
+  <!-- Mixed path with lines and quadratic Bezier -->
+  <path d="M 100 150 L 120 150 Q 140 130, 160 150 L 180 150" stroke="black" fill="none" id="mixed-quadratic"/>
+</svg>
