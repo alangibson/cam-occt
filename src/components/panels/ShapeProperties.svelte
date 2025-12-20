@@ -226,7 +226,12 @@
         if (!displayShape) return;
 
         try {
-            const json = JSON.stringify(displayShape, null, 2);
+            // Handle both ShapeData and Shape instances
+            const data =
+                displayShape instanceof Shape
+                    ? displayShape.toData()
+                    : displayShape;
+            const json = JSON.stringify(data, null, 2);
             await navigator.clipboard.writeText(json);
         } catch (err) {
             console.error('Failed to copy to clipboard:', err);
