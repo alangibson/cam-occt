@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
-import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
+import { OriginLocation } from '$lib/cam/drawing/enums';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -19,7 +19,7 @@ function createAndTranslateDrawing(
         units: units as Unit,
         fileName: 'test.dxf',
     });
-    translateToPositiveQuadrant(drawing);
+    drawing.originTo(OriginLocation.BOTTOM_LEFT);
     return drawing;
 }
 

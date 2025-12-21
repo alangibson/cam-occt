@@ -73,7 +73,7 @@ describe('Elephant DXF - Chain Containment Issue', () => {
         });
 
         // Detect parts
-        const result = await detectParts(chains, tolerance);
+        const result = detectParts(chains, tolerance);
 
         console.log('Parts detected:', result.parts.length);
         console.log('Warnings:', result.warnings);

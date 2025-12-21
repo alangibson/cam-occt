@@ -48,13 +48,13 @@ export interface OffsetOptions {
  * @param options - Optional configuration for join/end types
  * @returns Object containing inner and outer offset results as polylines
  */
-export async function offsetPaths(
+export function offsetPaths(
     polylines: Polyline[],
     distance: number,
     isClosed: boolean,
     options?: OffsetOptions
-): Promise<{ inner: Polyline[]; outer: Polyline[] }> {
-    const clipper = await getClipper2();
+): { inner: Polyline[]; outer: Polyline[] } {
+    const clipper = getClipper2();
     const { InflatePaths64, JoinType, EndType } = clipper;
 
     // Convert to Clipper2 format

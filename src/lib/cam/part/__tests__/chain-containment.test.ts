@@ -189,7 +189,7 @@ describe('buildContainmentHierarchy', () => {
         const innerChain = createTestChain('inner', innerShapes);
 
         const chains = [outerChain, innerChain];
-        const hierarchy = await buildContainmentHierarchy(chains);
+        const hierarchy = buildContainmentHierarchy(chains);
 
         expect(hierarchy.get('inner')).toBe('outer');
     });
@@ -199,7 +199,7 @@ describe('buildContainmentHierarchy', () => {
         const chain = createTestChain('single', shapes);
         const chains = [chain];
 
-        const hierarchy = await buildContainmentHierarchy(chains);
+        const hierarchy = buildContainmentHierarchy(chains);
 
         expect(hierarchy.size).toBe(0);
     });
@@ -220,7 +220,7 @@ describe('buildContainmentHierarchy', () => {
         const closedChain = createTestChain('closed', closedShapes);
 
         const chains = [openChain, closedChain];
-        const hierarchy = await buildContainmentHierarchy(chains);
+        const hierarchy = buildContainmentHierarchy(chains);
 
         expect(hierarchy.size).toBe(0);
     });
@@ -236,7 +236,7 @@ describe('buildContainmentHierarchy', () => {
         const smallChain = createTestChain('small', smallShapes);
 
         const chains = [largeChain, mediumChain, smallChain];
-        const hierarchy = await buildContainmentHierarchy(chains);
+        const hierarchy = buildContainmentHierarchy(chains);
 
         expect(hierarchy.get('medium')).toBe('large');
         expect(hierarchy.get('small')).toBe('medium'); // Should find smallest container

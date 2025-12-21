@@ -48,7 +48,7 @@ describe('Tractor Seat Mount Final Test', () => {
         );
 
         // Detect parts
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         partResult.parts.forEach((part) => {
             part.voids.forEach(() => {});

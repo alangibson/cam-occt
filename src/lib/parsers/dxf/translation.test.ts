@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import { polylineToPoints } from '$lib/geometry/dxf-polyline/functions';
-import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
+import { OriginLocation } from '$lib/cam/drawing/enums';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import { getShapePoints } from '$lib/cam/shape/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -22,7 +22,7 @@ function createAndTranslateDrawing(
     units: Unit = Unit.MM
 ): Drawing {
     const drawing = new Drawing({ shapes, units, fileName: 'test.dxf' });
-    translateToPositiveQuadrant(drawing);
+    drawing.originTo(OriginLocation.BOTTOM_LEFT);
     return drawing;
 }
 

@@ -34,7 +34,7 @@ describe('1997.dxf Part Detection', () => {
         chains.forEach(() => {});
 
         // Detect parts
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         // Log part details
         partResult.parts.forEach(() => {});
@@ -84,7 +84,7 @@ describe('1997.dxf Part Detection', () => {
         expect(Array.isArray(chains)).toBe(true);
 
         // Part detection should not throw
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
         expect(partResult).toBeDefined();
         expect(partResult.parts).toBeDefined();
         expect(partResult.warnings).toBeDefined();

@@ -34,23 +34,23 @@ const CHAIN_SAMPLE_POINT_75_PERCENT = 0.75;
  * @param outerChain - The potential containing chain
  * @param tolerance - Distance tolerance for chain closure checks
  * @param params - Part detection parameters for tessellation
- * @returns Promise<boolean> - True if inner is contained within outer
+ * @returns boolean - True if inner is contained within outer
  */
-export async function isChainContainedInChain_Clipper2(
+export function isChainContainedInChain_Clipper2(
     innerChain: Chain,
     outerChain: Chain
-): Promise<boolean> {
+): boolean {
     // Only closed chains can contain other chains
     if (!outerChain.isClosed) {
         return false;
     }
 
     // Get Clipper2 paths from chains (cached)
-    const innerPaths: Paths64 = await innerChain.paths64();
-    const outerPaths: Paths64 = await outerChain.paths64();
+    const innerPaths: Paths64 = innerChain.paths64();
+    const outerPaths: Paths64 = outerChain.paths64();
 
     // Calculate inner area before intersection (cached)
-    const innerArea: number = await innerChain.area();
+    const innerArea: number = innerChain.area();
 
     if (innerArea === 0) {
         return false;
@@ -58,7 +58,7 @@ export async function isChainContainedInChain_Clipper2(
 
     // console.log(`ip=${innerPaths.get(0).size()} op=${outerPaths.get(0).size()}`);
     // Get clipper instance for intersection operation
-    const clipper = await getClipper2();
+    const clipper = getClipper2();
     // Perform intersection: if inner is fully inside outer, intersection = inner
     const intersection: Paths64 = clipper.Intersect64(
         innerPaths,

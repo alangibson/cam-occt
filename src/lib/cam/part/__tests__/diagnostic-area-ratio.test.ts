@@ -40,7 +40,7 @@ describe('Diagnostic - Area Ratio Analysis', () => {
             '\n========== Area Ratio Analysis - Tractor Light Mount =========='
         );
 
-        const clipper = await getClipper2();
+        const clipper = getClipper2();
 
         if (chain1 && chain3) {
             const innerPoints = tessellateChain(
@@ -142,7 +142,7 @@ describe('Diagnostic - Area Ratio Analysis', () => {
             '\n========== Area Ratio Analysis - Tractor Seat Mount =========='
         );
 
-        const clipper = await getClipper2();
+        const clipper = getClipper2();
 
         if (chain1 && chain5) {
             const innerPoints = tessellateChain(

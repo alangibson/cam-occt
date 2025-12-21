@@ -6,6 +6,7 @@
     import ToolTable from '$components/pages/tool-table/ToolTable.svelte';
     import Settings from '$components/pages/settings/Settings.svelte';
     import { workflowStore } from '$lib/stores/workflow/store.svelte';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { uiStore } from '$lib/stores/ui/store.svelte';
     import { drawingStore } from '$lib/stores/drawing/store.svelte';
     import { visualizationStore } from '$lib/stores/visualization/classes.svelte';
@@ -27,9 +28,13 @@
     } from '$lib/stores/tools/store.svelte';
     import { selectionStore } from '$lib/stores/selection/store.svelte';
     import { autoSaveApplicationState } from '$lib/stores/storage/store';
+    import { preloadClipper2 } from '$lib/cam/offset/clipper-init';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = $state(false);
+
+    // Get current workflow stage
+    let currentStage = $derived(workflowStore.currentStage);
 
     // Consolidated auto-save effect - tracks ALL stores in one place
     // This ensures collectCurrentState() only runs once (after 1s debounce) instead of 6 times
@@ -123,23 +128,26 @@
     }
 
     onMount(() => {
-        // Migrate any legacy localStorage data
+        // Preload Clipper2 WASM module at app startup
+        preloadClipper2().then(() => {
+            // Migrate any legacy localStorage data
 
-        // Restore state from localStorage on app load
-        const restored = restoreApplicationState();
-        if (restored) {
-            // Application state restored from previous session
-        }
+            // Restore state from localStorage on app load
+            const restored = restoreApplicationState();
+            if (restored) {
+                // Application state restored from previous session
+            }
 
-        // Ensure at least one tool exists (required for operations)
-        const tools = toolStore.tools;
-        if (tools.length === 0) {
-            toolStore.addTool(createDefaultTool(1));
-            // Created default tool - no tools found in storage
-        }
+            // Ensure at least one tool exists (required for operations)
+            const tools = toolStore.tools;
+            if (tools.length === 0) {
+                toolStore.addTool(createDefaultTool(1));
+                // Created default tool - no tools found in storage
+            }
 
-        // Setup auto-save for all state changes
-        cleanupAutoSave = setupAutoSave();
+            // Setup auto-save for all state changes
+            cleanupAutoSave = setupAutoSave();
+        });
 
         // Save state when page is about to unload
         const handleBeforeUnload = () => {
@@ -245,9 +253,11 @@
     </main>
 
     <!-- Footer -->
-    <footer class="app-footer">
-        <Footer />
-    </footer>
+    {#if currentStage !== WorkflowStage.IMPORT}
+        <footer class="app-footer">
+            <Footer />
+        </footer>
+    {/if}
 </div>
 
 <style>

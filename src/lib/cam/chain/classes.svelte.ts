@@ -262,11 +262,11 @@ export class Chain implements Geometric, ChainData {
      * Lazily calculates and caches the result on first access
      * Uses tessellated points converted to Clipper2 format
      *
-     * @returns Promise<Paths64> Clipper2 path representation
+     * @returns Paths64 Clipper2 path representation
      */
-    async paths64(): Promise<Paths64> {
+    paths64(): Paths64 {
         if (this.#paths64 === undefined) {
-            const clipper = await getClipper2();
+            const clipper = getClipper2();
             this.#paths64 = toClipper2Paths([this.tessellated], clipper);
         }
         return this.#paths64;
@@ -277,11 +277,11 @@ export class Chain implements Geometric, ChainData {
      * Lazily calculates and caches the result on first access
      * Uses Clipper2 path representation for robust area calculation
      *
-     * @returns Promise<number> Area in squared units
+     * @returns Area in squared units
      */
-    async area(): Promise<number> {
+    area(): number {
         if (this.#area === undefined) {
-            const paths = await this.paths64();
+            const paths = this.paths64();
             this.#area = calculateClipper2PathsArea(paths);
         }
         return this.#area;
@@ -291,14 +291,11 @@ export class Chain implements Geometric, ChainData {
      * Check if this chain contains another chain using Clipper2 geometric containment
      *
      * @param otherChain The chain to check if it's contained within this chain
-     * @returns Promise<boolean> True if otherChain is contained within this chain
+     * @returns True if otherChain is contained within this chain
      */
-    async contains(otherChain: Chain): Promise<boolean> {
+    contains(otherChain: Chain): boolean {
         // Do full geometric containment check using Clipper2
-        const isContained = await isChainContainedInChain_Clipper2(
-            otherChain,
-            this
-        );
+        const isContained = isChainContainedInChain_Clipper2(otherChain, this);
         return isContained;
     }
 

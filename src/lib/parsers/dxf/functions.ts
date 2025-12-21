@@ -379,7 +379,7 @@ function convertRawInsUnitsToUnit(rawInsUnits: number | undefined): {
     }
 }
 
-export async function parseDXF(content: string): Promise<DrawingData> {
+export function parseDXF(content: string): DrawingData {
     let parsed: DXFParsed;
     try {
         parsed = parseString(content);

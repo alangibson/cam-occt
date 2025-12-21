@@ -25,7 +25,7 @@ describe('ADLER.dxf Part Detection', () => {
         chains.forEach(() => {});
 
         // Detect parts
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         // Log details about each part
         partResult.parts.forEach(() => {});
@@ -58,7 +58,7 @@ describe('ADLER.dxf Part Detection', () => {
             parsed.shapes.map((s) => new Shape(s)),
             { tolerance: 0.1 }
         );
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         expect(parsed.shapes.length).toBeGreaterThan(0);
         expect(chains.length).toBeGreaterThan(0);

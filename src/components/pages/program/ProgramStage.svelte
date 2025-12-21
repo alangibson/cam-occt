@@ -18,6 +18,7 @@
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
     import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { settingsStore } from '$lib/stores/settings/store.svelte';
+    import { operationsStore } from '$lib/stores/operations/store.svelte';
 
     // Props from WorkflowContainer for shared canvas
     let {
@@ -62,6 +63,18 @@
         // Apply zoom to fit if enabled in settings
         if (settings.optimizationSettings.zoomToFit) {
             drawingStore.zoomToFit();
+        }
+
+        // Auto-create operation if enabled and no operations exist
+        if (
+            settings.autoCreateOperation &&
+            operationsStore.operations.length === 0 &&
+            operationsComponent
+        ) {
+            // Use setTimeout to ensure component is fully initialized
+            setTimeout(() => {
+                operationsComponent.addNewOperation();
+            }, 0);
         }
     });
 

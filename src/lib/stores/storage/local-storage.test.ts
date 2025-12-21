@@ -60,6 +60,7 @@ const defaultApplicationSettings = {
         rapidRate: 3000,
         cutterCompensation: null,
     },
+    autoCreateOperation: true,
 };
 
 // Mock localStorage

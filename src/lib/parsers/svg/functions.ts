@@ -1200,7 +1200,7 @@ function flipY(y: number, height: number): number {
 /**
  * Parse SVG content and return DrawingData
  */
-export async function parseSVG(content: string): Promise<DrawingData> {
+export function parseSVG(content: string): DrawingData {
     try {
         const doc = parseSVGContent(content);
 

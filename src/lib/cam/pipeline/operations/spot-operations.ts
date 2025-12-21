@@ -16,12 +16,12 @@ import { Shape } from '$lib/cam/shape/classes';
  * @param operation - The operation defining spot parameters (contains tool and targets)
  * @param index - Index of this target in the operation's target list
  * @param tolerance - Tolerance for geometric operations
- * @returns Promise of cut generation result with cuts and warnings
+ * @returns Cut generation result with cuts and warnings
  */
-export async function generateSpotsForChainsWithOperation(
+export function generateSpotsForChainsWithOperation(
     operation: Operation,
     index: number
-): Promise<CutGenerationResult> {
+): CutGenerationResult {
     // Get chain from operation targets
     const chain = operation.targets[index] as Chain;
     const tool = operation.tool;

@@ -80,7 +80,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         // Detect parts using the same tolerance as chain detection
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
 
         normalizedChains.forEach((chain) => {
             isChainClosed(chain, 0.1);
@@ -133,7 +133,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         );
 
         // Detect parts using the same tolerance as chain detection
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
 
         // CORRECT BEHAVIOR: Should detect 1 part
 

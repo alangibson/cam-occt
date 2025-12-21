@@ -140,8 +140,8 @@ class OperationsStore {
             //     ) &&
             //     drawingStore.drawing
             // ) {
-            //     translateToPositiveQuadrant(
-            //         drawingStore.drawing,
+            //     drawingStore.drawing.originTo(
+            //         OriginLocation.BOTTOM_LEFT,
             //         planStore.plan
             //     );
             // }

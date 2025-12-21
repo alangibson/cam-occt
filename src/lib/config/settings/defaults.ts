@@ -49,4 +49,5 @@ export const DEFAULT_SETTINGS: ApplicationSettings = {
     offsetImplementation: OffsetImplementation.Polyline,
     renderer: Renderer.SVG,
     camSettings: DEFAULT_CAM_SETTINGS,
+    autoCreateOperation: true,
 };

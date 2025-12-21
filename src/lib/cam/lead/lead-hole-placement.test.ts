@@ -85,7 +85,7 @@ describe('Lead Hole Placement Fix', () => {
         // Convert ShapeData to Shape instances for chain detection
         const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
         const part5 = partResult.parts[4];
 
         expect(part5).toBeDefined();
@@ -177,7 +177,7 @@ describe('Lead Hole Placement Fix', () => {
         // Convert ShapeData to Shape instances for chain detection
         const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
         const part5 = partResult.parts[4];
 
         if (!part5) return;
@@ -228,7 +228,7 @@ describe('Lead Hole Placement Fix', () => {
         // Convert ShapeData to Shape instances for chain detection
         const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
         const part5 = partResult.parts[4];
 
         if (!part5) return;

@@ -152,6 +152,10 @@ function loadSettings(): ApplicationSettings {
                         ? parsed.renderer
                         : DEFAULT_SETTINGS.renderer,
                     camSettings,
+                    autoCreateOperation:
+                        typeof parsed.autoCreateOperation === 'boolean'
+                            ? parsed.autoCreateOperation
+                            : DEFAULT_SETTINGS.autoCreateOperation,
                 };
             }
         }
@@ -414,6 +418,14 @@ class SettingsStore {
                 ...this.settings.camSettings,
                 cutterCompensation: mode,
             },
+        };
+        saveSettings(this.settings);
+    }
+
+    setAutoCreateOperation(enabled: boolean) {
+        this.settings = {
+            ...this.settings,
+            autoCreateOperation: enabled,
         };
         saveSettings(this.settings);
     }

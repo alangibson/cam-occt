@@ -4,6 +4,8 @@
  */
 
 import { MeasurementSystem } from '$lib/config/settings/enums';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 
 /**
  * Unit display precision
@@ -176,4 +178,117 @@ export function convertCoordinates(
     }
 
     return coordinates.map((coord) => convertUnits(coord, fromUnit, toUnit));
+}
+
+/**
+ * Convert all coordinates in a DrawingData object from one unit to another
+ * Recursively processes all shapes and their geometries
+ */
+export function convertDrawingCoordinates(
+    drawing: DrawingData,
+    fromUnit: Unit,
+    toUnit: Unit
+): DrawingData {
+    if (fromUnit === toUnit || fromUnit === Unit.NONE) {
+        return drawing;
+    }
+
+    // Helper to convert a single coordinate value
+    const convert = (value: number): number =>
+        convertUnits(value, fromUnit, toUnit);
+
+    // Helper to convert a point
+    const convertPoint = (point: {
+        x: number;
+        y: number;
+    }): { x: number; y: number } => ({
+        x: convert(point.x),
+        y: convert(point.y),
+    });
+
+    // Helper to convert a shape's geometry
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const convertShapeGeometry = (shape: any): any => {
+        const { type, geometry } = shape;
+
+        switch (type) {
+            case GeometryType.LINE:
+                return {
+                    ...shape,
+                    geometry: {
+                        start: convertPoint(geometry.start),
+                        end: convertPoint(geometry.end),
+                    },
+                };
+
+            case GeometryType.CIRCLE:
+                return {
+                    ...shape,
+                    geometry: {
+                        center: convertPoint(geometry.center),
+                        radius: convert(geometry.radius),
+                    },
+                };
+
+            case GeometryType.ARC:
+                return {
+                    ...shape,
+                    geometry: {
+                        center: convertPoint(geometry.center),
+                        radius: convert(geometry.radius),
+                        startAngle: geometry.startAngle,
+                        endAngle: geometry.endAngle,
+                        clockwise: geometry.clockwise,
+                    },
+                };
+
+            case GeometryType.ELLIPSE:
+                return {
+                    ...shape,
+                    geometry: {
+                        center: convertPoint(geometry.center),
+                        majorAxisEndpoint: convertPoint(
+                            geometry.majorAxisEndpoint
+                        ),
+                        minorToMajorRatio: geometry.minorToMajorRatio,
+                        startParam: geometry.startParam,
+                        endParam: geometry.endParam,
+                    },
+                };
+
+            case GeometryType.SPLINE:
+                return {
+                    ...shape,
+                    geometry: {
+                        controlPoints: geometry.controlPoints.map(convertPoint),
+                        knots: geometry.knots,
+                        weights: geometry.weights,
+                        degree: geometry.degree,
+                        fitPoints: geometry.fitPoints.map(convertPoint),
+                        closed: geometry.closed,
+                    },
+                };
+
+            case GeometryType.POLYLINE:
+                return {
+                    ...shape,
+                    geometry: {
+                        closed: geometry.closed,
+                        shapes: geometry.shapes.map(convertShapeGeometry),
+                    },
+                };
+
+            default:
+                return shape;
+        }
+    };
+
+    // Convert all shapes
+    const convertedShapes = drawing.shapes.map(convertShapeGeometry);
+
+    return {
+        ...drawing,
+        shapes: convertedShapes,
+        units: toUnit,
+    };
 }

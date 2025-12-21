@@ -8,6 +8,12 @@ const config = {
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
 	
+	compilerOptions: {
+		experimental: {
+			async: true
+		}
+	},
+	
 	kit: {
 		adapter: adapter({
 			pages: 'build',

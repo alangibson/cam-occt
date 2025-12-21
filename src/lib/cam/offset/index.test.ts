@@ -52,7 +52,7 @@ function getBoundingBox(points: Point2D[]) {
 describe('Clipper2 Offset System', () => {
     describe('WASM Initialization', () => {
         it('initializes Clipper2 WASM module', async () => {
-            const clipper = await getClipper2();
+            const clipper = getClipper2();
             expect(clipper).toBeDefined();
             expect(clipper.InflatePaths64).toBeDefined();
             expect(clipper.JoinType).toBeDefined();
@@ -101,7 +101,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 10);
+            const result = offsetChain(chain, 10);
 
             expect(result.success).toBe(true);
             expect(result.innerChain).toBeDefined();
@@ -146,7 +146,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 5);
+            const result = offsetChain(chain, 5);
 
             expect(result.success).toBe(true);
             expect(result.innerChain).toBeDefined();
@@ -173,7 +173,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 10);
+            const result = offsetChain(chain, 10);
 
             expect(result.success).toBe(true);
             expect(result.innerChain).toBeDefined(); // left side
@@ -216,7 +216,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 5);
+            const result = offsetChain(chain, 5);
 
             expect(result.success).toBe(true);
             expect(result.innerChain!.shapes.length).toBeGreaterThan(0);
@@ -241,7 +241,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 0);
+            const result = offsetChain(chain, 0);
 
             // Even with zero distance, Clipper2 should succeed
             expect(result.success).toBe(true);
@@ -263,7 +263,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 0.1);
+            const result = offsetChain(chain, 0.1);
 
             expect(result.success).toBe(true);
             expect(result.innerChain).toBeDefined();
@@ -286,7 +286,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 100);
+            const result = offsetChain(chain, 100);
 
             expect(result.success).toBe(true);
         });
@@ -319,7 +319,7 @@ describe('Clipper2 Offset System', () => {
             };
 
             const offsetDistance = 0.05; // inches
-            const result = await offsetChain(chain, offsetDistance);
+            const result = offsetChain(chain, offsetDistance);
 
             // Main validation: offsetting succeeds and produces valid geometry
             expect(result.success).toBe(true);
@@ -358,7 +358,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 10);
+            const result = offsetChain(chain, 10);
 
             expect(result.metrics).toBeDefined();
             expect(result.metrics!.totalShapes).toBe(1);
@@ -388,7 +388,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 5);
+            const result = offsetChain(chain, 5);
 
             expect(result.success).toBe(true);
             expect(
@@ -419,7 +419,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 10);
+            const result = offsetChain(chain, 10);
 
             const innerIds = result.innerChain!.shapes.map((s) => s.id);
             const outerIds = result.outerChain!.shapes.map((s) => s.id);
@@ -472,7 +472,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 10);
+            const result = offsetChain(chain, 10);
 
             expect(result.success).toBe(true);
             expect(result.errors).toHaveLength(0);
@@ -553,7 +553,7 @@ describe('Clipper2 Offset System', () => {
             };
 
             const offsetDistance = 5;
-            const result = await offsetChain(chain, offsetDistance);
+            const result = offsetChain(chain, offsetDistance);
 
             expect(result.success).toBe(true);
 
@@ -617,7 +617,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 6);
+            const result = offsetChain(chain, 6);
 
             expect(result.success).toBe(true);
 
@@ -664,7 +664,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 5);
+            const result = offsetChain(chain, 5);
 
             expect(result.success).toBe(true);
             expect(result.innerChain!.shapes.length).toBeGreaterThan(0);
@@ -703,7 +703,7 @@ describe('Clipper2 Offset System', () => {
             };
 
             const offsetDistance = 10;
-            const result = await offsetChain(chain, offsetDistance);
+            const result = offsetChain(chain, offsetDistance);
 
             expect(result.success).toBe(true);
 
@@ -751,7 +751,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 10);
+            const result = offsetChain(chain, 10);
 
             expect(result.success).toBe(true);
 
@@ -804,7 +804,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 5);
+            const result = offsetChain(chain, 5);
 
             expect(result.success).toBe(true);
 
@@ -843,7 +843,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, 5);
+            const result = offsetChain(chain, 5);
 
             expect(result.success).toBe(true);
 
@@ -880,7 +880,7 @@ describe('Clipper2 Offset System', () => {
                 shapes: [],
             };
 
-            const result = await offsetChain(chain, 10);
+            const result = offsetChain(chain, 10);
 
             // Should handle gracefully, even if it returns empty results
             expect(result).toBeDefined();
@@ -903,7 +903,7 @@ describe('Clipper2 Offset System', () => {
                 ],
             };
 
-            const result = await offsetChain(chain, -10);
+            const result = offsetChain(chain, -10);
 
             // Negative distance should be treated as abs() internally
             expect(result.success).toBe(true);

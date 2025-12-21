@@ -52,7 +52,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
         chains = detectedChains.map((chain) => normalizeChain(chain));
 
         // Detect parts
-        const partDetectionResult = await detectParts(
+        const partDetectionResult = detectParts(
             chains.map((c) => new Chain(c))
         );
         parts = partDetectionResult.parts;

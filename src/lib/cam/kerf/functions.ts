@@ -121,10 +121,10 @@ function validateChainClosure(
  *
  * @param cut - The Cut to transform into a Kerf (must have cutChain; leadIn/leadOut optional)
  * @param tool - The Tool providing kerf width
- * @returns Promise resolving to a Kerf object with inner and outer offset chains
+ * @returns Kerf object with inner and outer offset chains
  * @throws Error if cut is missing cutChain or tool is missing kerfWidth
  */
-export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
+export function cutToKerf(cut: Cut, tool: Tool): KerfData {
     performance.mark(`cutToKerf-${cut.id}-start`);
 
     // Validation
@@ -184,7 +184,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
     const polylines: Polyline[] = [{ points: combinedPoints }];
 
     // Get Clipper2 module for accessing JoinType and EndType enums
-    const clipper = await getClipper2();
+    const clipper = getClipper2();
     const { JoinType, EndType } = clipper;
 
     // When leads are present, treat as open path regardless of chain closure
@@ -200,7 +200,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
     // Perform bi-directional offset using Clipper2
     performance.mark(`cutToKerf-${cut.id}-offset-main-start`);
     const { inner, outer }: { inner: Polyline[]; outer: Polyline[] } =
-        await offsetPaths(
+        offsetPaths(
             polylines,
             offsetDistance,
             isClosedForOffset,
@@ -245,7 +245,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
 
     if (leadInPoints.length > 1) {
         const leadInOffset: { inner: Polyline[]; outer: Polyline[] } =
-            await offsetPaths(
+            offsetPaths(
                 [{ points: leadInPoints }],
                 offsetDistance,
                 false, // Leads are always open paths
@@ -272,7 +272,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<KerfData> {
     }
 
     if (leadOutPoints.length > 1) {
-        const leadOutOffset = await offsetPaths(
+        const leadOutOffset = offsetPaths(
             [{ points: leadOutPoints }],
             offsetDistance,
             false, // Leads are always open paths
@@ -463,14 +463,14 @@ export function doesLeadKerfOverlapChain(
  * @param maxAttempts - Maximum positions to try (default DEFAULT_MAX_ATTEMPTS)
  * @returns true if adjustment succeeded, false if no solution found
  */
-export async function adjustCutStartPointForLeadKerfOverlap(
+export function adjustCutStartPointForLeadKerfOverlap(
     cut: Cut,
     tool: Tool,
     tolerance: number,
     parts: Part[],
     stepSize: number = DEFAULT_STEP_SIZE,
     maxAttempts: number = DEFAULT_MAX_ATTEMPTS
-): Promise<boolean> {
+): boolean {
     if (!cut.chain) {
         return false;
     }
@@ -536,7 +536,7 @@ export async function adjustCutStartPointForLeadKerfOverlap(
             assignLeadsToCut(cut, leadResult.leadIn, leadResult.leadOut);
 
             // Generate kerf for test cut
-            const testKerf = await cutToKerf(cut, tool);
+            const testKerf = cutToKerf(cut, tool);
 
             // Check if overlap is resolved
             const hasOverlap =

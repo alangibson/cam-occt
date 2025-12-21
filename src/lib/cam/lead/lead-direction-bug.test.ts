@@ -200,7 +200,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             };
 
             // Detect parts from the chains
-            const partDetectionResult = await detectParts(
+            const partDetectionResult = detectParts(
                 [new Chain(rectangleChain), new Chain(circleChain)],
                 0.001 // tolerance
             );
@@ -1286,7 +1286,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             const chain = createCircleChain();
 
             // Detect parts from the single circle chain
-            const partDetectionResult = await detectParts(
+            const partDetectionResult = detectParts(
                 [chain],
                 0.001 // tolerance
             );

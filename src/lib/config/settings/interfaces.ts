@@ -71,4 +71,7 @@ export interface ApplicationSettings {
 
     /** CAM settings */
     camSettings: CamSettings;
+
+    /** Auto-create operation when transitioning to Program stage */
+    autoCreateOperation: boolean;
 }

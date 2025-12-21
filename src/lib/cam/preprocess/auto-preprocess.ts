@@ -10,7 +10,7 @@ import { PreprocessingStep } from '$lib/config/settings/enums';
 import { decomposePolylines } from '$lib/cam/preprocess/decompose-polylines/decompose-polylines';
 import { deduplicateShapes } from '$lib/cam/preprocess/dedupe-shapes/functions';
 import { joinColinearLines } from '$lib/cam/preprocess/join-colinear-lines';
-import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
+import { OriginLocation } from '$lib/cam/drawing/enums';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { AlgorithmParameters } from '$lib/cam/preprocess/algorithm-parameters';
 import { Shape } from '$lib/cam/shape/classes';
@@ -101,7 +101,7 @@ async function applyPreprocessingStep(
             break;
 
         case PreprocessingStep.TranslateToPositive:
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
             resetDownstreamStages(WorkflowStage.PROGRAM);
             break;
 

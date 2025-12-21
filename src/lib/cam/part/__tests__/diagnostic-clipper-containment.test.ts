@@ -36,7 +36,7 @@ describe('Diagnostic - Clipper2 Containment', () => {
         );
 
         if (chain1 && chain3) {
-            const isContained = await isChainContainedInChain_Clipper2(
+            const isContained = isChainContainedInChain_Clipper2(
                 chain1,
                 chain3
             );
@@ -49,7 +49,7 @@ describe('Diagnostic - Clipper2 Containment', () => {
         }
 
         if (chain2 && chain3) {
-            const isContained = await isChainContainedInChain_Clipper2(
+            const isContained = isChainContainedInChain_Clipper2(
                 chain2,
                 chain3
             );
@@ -97,7 +97,7 @@ describe('Diagnostic - Clipper2 Containment', () => {
             [4, chain4],
         ] as const) {
             if (chain && chain5) {
-                const isContained = await isChainContainedInChain_Clipper2(
+                const isContained = isChainContainedInChain_Clipper2(
                     chain,
                     chain5
                 );

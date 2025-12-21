@@ -1,8 +1,9 @@
 /**
  * Clipper2 WASM Initialization Module
  *
- * Handles lazy initialization of the Clipper2 WASM module with singleton pattern.
- * The WASM module is loaded only once and reused for all offset operations.
+ * Handles eager initialization of the Clipper2 WASM module with singleton pattern.
+ * The WASM module should be preloaded at app startup via preloadClipper2().
+ * Once loaded, getClipper2() returns the instance synchronously.
  */
 
 import type { MainModule } from '$lib/wasm/clipper2z';
@@ -20,19 +21,17 @@ let clipper2Instance: MainModule | null = null;
 let initPromise: Promise<MainModule> | null = null;
 
 /**
- * Get or initialize the Clipper2 WASM module
+ * Preload the Clipper2 WASM module
  *
- * This function uses lazy initialization - the WASM module is only loaded
- * on the first call. Subsequent calls return the cached instance.
- *
- * Uses environment-aware WASM loading:
+ * This function starts loading the WASM module and should be called at app startup.
+ * It uses environment-aware WASM loading:
  * - Browser: Vite serves .wasm as an asset (uses href)
  * - Node/Vitest: Direct filesystem access (uses pathname)
  *
  * @returns Promise resolving to initialized Clipper2 MainModule
  * @throws Error if WASM initialization fails
  */
-export async function getClipper2(): Promise<MainModule> {
+export async function preloadClipper2(): Promise<MainModule> {
     // Return cached instance if available
     if (clipper2Instance) {
         return clipper2Instance;
@@ -78,5 +77,23 @@ export async function getClipper2(): Promise<MainModule> {
     }
 
     clipper2Instance = await initPromise!;
+    return clipper2Instance;
+}
+
+/**
+ * Get the Clipper2 WASM module synchronously
+ *
+ * This function returns the cached WASM instance. It throws an error if the
+ * module hasn't been loaded yet via preloadClipper2().
+ *
+ * @returns Initialized Clipper2 MainModule
+ * @throws Error if WASM module hasn't been preloaded
+ */
+export function getClipper2(): MainModule {
+    if (!clipper2Instance) {
+        throw new Error(
+            'Clipper2 WASM module not loaded. Call preloadClipper2() at app startup.'
+        );
+    }
     return clipper2Instance;
 }

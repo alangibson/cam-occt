@@ -133,9 +133,7 @@ describe('Hole Lead Direction Fix', () => {
         };
 
         // Create part detection for offset geometry
-        const offsetPartResult = await detectParts([
-            new Chain(offsetHoleChain),
-        ]);
+        const offsetPartResult = detectParts([new Chain(offsetHoleChain)]);
         expect(offsetPartResult.parts.length).toBe(1);
         const offsetPart = offsetPartResult.parts[0];
 
@@ -261,8 +259,8 @@ describe('Hole Lead Direction Fix', () => {
         };
 
         // Create part contexts for both
-        const originalPartResult = await detectParts([new Chain(originalHole)]);
-        const offsetPartResult = await detectParts([new Chain(offsetHole)]);
+        const originalPartResult = detectParts([new Chain(originalHole)]);
+        const offsetPartResult = detectParts([new Chain(offsetHole)]);
 
         const leadConfig = {
             type: LeadType.ARC as const,

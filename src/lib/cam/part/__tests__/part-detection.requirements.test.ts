@@ -66,7 +66,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
 
         // Detect parts
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
 
         // Count closed chains after normalization
         const closedChains = normalizedChains.filter((chain) =>
@@ -88,7 +88,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
             { tolerance: 0.1 }
         );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );
@@ -108,7 +108,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
             { tolerance: 0.1 }
         );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );
@@ -128,7 +128,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
             { tolerance: 0.1 }
         );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );
@@ -148,7 +148,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
             { tolerance: 0.1 }
         );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );
@@ -168,7 +168,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
             { tolerance: 0.1 }
         );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );
@@ -195,7 +195,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
 
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );
@@ -215,7 +215,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
             { tolerance: 0.1 }
         );
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         // Count closed chains by detecting which chains became parts or holes
         const closedChainIds = new Set<string>();
         partResult.parts.forEach((part) => {
@@ -250,7 +250,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
 
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );

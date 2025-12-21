@@ -80,7 +80,7 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
             );
         });
 
-        const partResult = await detectParts(chains, tolerance);
+        const partResult = detectParts(chains, tolerance);
         console.log(`Parts detected: ${partResult.parts.length}`);
         console.log('\nPart structure:');
         partResult.parts.forEach((part, idx) => {
@@ -135,7 +135,7 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
             );
         });
 
-        const partResult = await detectParts(chains, tolerance);
+        const partResult = detectParts(chains, tolerance);
         console.log(`Parts detected: ${partResult.parts.length}`);
 
         // With very high tolerance, all splines are forced to merge into 1 chain → 1 part

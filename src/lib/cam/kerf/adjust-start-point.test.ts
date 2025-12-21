@@ -134,7 +134,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
 
         const tool = createTool(2);
 
-        const result = await adjustCutStartPointForLeadKerfOverlap(
+        const result = adjustCutStartPointForLeadKerfOverlap(
             new Cut(cut),
             tool,
             0.01,
@@ -163,7 +163,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         const cut = createCut(openChain, 'test-tool');
         const tool = createTool(2);
 
-        const result = await adjustCutStartPointForLeadKerfOverlap(
+        const result = adjustCutStartPointForLeadKerfOverlap(
             new Cut(cut),
             tool,
             0.01,
@@ -180,7 +180,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         const tool = createTool(2);
 
         // The function will try different positions
-        const result = await adjustCutStartPointForLeadKerfOverlap(
+        const result = adjustCutStartPointForLeadKerfOverlap(
             new Cut(cut),
             tool,
             0.01,
@@ -201,7 +201,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         const originalChainLength = cut.chain!.shapes.length;
         const tool = createTool(2);
 
-        const result = await adjustCutStartPointForLeadKerfOverlap(
+        const result = adjustCutStartPointForLeadKerfOverlap(
             cut,
             tool,
             0.01,
@@ -234,7 +234,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         const tool = createTool(2);
 
         // Try with very small chain and large lead - likely to always overlap
-        const result = await adjustCutStartPointForLeadKerfOverlap(
+        const result = adjustCutStartPointForLeadKerfOverlap(
             new Cut(cut),
             tool,
             0.01,
@@ -255,13 +255,13 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
         const invalidTool = createTool(-1);
 
         // Should not throw, even with invalid tool
-        await expect(
+        expect(
             adjustCutStartPointForLeadKerfOverlap(
                 new Cut(cut),
                 invalidTool,
                 0.01,
                 [] // Empty parts array
             )
-        ).resolves.toBeDefined();
+        ).toBeDefined();
     });
 });

@@ -26,7 +26,7 @@ ENDSEC
 EOF`;
 
         // This should not throw an error
-        await expect(parseDXF(dxfWithMissingVertices)).resolves.toBeDefined();
+        expect(parseDXF(dxfWithMissingVertices)).toBeDefined();
     });
 
     it('should handle empty or malformed DXF entities', async () => {

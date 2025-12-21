@@ -95,6 +95,12 @@
             !settingsStore.settings.optimizationSettings.zoomToFit
         );
     }
+
+    function handleAutoCreateOperationToggle() {
+        settingsStore.setAutoCreateOperation(
+            !settingsStore.settings.autoCreateOperation
+        );
+    }
 </script>
 
 <div class="settings-container">
@@ -167,6 +173,14 @@
                         >
                     </label>
                 {/each}
+                <label class="stage-item">
+                    <input
+                        type="checkbox"
+                        checked={settingsStore.settings.autoCreateOperation}
+                        onchange={handleAutoCreateOperationToggle}
+                    />
+                    <span class="stage-name">Auto create operation</span>
+                </label>
             </div>
         </section>
 

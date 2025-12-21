@@ -1,10 +1,13 @@
 import type { DrawingData } from './interfaces';
 import type { LayerData } from '$lib/cam/layer/interfaces';
 import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
+import type { Plan } from '$lib/cam/plan/classes.svelte';
 import { shapesBoundingBox } from '$lib/cam/shape/functions';
 import { Layer } from '$lib/cam/layer/classes.svelte';
 import { Shape } from '$lib/cam/shape/classes';
 import { Unit } from '$lib/config/units/units';
+import { OriginLocation } from './enums';
+import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 
 export class Drawing implements DrawingData {
     #data: DrawingData;
@@ -110,5 +113,16 @@ export class Drawing implements DrawingData {
 
         // Trigger Svelte 5 reactivity by reassigning the $state layers
         this.#layers = { ...this.layers };
+    }
+
+    /**
+     * Position the drawing origin at the specified location
+     * @param location The desired origin location
+     * @param plan Optional plan to translate along with the drawing
+     */
+    originTo(location: OriginLocation, plan?: Plan): void {
+        if (location === OriginLocation.BOTTOM_LEFT) {
+            translateToPositiveQuadrant(this, plan);
+        }
     }
 }

@@ -24,7 +24,7 @@ describe('DRAAK.dxf Part Detection', () => {
         console.log(`\nDRAAK.dxf: Found ${chains.length} chains`);
 
         // Detect parts
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
 
         console.log(`DRAAK.dxf: Detected ${partResult.parts.length} parts`);
 
@@ -64,7 +64,7 @@ describe('DRAAK.dxf Part Detection', () => {
             parsed.shapes.map((s) => new Shape(s)),
             { tolerance: 0.1 }
         );
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
 
         expect(parsed.shapes.length).toBeGreaterThan(0);
         expect(chains.length).toBeGreaterThan(0);

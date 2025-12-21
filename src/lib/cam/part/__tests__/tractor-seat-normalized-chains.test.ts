@@ -32,7 +32,7 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
         // Check closure status after normalization
 
         // Detect parts after normalization
-        const partResult = await detectParts(normalizedChains, 0.1);
+        const partResult = detectParts(normalizedChains, 0.1);
 
         // Show details for each part
         partResult.parts.forEach((part, _index) => {

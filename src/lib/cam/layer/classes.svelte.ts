@@ -76,7 +76,7 @@ export class Layer implements LayerData {
                 this.#generateChains();
             }
 
-            const result = await detectParts(
+            const result = detectParts(
                 this.#chains,
                 CHAIN_CLOSURE_TOLERANCE,
                 layerName

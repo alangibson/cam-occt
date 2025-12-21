@@ -58,7 +58,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         chainStore.setChains(chainsWithDirection);
 
         // Detect parts
-        const partDetectionResult = await detectParts(chainsWithDirection);
+        const partDetectionResult = detectParts(chainsWithDirection);
         // Note: Parts are now managed through Drawing/Layer - no need to set them in store
 
         // Find the O parts (should be 3 of them based on the file name)
@@ -188,7 +188,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         const chainsWithDirection = setChainsDirection(chains);
         // @ts-expect-error - setChains no longer exists, test needs refactoring
         chainStore.setChains(chainsWithDirection);
-        const partDetectionResult = await detectParts(chainsWithDirection);
+        const partDetectionResult = detectParts(chainsWithDirection);
         // Note: Parts are now managed through Drawing/Layer - no need to set them in store
 
         const oParts = partDetectionResult.parts.filter(
@@ -372,7 +372,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         const chainsWithDirection = setChainsDirection(chains);
         // @ts-expect-error - setChains no longer exists, test needs refactoring
         chainStore.setChains(chainsWithDirection);
-        const partDetectionResult = await detectParts(chainsWithDirection);
+        const partDetectionResult = detectParts(chainsWithDirection);
         // Note: Parts are now managed through Drawing/Layer - no need to set them in store
 
         const oParts = partDetectionResult.parts.filter(

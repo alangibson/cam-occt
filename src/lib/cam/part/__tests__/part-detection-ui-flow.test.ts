@@ -23,7 +23,7 @@ describe('UI Flow Integration Test', () => {
         chains.forEach(() => {});
 
         // Step 3: Detect parts (matching UI flow)
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         partResult.parts.forEach((part) => {
             part.voids.forEach(() => {});
@@ -78,7 +78,7 @@ describe('UI Flow Integration Test', () => {
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         // Step 3: Detect parts (matching UI flow)
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         // Step 4: Test part type detection for each chain
 

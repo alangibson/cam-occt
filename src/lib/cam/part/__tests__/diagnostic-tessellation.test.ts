@@ -81,7 +81,7 @@ describe('Diagnostic - Tessellation Analysis', () => {
             console.log(`Polygon is closed: ${dist < 0.01}`);
 
             // Check if we're getting a full circle or partial
-            const clipper = await getClipper2();
+            const clipper = getClipper2();
 
             const paths = toClipper2Paths([tessellated], clipper);
             const area = calculateClipper2PathsArea(paths);

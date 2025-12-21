@@ -434,12 +434,12 @@ describe('Operations Auto-Selection Feature', () => {
 
         drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
 
-        // Ensure no parts exist
+        // The drawing has two closed circles, which should be detected as 2 parts
         let drawing = drawingStore.drawing;
         const parts = drawing
             ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
             : [];
-        expect(parts.length).toBe(0);
+        expect(parts.length).toBe(2);
 
         // Render the component
         const component = render(Operations);
@@ -456,17 +456,18 @@ describe('Operations Auto-Selection Feature', () => {
         expect(operations.length).toBe(1);
 
         const newOperation = operations[0];
-        expect(newOperation.targetType).toBe('chains');
-        // Get the actual chain IDs from the drawing
+        // Since parts exist (2 closed circles detected as parts), target type should be 'parts'
+        expect(newOperation.targetType).toBe('parts');
+        // Get the actual part IDs from the drawing
         drawing = drawingStore.drawing;
-        const actualChainIds = drawing
+        const actualPartIds = drawing
             ? Object.values(drawing.layers).flatMap((layer) =>
-                  layer.chains.map((chain) => chain.id)
+                  layer.parts.map((part) => part.id)
               )
             : [];
-        expect(newOperation.targetIds.length).toBe(actualChainIds.length);
+        expect(newOperation.targetIds.length).toBe(actualPartIds.length);
         expect(newOperation.targetIds).toEqual(
-            expect.arrayContaining(actualChainIds)
+            expect.arrayContaining(actualPartIds)
         );
     });
 

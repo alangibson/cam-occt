@@ -34,7 +34,7 @@ describe('Tractor Seat Mount Current Behavior', () => {
 
         // Detect parts with user tolerance
         const userTolerance = 0.1;
-        const partResult = await detectParts(chains, userTolerance);
+        const partResult = detectParts(chains, userTolerance);
 
         // Show all parts
         partResult.parts.forEach(() => {});

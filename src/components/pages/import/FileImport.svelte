@@ -1,64 +1,9 @@
 <script lang="ts">
-    import { untrack } from 'svelte';
-    import { parseDXF } from '$lib/parsers/dxf/functions';
-    import { parseSVG } from '$lib/parsers/svg/functions';
     import { drawingStore } from '$lib/stores/drawing/store.svelte';
     import { settingsStore } from '$lib/stores/settings/store.svelte';
     import { Unit, measurementSystemToUnit } from '$lib/config/units/units';
     import type { DrawingData } from '$lib/cam/drawing/interfaces';
-    import { Drawing } from '$lib/cam/drawing/classes.svelte';
-    import type { ApplicationSettings } from '$lib/config/settings/interfaces';
-    import { ImportUnitSetting } from '$lib/config/settings/enums';
-
-    /**
-     * Apply unit override to a drawing based on application settings
-     * This function only changes the unit label without converting geometry values
-     */
-    function applyImportUnitConversion(
-        drawing: DrawingData,
-        settings: ApplicationSettings
-    ): DrawingData {
-        // Determine target unit based on import setting
-        let targetUnit: Unit;
-
-        switch (settings.importUnitSetting) {
-            case ImportUnitSetting.Automatic:
-                // Use the file's detected units - no override
-                return drawing;
-
-            case ImportUnitSetting.Application:
-                // Override to application's measurement system
-                targetUnit = measurementSystemToUnit(
-                    settings.measurementSystem
-                );
-                break;
-
-            case ImportUnitSetting.Metric:
-                // Force metric units
-                targetUnit = Unit.MM;
-                break;
-
-            case ImportUnitSetting.Imperial:
-                // Force imperial units
-                targetUnit = Unit.INCH;
-                break;
-
-            default:
-                // Fallback to automatic behavior
-                return drawing;
-        }
-
-        // If no override needed, return original drawing
-        if (drawing.units === targetUnit) {
-            return drawing;
-        }
-
-        // Only change the unit label, keep all geometry values unchanged
-        return {
-            ...drawing,
-            units: targetUnit,
-        };
-    }
+    import { File as CAMFile } from '$lib/cam/file/classes';
 
     interface Props {
         onimportAdvance?: () => void;
@@ -67,50 +12,85 @@
             fileName: string;
             originalUnits: Unit | null;
         }) => void;
+        externalFileContent?: string | null;
+        externalFileName?: string | null;
     }
 
-    let { onimportAdvance, onfileImported }: Props = $props();
+    let {
+        onimportAdvance,
+        onfileImported,
+        externalFileContent,
+        externalFileName,
+    }: Props = $props();
 
     let fileInput: HTMLInputElement | undefined = $state();
     let isDragging = $state(false);
-    let originalUnits: Unit | null = $state(null);
-    let originalDrawing: DrawingData | null = $state(null);
-    let settingsEffectInitialized = $state(false);
+    let loadedFile: CAMFile | null = $state(null);
+    let fileUnit: Unit | null = $state(null);
 
-    let fileName = $derived(drawingStore.drawing?.fileName ?? null);
     let settings = $derived(settingsStore.settings);
 
-    // Reset originalUnits and originalDrawing when no file is loaded
+    // Load file unit when file is loaded
     $effect(() => {
-        if (!fileName) {
-            originalUnits = null;
-            originalDrawing = null;
-            settingsEffectInitialized = false;
+        if (loadedFile) {
+            loadedFile.getUnit().then((unit) => {
+                fileUnit = unit;
+            });
+        } else {
+            fileUnit = null;
         }
     });
 
-    // Re-apply unit conversion when settings change (not on initial import)
-    $effect(() => {
-        // Only track settings as the dependency
-        const currentSettings = settings;
+    async function handleFileLoad(content: string, fileName: string) {
+        try {
+            const fileType = CAMFile.getFileTypeFromName(fileName);
 
-        untrack(() => {
-            if (originalDrawing && currentSettings && fileName) {
-                if (settingsEffectInitialized) {
-                    const convertedDrawing = applyImportUnitConversion(
-                        originalDrawing,
-                        currentSettings
-                    );
-                    drawingStore.setDrawing(
-                        new Drawing(convertedDrawing),
-                        fileName
-                    );
-                } else {
-                    settingsEffectInitialized = true;
-                }
+            if (!fileType) {
+                alert('Unsupported file format. Please use DXF or SVG files.');
+                return;
             }
-        });
-    });
+
+            // Create File object but don't parse yet
+            loadedFile = new CAMFile(fileName, fileType, content);
+        } catch (error) {
+            alert('Error loading file. Please check the file format.');
+            console.error(error);
+        }
+    }
+
+    async function handleImportClick() {
+        if (!loadedFile) return;
+
+        try {
+            // Determine application unit
+            const applicationUnit = measurementSystemToUnit(
+                settings.measurementSystem
+            );
+
+            // Convert file to drawing with unit conversion
+            // File class handles all conversion logic based on import setting
+            const drawing = await loadedFile.toDrawing(
+                applicationUnit,
+                settings.importUnitSetting
+            );
+
+            // Store in drawing store
+            drawingStore.setDrawing(drawing, loadedFile.name);
+
+            // Notify parent
+            onfileImported?.({
+                drawing: drawing.toData(),
+                fileName: loadedFile.name,
+                originalUnits: fileUnit,
+            });
+
+            // Advance to next stage
+            onimportAdvance?.();
+        } catch (error) {
+            alert('Error importing file. Please check the file format.');
+            console.error(error);
+        }
+    }
 
     async function handleFiles(files: FileList | null) {
         if (!files || files.length === 0) {
@@ -122,69 +102,21 @@
 
         reader.onload = async (e) => {
             const content = e.target?.result as string;
-
-            try {
-                let drawing;
-
-                if (file.name.toLowerCase().endsWith('.dxf')) {
-                    // Parse DXF file
-                    const parsedDrawing: DrawingData = await parseDXF(content);
-
-                    // Store original drawing and units before conversion
-                    originalDrawing = parsedDrawing;
-                    originalUnits = parsedDrawing.units;
-
-                    // Apply unit conversion based on application settings
-                    drawing = applyImportUnitConversion(
-                        parsedDrawing,
-                        settings
-                    );
-
-                    // Add fileName to the drawing data
-                    drawing.fileName = file.name;
-
-                    drawingStore.setDrawing(new Drawing(drawing), file.name);
-                    onfileImported?.({
-                        drawing,
-                        fileName: file.name,
-                        originalUnits,
-                    });
-                } else if (file.name.toLowerCase().endsWith('.svg')) {
-                    // Parse SVG file
-                    const parsedDrawing: DrawingData = await parseSVG(content);
-
-                    // Store original drawing and units before conversion
-                    originalDrawing = parsedDrawing;
-                    originalUnits = parsedDrawing.units;
-
-                    // Apply unit conversion based on application settings
-                    drawing = applyImportUnitConversion(
-                        parsedDrawing,
-                        settings
-                    );
-
-                    // Add fileName to the drawing data
-                    drawing.fileName = file.name;
-
-                    drawingStore.setDrawing(new Drawing(drawing), file.name);
-                    onfileImported?.({
-                        drawing,
-                        fileName: file.name,
-                        originalUnits,
-                    });
-                } else {
-                    alert(
-                        'Unsupported file format. Please use DXF or SVG files.'
-                    );
-                    return;
-                }
-            } catch {
-                alert('Error parsing file. Please check the file format.');
-            }
+            await handleFileLoad(content, file.name);
         };
 
         reader.readAsText(file);
     }
+
+    // Handle external file loading from gallery
+    $effect(() => {
+        if (externalFileContent && externalFileName) {
+            handleFileLoad(externalFileContent, externalFileName).then(() => {
+                // Auto-import when loaded from gallery
+                handleImportClick();
+            });
+        }
+    });
 
     function handleDrop(e: DragEvent) {
         e.preventDefault();
@@ -225,17 +157,17 @@
         </button>
         <button
             class="advance-button"
-            disabled={!fileName}
-            onclick={() => onimportAdvance?.()}
+            disabled={!loadedFile}
+            onclick={handleImportClick}
         >
             Import
         </button>
     </div>
 
-    {#if fileName}
+    {#if loadedFile}
         <p class="filename">
-            Loaded: {fileName}
-            <span class="units">({originalUnits})</span>
+            Loaded: {loadedFile.name}
+            <span class="units">({fileUnit ?? 'detecting...'})</span>
         </p>
     {:else}
         <p class="hint">or drag and drop a file here</p>

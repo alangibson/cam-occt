@@ -11,25 +11,25 @@ describe('SVG Parser', () => {
         expect(typeof parseSVG).toBe('function');
     });
 
-    it('should handle empty SVG content gracefully', async () => {
+    it('should handle empty SVG content gracefully', () => {
         const emptySVG = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
 </svg>`;
 
-        const result = await parseSVG(emptySVG);
+        const result = parseSVG(emptySVG);
         expect(result).toBeDefined();
         expect(result.shapes).toBeDefined();
         expect(Array.isArray(result.shapes)).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
-    it('should parse line elements', async () => {
+    it('should parse line elements', () => {
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <line x1="10" y1="20" x2="30" y2="40" />
 </svg>`;
 
-        const result = await parseSVG(svg);
+        const result = parseSVG(svg);
         expect(result.shapes).toHaveLength(1);
         expect(result.shapes[0].type).toBe(GeometryType.LINE);
         // Y flipped: y=20->180, y=40->160
@@ -39,13 +39,13 @@ describe('SVG Parser', () => {
         });
     });
 
-    it('should parse circle elements', async () => {
+    it('should parse circle elements', () => {
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <circle cx="50" cy="60" r="25" />
 </svg>`;
 
-        const result = await parseSVG(svg);
+        const result = parseSVG(svg);
         expect(result.shapes).toHaveLength(1);
         expect(result.shapes[0].type).toBe(GeometryType.CIRCLE);
         // Y flipped: y=60->140
@@ -55,13 +55,13 @@ describe('SVG Parser', () => {
         });
     });
 
-    it('should parse ellipse elements', async () => {
+    it('should parse ellipse elements', () => {
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <ellipse cx="100" cy="100" rx="40" ry="20" />
 </svg>`;
 
-        const result = await parseSVG(svg);
+        const result = parseSVG(svg);
         expect(result.shapes).toHaveLength(1);
         expect(result.shapes[0].type).toBe(GeometryType.ELLIPSE);
         const ellipse = result.shapes[0].geometry as Ellipse;
@@ -74,13 +74,13 @@ describe('SVG Parser', () => {
         expect(ellipse.minorToMajorRatio).toBe(0.5);
     });
 
-    it('should parse rect elements as closed polylines', async () => {
+    it('should parse rect elements as closed polylines', () => {
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <rect x="10" y="20" width="50" height="30" />
 </svg>`;
 
-        const result = await parseSVG(svg);
+        const result = parseSVG(svg);
         expect(result.shapes).toHaveLength(1);
         expect(result.shapes[0].type).toBe(GeometryType.POLYLINE);
         const polyline = result.shapes[0].geometry as DxfPolyline;
@@ -88,13 +88,13 @@ describe('SVG Parser', () => {
         expect(polyline.shapes).toHaveLength(4);
     });
 
-    it('should parse polyline elements', async () => {
+    it('should parse polyline elements', () => {
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <polyline points="10,10 50,10 50,50" />
 </svg>`;
 
-        const result = await parseSVG(svg);
+        const result = parseSVG(svg);
         expect(result.shapes).toHaveLength(1);
         expect(result.shapes[0].type).toBe(GeometryType.POLYLINE);
         const polyline = result.shapes[0].geometry as DxfPolyline;
@@ -102,13 +102,13 @@ describe('SVG Parser', () => {
         expect(polyline.shapes).toHaveLength(2);
     });
 
-    it('should parse polygon elements as closed polylines', async () => {
+    it('should parse polygon elements as closed polylines', () => {
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <polygon points="10,10 50,10 50,50" />
 </svg>`;
 
-        const result = await parseSVG(svg);
+        const result = parseSVG(svg);
         expect(result.shapes).toHaveLength(1);
         expect(result.shapes[0].type).toBe(GeometryType.POLYLINE);
         const polyline = result.shapes[0].geometry as DxfPolyline;
@@ -116,13 +116,13 @@ describe('SVG Parser', () => {
         expect(polyline.shapes).toHaveLength(3);
     });
 
-    it('should parse simple path with line commands', async () => {
+    it('should parse simple path with line commands', () => {
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <path d="M 10 10 L 50 10 L 50 50 Z" />
 </svg>`;
 
-        const result = await parseSVG(svg);
+        const result = parseSVG(svg);
         expect(result.shapes.length).toBeGreaterThan(0);
         // Path creates individual line segments
         expect(result.shapes.every((s) => s.type === GeometryType.LINE)).toBe(
@@ -130,33 +130,33 @@ describe('SVG Parser', () => {
         );
     });
 
-    it('should parse real SVG file with simple shapes', async () => {
+    it('should parse real SVG file with simple shapes', () => {
         const svgContent = readFileSync('tests/svg/simple-shapes.svg', 'utf-8');
-        const result = await parseSVG(svgContent);
+        const result = parseSVG(svgContent);
 
         expect(result.shapes.length).toBeGreaterThan(0);
         expect(result.units).toBe(Unit.NONE);
     });
 
-    it('should parse real SVG file with simple path', async () => {
+    it('should parse real SVG file with simple path', () => {
         const svgContent = readFileSync('tests/svg/simple-path.svg', 'utf-8');
-        const result = await parseSVG(svgContent);
+        const result = parseSVG(svgContent);
 
         expect(result.shapes.length).toBeGreaterThan(0);
     });
 
-    it('should throw error for invalid SVG', async () => {
+    it('should throw error for invalid SVG', () => {
         const invalidSVG = 'not an svg';
 
-        await expect(parseSVG(invalidSVG)).rejects.toThrow();
+        expect(() => parseSVG(invalidSVG)).toThrow();
     });
 
-    it('should throw error for malformed XML', async () => {
+    it('should throw error for malformed XML', () => {
         const malformedSVG = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
   <line x1="10" y1="20"
 </svg>`;
 
-        await expect(parseSVG(malformedSVG)).rejects.toThrow();
+        expect(() => parseSVG(malformedSVG)).toThrow();
     });
 });

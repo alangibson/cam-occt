@@ -82,7 +82,7 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
         });
 
@@ -122,7 +122,7 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
         });
 
@@ -156,7 +156,7 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
         });
 
@@ -193,7 +193,7 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
         });
 
@@ -268,7 +268,7 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
         });
 
@@ -336,7 +336,7 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
         });
 
@@ -417,7 +417,7 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
         });
 

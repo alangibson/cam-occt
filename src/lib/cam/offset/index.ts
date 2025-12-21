@@ -6,7 +6,7 @@
  * uses industry-standard Clipper2 for robust offsetting.
  *
  * Key differences from existing system:
- * - Async API (required for WASM initialization)
+ * - Synchronous API (WASM preloaded at app startup)
  * - All shapes tessellated to polylines before offsetting
  * - Output is always polylines (no analytical curves)
  * - Automatic handling of trimming/gap-filling (done by Clipper2)
@@ -36,22 +36,22 @@ import { getDefaults } from '$lib/config/defaults/defaults-manager';
  * @param chain - The chain to offset
  * @param distance - Offset distance (positive value, direction determined by chain geometry)
  * @param params - Offset parameters (tolerance, etc.)
- * @returns Promise resolving to ChainOffsetResult with inner/outer or left/right chains
+ * @returns ChainOffsetResult with inner/outer or left/right chains
  *
  * @example
  * ```typescript
- * const result = await offsetChain(myChain, 5.0);
+ * const result = offsetChain(myChain, 5.0);
  * if (result.success) {
  *   console.log('Inner chain:', result.innerChain);
  *   console.log('Outer chain:', result.outerChain);
  * }
  * ```
  */
-export async function offsetChain(
+export function offsetChain(
     chain: ChainData,
     distance: number,
     params: ChainOffsetParameters = DEFAULT_CHAIN_OFFSET_PARAMETERS
-): Promise<ChainOffsetResult> {
+): ChainOffsetResult {
     const startTime = performance.now();
     const result: ChainOffsetResult = {
         success: false,
@@ -92,8 +92,8 @@ export async function offsetChain(
             polylines = shapePolylines;
         }
 
-        // 3. Call Clipper2 offset (async because WASM initialization)
-        const { inner, outer } = await offsetPaths(
+        // 3. Call Clipper2 offset
+        const { inner, outer } = offsetPaths(
             polylines,
             Math.abs(distance),
             isClosed

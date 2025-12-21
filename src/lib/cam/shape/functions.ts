@@ -74,6 +74,7 @@ import {
     polylineToPoints,
     polylineToVertices,
     reversePolyline,
+    translateDxfPolyline,
 } from '$lib/geometry/dxf-polyline/functions';
 import { calculatePolylineLength } from '$lib/geometry/polyline/functions';
 import { MIDPOINT_T, QUARTER_CIRCLE_QUADRANTS } from '$lib/geometry/constants';
@@ -1486,6 +1487,13 @@ export function translateShape(shape: Shape, dx: number, dy: number): Shape {
             break;
         case GeometryType.SPLINE:
             shape.geometry = translateSpline(shape.geometry as Spline, dx, dy);
+            break;
+        case GeometryType.POLYLINE:
+            shape.geometry = translateDxfPolyline(
+                shape.geometry as DxfPolyline,
+                dx,
+                dy
+            );
             break;
         default:
             // No translation needed for unknown types

@@ -5,7 +5,7 @@ import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import { translateToPositiveQuadrant } from './translate-to-positive';
+import { OriginLocation } from '$lib/cam/drawing/enums';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 
@@ -33,7 +33,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -55,7 +55,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -75,7 +75,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -97,7 +97,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -124,7 +124,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -150,7 +150,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -180,7 +180,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -207,7 +207,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -233,7 +233,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -260,7 +260,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -288,7 +288,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -324,7 +324,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(2);
@@ -361,7 +361,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -381,7 +381,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -404,7 +404,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);
@@ -428,7 +428,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             ];
 
             const drawing = createDrawing(shapes);
-            translateToPositiveQuadrant(drawing);
+            drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
             const result = drawing.shapes;
             expect(result).toHaveLength(1);

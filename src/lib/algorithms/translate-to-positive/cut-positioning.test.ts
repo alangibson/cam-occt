@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { GeometryType } from '$lib/geometry/enums';
-import { translateToPositiveQuadrant } from './translate-to-positive';
+import { OriginLocation } from '$lib/cam/drawing/enums';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 import { Operation } from '$lib/cam/operation/classes.svelte';
@@ -57,7 +57,7 @@ describe('Translate to Positive - Cut Positioning', () => {
         });
 
         // Apply translate to positive (simulating preprocessing)
-        translateToPositiveQuadrant(drawing);
+        drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
         // Verify shapes were translated
         const translatedShapes = drawing.shapes;
@@ -218,7 +218,7 @@ describe('Translate to Positive - Cut Positioning', () => {
         });
 
         // Apply translate to positive
-        translateToPositiveQuadrant(drawing);
+        drawing.originTo(OriginLocation.BOTTOM_LEFT);
 
         // Get chains from drawing
         const layers = Object.values(drawing.layers);

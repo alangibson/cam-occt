@@ -12,9 +12,9 @@ import { MAX_CONTAINMENT_NESTING_LEVEL } from '$lib/cam/part/constants';
  * Build Chain containment hierarchy.
  * Main entry point function for Chain containment heirarchy algorithm.
  */
-export async function buildContainmentHierarchy(
+export function buildContainmentHierarchy(
     chains: Chain[]
-): Promise<Map<string, string>> {
+): Map<string, string> {
     // child -> parent
     const containmentMap: Map<string, string> = new Map<string, string>();
 
@@ -26,7 +26,7 @@ export async function buildContainmentHierarchy(
     // Store areas in Map for synchronous sort comparator
     const chainAreas = new Map<string, number>();
     for (const chain of closedChains) {
-        const area = await chain.area(); // Populates Chain.#area cache
+        const area = chain.area(); // Populates Chain.#area cache
         chainAreas.set(chain.id, area);
     }
 
@@ -65,7 +65,7 @@ export async function buildContainmentHierarchy(
             }
 
             // Do full geometric containment check
-            const isContained = await potential.contains(current);
+            const isContained = potential.contains(current);
 
             if (isContained) {
                 if (potentialArea < smallestArea) {

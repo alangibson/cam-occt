@@ -34,11 +34,11 @@ import { generateId } from '$lib/domain/id';
  * Builds Parts from a collection of Chains.
  * Main entry point for part detection algorithm.
  */
-export async function detectParts(
+export function detectParts(
     chains: Chain[],
     tolerance: number = CHAIN_CLOSURE_TOLERANCE,
     layerName: string = '0'
-): Promise<PartDetectionResult> {
+): PartDetectionResult {
     const warnings: PartDetectionWarning[] = [];
 
     // CRITICAL: Normalize all chains BEFORE any analysis
@@ -66,7 +66,7 @@ export async function detectParts(
     // Build containment hierarchy first to identify part chains
     // (needed for slot detection)
     const containmentMap: Map<string, string> =
-        await buildContainmentHierarchy(closedChains);
+        buildContainmentHierarchy(closedChains);
 
     const allPartChains: Chain[] = identifyPartChains(
         closedChains,

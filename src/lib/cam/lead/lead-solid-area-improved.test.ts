@@ -32,7 +32,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
 
         // Detect parts
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         // Find Part 5 (0-based indexing, so part 5 is index 4)
         const part5 = partResult.parts[4];
@@ -86,7 +86,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         // Convert ShapeData to Shape instances for chain detection
         const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
         const part5 = partResult.parts[4];
 
         if (!part5) {
@@ -142,7 +142,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         // Convert ShapeData to Shape instances for chain detection
         const shapeInstances = decomposed.map((s) => new Shape(s));
         const chains = detectShapeChains(shapeInstances, { tolerance: 0.1 });
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
         const part5 = partResult.parts[4];
 
         if (!part5) return;

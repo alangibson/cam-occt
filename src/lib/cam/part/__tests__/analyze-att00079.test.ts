@@ -50,7 +50,7 @@ describe('ATT00079.dxf Part Detection Verification', () => {
         );
 
         // Detect parts
-        const partResult = await detectParts(chains, 0.1);
+        const partResult = detectParts(chains, 0.1);
 
         // Find the closed chains
         const closedChains = chains.filter((chain) =>

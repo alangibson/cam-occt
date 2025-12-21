@@ -158,7 +158,7 @@ async function prepareLeadCalculation(
         try {
             // Create a single-chain array for part detection on offset geometry
             const offsetChains = [chainForLeads];
-            const partDetectionResult = await detectParts(offsetChains);
+            const partDetectionResult = detectParts(offsetChains);
 
             // Use the first detected part (there should only be one for a single chain)
             if (partDetectionResult.parts.length > 0) {

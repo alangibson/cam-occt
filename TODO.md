@@ -1,28 +1,34 @@
 # Milestones
 
-## v0.?.0
+## v1.?.0
+
+- Mobile support
+
+## v1.?.0
 
 - Open multiple drawings
 
-## v0.?.0
+## v1.?.0
 
 - Manual packing
 
 - Add 3rd party TSP algorithm
+- Add support for machine cut envelope size
+- Add support for material size
 
-## v0.?.0
+## v0.6.0
+
+- Stable tool table storage JSON w/ JSONSchema definition
+- Download project
+
+## v0.5.0
 
 - Support multiple gcode preprocessors
 
+- Stable postprocessor storage JSON w/ JSONSchema definition
+- Download postprocessor JSON
 - Show gcode being executed in simulation
 - Move spot duration value to Simulation page. This is set in LinuxCNC config directly.
-
-## v0.4.0
-
-- Support SVG import
-
-- Stable tool table storage JSON w/ JSONSchema definition
-- Display test DXF files on Import screen
 
 # Fix
 

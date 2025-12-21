@@ -8,7 +8,9 @@ import { hashObject } from '$lib/geometry/hash/functions';
 import {
     calculateArcPoint,
     convertBulgeToArc,
+    translateArc,
 } from '$lib/geometry/arc/functions';
+import { translateLine } from '$lib/geometry/line/functions';
 import { EPSILON } from '$lib/geometry/math/constants';
 import {
     DIRECTION_CLOCKWISE,
@@ -502,5 +504,36 @@ export function polylineBoundingBox(polyline: DxfPolyline): BoundingBoxData {
     return {
         min: { x: minX, y: minY },
         max: { x: maxX, y: maxY },
+    };
+}
+
+/**
+ * Translate a polyline by the given offsets
+ * Translates all constituent shapes (lines and arcs) that make up the polyline
+ */
+export function translateDxfPolyline(
+    polyline: DxfPolyline,
+    dx: number,
+    dy: number
+): DxfPolyline {
+    // Translate each shape in the polyline
+    const translatedShapes: ShapeData[] = polyline.shapes.map((shape) => {
+        if (shape.type === GeometryType.LINE) {
+            return {
+                ...shape,
+                geometry: translateLine(shape.geometry as Line, dx, dy),
+            };
+        } else if (shape.type === GeometryType.ARC) {
+            return {
+                ...shape,
+                geometry: translateArc(shape.geometry as Arc, dx, dy),
+            };
+        }
+        return shape;
+    });
+
+    return {
+        closed: polyline.closed,
+        shapes: translatedShapes,
     };
 }

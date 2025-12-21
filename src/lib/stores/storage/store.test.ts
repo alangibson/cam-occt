@@ -62,6 +62,7 @@ const defaultApplicationSettings = {
         rapidRate: 3000,
         cutterCompensation: CutterCompensation.SOFTWARE,
     },
+    autoCreateOperation: true,
 };
 
 // Mock localStorage module
@@ -347,6 +348,7 @@ vi.mock('../settings/store.svelte', () => {
             rapidRate: 3000,
             cutterCompensation: 'software',
         },
+        autoCreateOperation: true,
     };
     return {
         settingsStore: {

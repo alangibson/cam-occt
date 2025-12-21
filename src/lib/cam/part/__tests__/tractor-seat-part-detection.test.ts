@@ -91,7 +91,7 @@ describe('Tractor Seat Mount Part Detection', () => {
         }
 
         // Detect parts
-        const partResult = await detectParts(chains);
+        const partResult = detectParts(chains);
 
         console.log(`Parts detected: ${partResult.parts.length}`);
         console.log(`Warnings: ${partResult.warnings.length}`);

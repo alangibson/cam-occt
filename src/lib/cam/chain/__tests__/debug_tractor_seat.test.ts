@@ -62,7 +62,7 @@ describe('Tractor Seat Mount Debug Analysis', () => {
 
                 // Only proceed with part detection if we have reasonable number of chains
                 if (chains.length > 0 && chains.length <= 20) {
-                    const partResult = await detectParts(chains);
+                    const partResult = detectParts(chains);
 
                     // Process warnings if needed
 
