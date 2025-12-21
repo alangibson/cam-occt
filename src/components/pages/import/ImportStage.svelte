@@ -177,15 +177,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="getting-started">
-                    <h3>Getting Started</h3>
-                    <p>
-                        Import your design file using the file picker, or try
-                        one of our example files below to explore MetalHeadCAM's
-                        capabilities.
-                    </p>
-                </div>
             </div>
         </div>
         <div class="right-cell">
@@ -286,6 +277,7 @@
         min-width: 0;
         display: flex;
         align-items: center;
+        justify-content: center;
     }
 
     .welcome-content {
@@ -339,27 +331,6 @@
         color: #6b7280;
         margin: 0;
         line-height: 1.5;
-    }
-
-    .getting-started {
-        padding: 1.5rem;
-        background-color: #f0f9ff;
-        border-left: 4px solid rgb(0, 83, 135);
-        border-radius: 0.375rem;
-    }
-
-    .getting-started h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: rgb(0, 83, 135);
-        margin: 0 0 0.5rem 0;
-    }
-
-    .getting-started p {
-        font-size: 0.9rem;
-        color: #374151;
-        margin: 0;
-        line-height: 1.6;
     }
 
     .right-cell {
@@ -463,10 +434,6 @@
 
         .feature-icon {
             font-size: 1.5rem;
-        }
-
-        .getting-started {
-            padding: 1rem;
         }
 
         .right-cell {
